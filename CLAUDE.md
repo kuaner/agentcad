@@ -35,7 +35,8 @@ src/agentcad/          # Main package
   validate.py           # Full validation pipeline: build + measure + render + design checks + feature coverage
   stl.py                # Pure-Python STL reader (binary + ASCII), mesh analysis, section radius
   jsonio.py             # JSON read/write/print helpers
-  templates.py          # Scaffold templates for init/new commands
+  templates.py          # Loads template files from _templates/ package
+  _templates/           # Template files (md, json, py) for workspace/model scaffolding
   __main__.py           # python -m agentcad entry point
 docs/
   DESIGN.md             # Architecture and iteration roadmap (V0-V5)

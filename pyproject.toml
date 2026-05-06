@@ -23,6 +23,9 @@ agentcad = "agentcad.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"agentcad._templates" = ["*.md", "*.json", "*.py"]
+
 [project.optional-dependencies]
 dev = ["pytest"]
 
