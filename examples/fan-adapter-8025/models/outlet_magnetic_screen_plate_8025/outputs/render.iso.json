@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "stage": "render",
+  "model": "outlet_magnetic_screen_plate_8025",
+  "view": "iso",
+  "artifacts": {
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/preview.iso.svg",
+    "render": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/render.iso.json"
+  },
+  "message": "preview rendered"
+}

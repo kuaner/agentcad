@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "stage": "deliver",
+  "model": "outlet_magnetic_screen_plate_8025",
+  "createdAt": "2026-05-06T07:02:43.314384+00:00",
+  "validationOk": true,
+  "artifacts": {
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.stl",
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/preview.iso.svg",
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/geometry.json",
+    "validation": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/validation.json",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/build.json"
+  },
+  "manifest": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/deliverable.json",
+  "message": "delivery manifest written"
+}

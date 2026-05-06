@@ -1,0 +1,17 @@
+{
+  "fan_frame_size": 80.0,
+  "fan_mount_spacing": 71.5,
+  "plate_size": 88.0,
+  "plate_thickness": 9.0,
+  "corner_radius": 5.0,
+  "air_opening_diameter": 74.0,
+  "screw_clearance_diameter": 4.5,
+  "screw_head_recess_diameter": 8.5,
+  "screw_head_recess_depth": 2.0,
+  "magnet_pocket_diameter": 12.2,
+  "magnet_nominal_diameter": 12.0,
+  "magnet_pocket_depth": 5.2,
+  "magnet_nominal_thickness": 5.0,
+  "magnet_glue_clearance": 0.2,
+  "edge_chamfer": 0.6
+}

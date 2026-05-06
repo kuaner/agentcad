@@ -1,0 +1,313 @@
+{
+  "ok": true,
+  "stage": "validate",
+  "model": "fan_duct_adapter_8025",
+  "validatedAt": "2026-05-06T07:34:19.225327+00:00",
+  "checks": [
+    {
+      "name": "build",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "measure",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "render",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "feature_coverage:square_fan_flange",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "square_fan_flange",
+      "checks": [
+        "overall_bbox",
+        "watertight_body"
+      ],
+      "matchedChecks": [
+        "overall_bbox",
+        "watertight_body"
+      ]
+    },
+    {
+      "name": "feature_coverage:fan_mounting_holes",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "fan_mounting_holes",
+      "checks": [
+        "mount_hole_count",
+        "mount_pattern_spacing"
+      ],
+      "matchedChecks": [
+        "mount_hole_count",
+        "mount_pattern_spacing"
+      ]
+    },
+    {
+      "name": "feature_coverage:round_duct_socket",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "round_duct_socket",
+      "checks": [
+        "duct_inner_diameter_contract",
+        "socket_outer_diameter_base",
+        "socket_outer_diameter_before_chamfer"
+      ],
+      "matchedChecks": [
+        "duct_inner_diameter_contract",
+        "socket_outer_diameter_base",
+        "socket_outer_diameter_before_chamfer"
+      ]
+    },
+    {
+      "name": "feature_coverage:duct_lead_in_chamfer",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "duct_lead_in_chamfer",
+      "checks": [
+        "lead_in_outer_diameter_start",
+        "lead_in_outer_diameter_end",
+        "lead_in_diameter_decreases"
+      ],
+      "matchedChecks": [
+        "lead_in_outer_diameter_start",
+        "lead_in_outer_diameter_end",
+        "lead_in_diameter_decreases"
+      ]
+    },
+    {
+      "name": "feature_coverage:deliverable_artifacts",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "deliverable_artifacts",
+      "checks": [
+        "step_artifact",
+        "stl_artifact"
+      ],
+      "matchedChecks": [
+        "step_artifact",
+        "stl_artifact"
+      ]
+    },
+    {
+      "name": "overall_bbox",
+      "type": "bbox_size",
+      "ok": true,
+      "expected": [
+        86.0,
+        86.0,
+        33.0
+      ],
+      "actual": [
+        86.0,
+        86.0,
+        33.0
+      ],
+      "tolerance": 0.6
+    },
+    {
+      "name": "watertight_body",
+      "type": "watertight",
+      "ok": true,
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "mesh_detail",
+      "type": "min_triangles",
+      "ok": true,
+      "expected": 100,
+      "actual": 5836
+    },
+    {
+      "name": "mount_hole_count",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "mounting.hole_count",
+      "expected": 4,
+      "actual": 4,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/metadata.json"
+    },
+    {
+      "name": "mount_pattern_spacing",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "mounting.pattern_spacing_mm",
+      "expected": 71.5,
+      "actual": 71.5,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/metadata.json"
+    },
+    {
+      "name": "duct_inner_diameter_contract",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "duct.inner_diameter_mm",
+      "expected": 80.0,
+      "actual": 80.0,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/metadata.json"
+    },
+    {
+      "name": "socket_outer_diameter_base",
+      "type": "outer_diameter_at_z",
+      "ok": true,
+      "z": 6.0,
+      "expected": 79.4,
+      "actual": 79.40000316731694,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 6.0,
+        "point_count": 1008,
+        "radius_min": 36.99315556490516,
+        "radius_max": 39.70000177057726,
+        "radius_mean": 38.347849377851524,
+        "radius_outer_estimate": 39.70000158365847,
+        "radius_inner_estimate": 36.99315625099551,
+        "diameter_outer_estimate": 79.40000316731694,
+        "diameter_inner_estimate": 73.98631250199102
+      }
+    },
+    {
+      "name": "socket_outer_diameter_before_chamfer",
+      "type": "outer_diameter_at_z",
+      "ok": true,
+      "z": 31.9,
+      "expected": 79.4,
+      "actual": 79.40000316731694,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 31.9,
+        "point_count": 1008,
+        "radius_min": 36.99851619641963,
+        "radius_max": 39.70000177057726,
+        "radius_mean": 38.34958399076265,
+        "radius_outer_estimate": 39.70000158365847,
+        "radius_inner_estimate": 36.99851648885713,
+        "diameter_outer_estimate": 79.40000316731694,
+        "diameter_inner_estimate": 73.99703297771426
+      }
+    },
+    {
+      "name": "lead_in_outer_diameter_start",
+      "type": "outer_diameter_at_z",
+      "ok": true,
+      "z": 32.0,
+      "expected": 79.4,
+      "actual": 79.40000354115452,
+      "tolerance": 0.35,
+      "section": {
+        "ok": true,
+        "z": 32.0,
+        "point_count": 2016,
+        "radius_min": 36.99864670726454,
+        "radius_max": 39.70000177057726,
+        "radius_mean": 39.02483114059272,
+        "radius_outer_estimate": 39.70000177057726,
+        "radius_inner_estimate": 36.99864707635199,
+        "diameter_outer_estimate": 79.40000354115452,
+        "diameter_inner_estimate": 73.99729415270399
+      }
+    },
+    {
+      "name": "lead_in_outer_diameter_end",
+      "type": "outer_diameter_at_z",
+      "ok": true,
+      "z": 33.0,
+      "expected": 77.4,
+      "actual": 77.40000197967642,
+      "tolerance": 0.35,
+      "section": {
+        "ok": true,
+        "z": 33.0,
+        "point_count": 3024,
+        "radius_min": 36.99999824894856,
+        "radius_max": 38.700001678310805,
+        "radius_mean": 37.850000001672484,
+        "radius_outer_estimate": 38.70000098983821,
+        "radius_inner_estimate": 36.9999983721482,
+        "diameter_outer_estimate": 77.40000197967642,
+        "diameter_inner_estimate": 73.9999967442964
+      }
+    },
+    {
+      "name": "lead_in_diameter_decreases",
+      "type": "diameter_decreases_along_z",
+      "ok": true,
+      "z_values": [
+        32.0,
+        32.5,
+        33.0
+      ],
+      "diameters": [
+        79.40000354115452,
+        78.40000137065661,
+        77.40000197967642
+      ],
+      "sections": [
+        {
+          "ok": true,
+          "z": 32.0,
+          "point_count": 2016,
+          "radius_min": 36.99864670726454,
+          "radius_max": 39.70000177057726,
+          "radius_mean": 39.02483114059272,
+          "radius_outer_estimate": 39.70000177057726,
+          "radius_inner_estimate": 36.99864707635199,
+          "diameter_outer_estimate": 79.40000354115452,
+          "diameter_inner_estimate": 73.99729415270399
+        },
+        {
+          "ok": true,
+          "z": 32.5,
+          "point_count": 1008,
+          "radius_min": 36.999311925327746,
+          "radius_max": 39.20000138020774,
+          "radius_mean": 38.096782923668535,
+          "radius_outer_estimate": 39.200000685328305,
+          "radius_inner_estimate": 36.99931216380426,
+          "diameter_outer_estimate": 78.40000137065661,
+          "diameter_inner_estimate": 73.99862432760852
+        },
+        {
+          "ok": true,
+          "z": 33.0,
+          "point_count": 3024,
+          "radius_min": 36.99999824894856,
+          "radius_max": 38.700001678310805,
+          "radius_mean": 37.850000001672484,
+          "radius_outer_estimate": 38.70000098983821,
+          "radius_inner_estimate": 36.9999983721482,
+          "diameter_outer_estimate": 77.40000197967642,
+          "diameter_inner_estimate": 73.9999967442964
+        }
+      ],
+      "epsilon": 0.05
+    },
+    {
+      "name": "step_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.step"
+    },
+    {
+      "name": "stl_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.stl"
+    }
+  ],
+  "artifacts": {
+    "validation": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/validation.json",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/build.json",
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/geometry.json",
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.stl",
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.iso.svg"
+  },
+  "message": "validation passed"
+}

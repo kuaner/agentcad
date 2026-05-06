@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "stage": "measure",
+  "model": "outlet_magnetic_screen_plate_8025",
+  "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.stl",
+  "geometry": {
+    "bbox": {
+      "min": [
+        -44.0,
+        -44.0,
+        0.0
+      ],
+      "max": [
+        44.0,
+        44.0,
+        9.0
+      ],
+      "size": [
+        88.0,
+        88.0,
+        9.0
+      ],
+      "center": [
+        0.0,
+        0.0,
+        4.5
+      ]
+    },
+    "mesh": {
+      "triangles": 7096,
+      "vertices": 21288,
+      "unique_edges": 10644,
+      "boundary_or_nonmanifold_edges": 0,
+      "watertight": true
+    },
+    "mass_properties": {
+      "surface_area": 13015.028650266273,
+      "volume": 27812.33126481312
+    }
+  },
+  "artifacts": {
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/geometry.json"
+  },
+  "message": "model measured"
+}

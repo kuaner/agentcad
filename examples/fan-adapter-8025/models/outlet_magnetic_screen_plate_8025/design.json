@@ -1,0 +1,141 @@
+{
+  "schema": "design-spec.v1",
+  "model": "outlet_magnetic_screen_plate_8025",
+  "units": "mm",
+  "intent": "Outlet-side adapter plate for an 8025 fan. The plate screws to the fan using the normal 71.5 mm fan hole pattern, while the same four corner positions include coaxial 12 mm magnet pockets on the screen-facing side. Magnets are glued into the pockets so the fan assembly can attach magnetically to a window screen for exhaust.",
+  "assumptions": [
+    "8025 fan frame is 80 x 80 mm with common 71.5 mm square screw pattern.",
+    "The fan side is Z=0. The screen-facing service side is the top face at Z=plate_thickness.",
+    "Screws install from the screen-facing side into the fan before magnets are glued in.",
+    "Each corner feature is a coaxial stepped stack opened from the screen-facing side: through screw clearance, screw head recess, then larger magnet pocket.",
+    "Magnet pocket diameter is 12.2 mm for glue clearance around a nominal 12 mm magnet.",
+    "Magnet pocket depth is 5.2 mm for a nominal 5 mm thick magnet and glue allowance."
+  ],
+  "features": [
+    {
+      "id": "screen_plate_body",
+      "intent": "Thicker square plate provides structure and depth for embedded magnets.",
+      "checks": ["overall_bbox", "watertight_body"]
+    },
+    {
+      "id": "central_exhaust_opening",
+      "intent": "Large center opening leaves the fan exhaust path unobstructed.",
+      "checks": ["air_opening_contract"]
+    },
+    {
+      "id": "fan_screw_step_holes",
+      "intent": "Four stepped screw holes align with the 8025 fan and include screen-side screw head recesses so screws can be installed from the accessible side.",
+      "checks": ["mount_hole_count", "mount_pattern_spacing", "screw_clearance_contract", "screw_head_recess_contract", "screw_install_side_contract", "screw_recess_side_contract"]
+    },
+    {
+      "id": "coaxial_magnet_pockets",
+      "intent": "Four 12 mm magnet pockets reuse the fan screw positions, open on the screen-facing side, and are glued after screw installation.",
+      "checks": ["magnet_pocket_count", "magnet_pocket_diameter_contract", "magnet_pocket_depth_contract", "magnet_pocket_side_contract", "magnet_positions_reuse_mount_pattern"]
+    },
+    {
+      "id": "deliverable_artifacts",
+      "intent": "The workflow produces STEP and STL files for CAD review and fabrication.",
+      "checks": ["step_artifact", "stl_artifact"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "overall_bbox",
+      "type": "bbox_size",
+      "expected": [88.0, 88.0, 9.0],
+      "tolerance": 0.6
+    },
+    {
+      "id": "watertight_body",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "mesh_detail",
+      "type": "min_triangles",
+      "expected": 100
+    },
+    {
+      "id": "air_opening_contract",
+      "type": "metadata_equals",
+      "path": "air_opening.diameter_mm",
+      "expected": 74.0
+    },
+    {
+      "id": "mount_hole_count",
+      "type": "metadata_equals",
+      "path": "mounting.hole_count",
+      "expected": 4
+    },
+    {
+      "id": "mount_pattern_spacing",
+      "type": "metadata_equals",
+      "path": "mounting.pattern_spacing_mm",
+      "expected": 71.5
+    },
+    {
+      "id": "screw_clearance_contract",
+      "type": "metadata_equals",
+      "path": "mounting.screw_clearance_diameter_mm",
+      "expected": 4.5
+    },
+    {
+      "id": "screw_head_recess_contract",
+      "type": "metadata_equals",
+      "path": "mounting.screw_head_recess_diameter_mm",
+      "expected": 8.5
+    },
+    {
+      "id": "screw_install_side_contract",
+      "type": "metadata_equals",
+      "path": "mounting.screw_install_side",
+      "expected": "screen"
+    },
+    {
+      "id": "screw_recess_side_contract",
+      "type": "metadata_equals",
+      "path": "mounting.screw_head_recess_side",
+      "expected": "screen"
+    },
+    {
+      "id": "magnet_pocket_count",
+      "type": "metadata_equals",
+      "path": "magnets.pocket_count",
+      "expected": 4
+    },
+    {
+      "id": "magnet_pocket_diameter_contract",
+      "type": "metadata_equals",
+      "path": "magnets.pocket_diameter_mm",
+      "expected": 12.2
+    },
+    {
+      "id": "magnet_pocket_depth_contract",
+      "type": "metadata_equals",
+      "path": "magnets.pocket_depth_mm",
+      "expected": 5.2
+    },
+    {
+      "id": "magnet_pocket_side_contract",
+      "type": "metadata_equals",
+      "path": "magnets.pocket_side",
+      "expected": "screen"
+    },
+    {
+      "id": "magnet_positions_reuse_mount_pattern",
+      "type": "metadata_equals",
+      "path": "magnets.coaxial_with_mounting_holes",
+      "expected": true
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/outlet_magnetic_screen_plate_8025.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/outlet_magnetic_screen_plate_8025.stl"
+    }
+  ]
+}

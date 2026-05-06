@@ -1,0 +1,264 @@
+{
+  "ok": true,
+  "stage": "validate",
+  "model": "outlet_magnetic_screen_plate_8025",
+  "validatedAt": "2026-05-06T07:34:19.207279+00:00",
+  "checks": [
+    {
+      "name": "build",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "measure",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "render",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "feature_coverage:screen_plate_body",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "screen_plate_body",
+      "checks": [
+        "overall_bbox",
+        "watertight_body"
+      ],
+      "matchedChecks": [
+        "overall_bbox",
+        "watertight_body"
+      ]
+    },
+    {
+      "name": "feature_coverage:central_exhaust_opening",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "central_exhaust_opening",
+      "checks": [
+        "air_opening_contract"
+      ],
+      "matchedChecks": [
+        "air_opening_contract"
+      ]
+    },
+    {
+      "name": "feature_coverage:fan_screw_step_holes",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "fan_screw_step_holes",
+      "checks": [
+        "mount_hole_count",
+        "mount_pattern_spacing",
+        "screw_clearance_contract",
+        "screw_head_recess_contract",
+        "screw_install_side_contract",
+        "screw_recess_side_contract"
+      ],
+      "matchedChecks": [
+        "mount_hole_count",
+        "mount_pattern_spacing",
+        "screw_clearance_contract",
+        "screw_head_recess_contract",
+        "screw_install_side_contract",
+        "screw_recess_side_contract"
+      ]
+    },
+    {
+      "name": "feature_coverage:coaxial_magnet_pockets",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "coaxial_magnet_pockets",
+      "checks": [
+        "magnet_pocket_count",
+        "magnet_pocket_diameter_contract",
+        "magnet_pocket_depth_contract",
+        "magnet_pocket_side_contract",
+        "magnet_positions_reuse_mount_pattern"
+      ],
+      "matchedChecks": [
+        "magnet_pocket_count",
+        "magnet_pocket_diameter_contract",
+        "magnet_pocket_depth_contract",
+        "magnet_pocket_side_contract",
+        "magnet_positions_reuse_mount_pattern"
+      ]
+    },
+    {
+      "name": "feature_coverage:deliverable_artifacts",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "deliverable_artifacts",
+      "checks": [
+        "step_artifact",
+        "stl_artifact"
+      ],
+      "matchedChecks": [
+        "step_artifact",
+        "stl_artifact"
+      ]
+    },
+    {
+      "name": "overall_bbox",
+      "type": "bbox_size",
+      "ok": true,
+      "expected": [
+        88.0,
+        88.0,
+        9.0
+      ],
+      "actual": [
+        88.0,
+        88.0,
+        9.0
+      ],
+      "tolerance": 0.6
+    },
+    {
+      "name": "watertight_body",
+      "type": "watertight",
+      "ok": true,
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "mesh_detail",
+      "type": "min_triangles",
+      "ok": true,
+      "expected": 100,
+      "actual": 7096
+    },
+    {
+      "name": "air_opening_contract",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "air_opening.diameter_mm",
+      "expected": 74.0,
+      "actual": 74.0,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "mount_hole_count",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "mounting.hole_count",
+      "expected": 4,
+      "actual": 4,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "mount_pattern_spacing",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "mounting.pattern_spacing_mm",
+      "expected": 71.5,
+      "actual": 71.5,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "screw_clearance_contract",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "mounting.screw_clearance_diameter_mm",
+      "expected": 4.5,
+      "actual": 4.5,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "screw_head_recess_contract",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "mounting.screw_head_recess_diameter_mm",
+      "expected": 8.5,
+      "actual": 8.5,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "screw_install_side_contract",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "mounting.screw_install_side",
+      "expected": "screen",
+      "actual": "screen",
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "screw_recess_side_contract",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "mounting.screw_head_recess_side",
+      "expected": "screen",
+      "actual": "screen",
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "magnet_pocket_count",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "magnets.pocket_count",
+      "expected": 4,
+      "actual": 4,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "magnet_pocket_diameter_contract",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "magnets.pocket_diameter_mm",
+      "expected": 12.2,
+      "actual": 12.2,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "magnet_pocket_depth_contract",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "magnets.pocket_depth_mm",
+      "expected": 5.2,
+      "actual": 5.2,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "magnet_pocket_side_contract",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "magnets.pocket_side",
+      "expected": "screen",
+      "actual": "screen",
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "magnet_positions_reuse_mount_pattern",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "magnets.coaxial_with_mounting_holes",
+      "expected": true,
+      "actual": true,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+    },
+    {
+      "name": "step_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.step"
+    },
+    {
+      "name": "stl_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.stl"
+    }
+  ],
+  "artifacts": {
+    "validation": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/validation.json",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/build.json",
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/geometry.json",
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.stl",
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/preview.iso.svg"
+  },
+  "message": "validation passed"
+}

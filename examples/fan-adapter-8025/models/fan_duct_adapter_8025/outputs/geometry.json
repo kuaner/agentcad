@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "stage": "measure",
+  "model": "fan_duct_adapter_8025",
+  "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.stl",
+  "geometry": {
+    "bbox": {
+      "min": [
+        -43.0,
+        -43.0,
+        0.0
+      ],
+      "max": [
+        43.0,
+        43.0,
+        33.0
+      ],
+      "size": [
+        86.0,
+        86.0,
+        33.0
+      ],
+      "center": [
+        0.0,
+        0.0,
+        16.5
+      ]
+    },
+    "mesh": {
+      "triangles": 5836,
+      "vertices": 17508,
+      "unique_edges": 8754,
+      "boundary_or_nonmanifold_edges": 0,
+      "watertight": true
+    },
+    "mass_properties": {
+      "surface_area": 22581.220940170042,
+      "volume": 32850.782162298514
+    }
+  },
+  "artifacts": {
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/geometry.json"
+  },
+  "message": "model measured"
+}

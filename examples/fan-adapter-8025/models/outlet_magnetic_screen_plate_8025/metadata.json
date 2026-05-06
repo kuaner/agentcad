@@ -1,0 +1,79 @@
+{
+  "schema": "agentcad.part.metadata.v1",
+  "units": "mm",
+  "model": "outlet_magnetic_screen_plate_8025",
+  "fan": {
+    "frame_size_mm": 80.0
+  },
+  "air_opening": {
+    "diameter_mm": 74.0
+  },
+  "mounting": {
+    "hole_count": 4,
+    "pattern_spacing_mm": 71.5,
+    "screw_clearance_diameter_mm": 4.5,
+    "screw_head_recess_diameter_mm": 8.5,
+    "screw_head_recess_depth_mm": 2.0,
+    "screw_head_recess_side": "screen",
+    "screw_install_side": "screen",
+    "positions_mm": [
+      [
+        -35.75,
+        -35.75,
+        0
+      ],
+      [
+        35.75,
+        -35.75,
+        0
+      ],
+      [
+        -35.75,
+        35.75,
+        0
+      ],
+      [
+        35.75,
+        35.75,
+        0
+      ]
+    ]
+  },
+  "magnets": {
+    "pocket_count": 4,
+    "nominal_diameter_mm": 12.0,
+    "nominal_thickness_mm": 5.0,
+    "pocket_diameter_mm": 12.2,
+    "pocket_depth_mm": 5.2,
+    "pocket_side": "screen",
+    "glue_clearance_mm": 0.2,
+    "coaxial_with_mounting_holes": true,
+    "positions_mm": [
+      [
+        -35.75,
+        -35.75,
+        9.0
+      ],
+      [
+        35.75,
+        -35.75,
+        9.0
+      ],
+      [
+        -35.75,
+        35.75,
+        9.0
+      ],
+      [
+        35.75,
+        35.75,
+        9.0
+      ]
+    ]
+  },
+  "bbox_expected_mm": [
+    88.0,
+    88.0,
+    9.0
+  ]
+}

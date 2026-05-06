@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentcad"
+version = "0.1.0"
+description = "Agent-first CAD workflow runtime"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = "MIT"
+authors = [
+  { name = "AgentCAD contributors" }
+]
+dependencies = [
+  "build123d"
+]
+
+[project.scripts]
+cad = "agentcad.cli:main"
+agentcad = "agentcad.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
