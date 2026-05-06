@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from . import templates
@@ -29,10 +30,13 @@ def init_workspace(target: Path, force: bool = False) -> dict:
         return {"ok": True, "message": "workspace already exists", "project": str(target)}
 
     write_json_if_missing(project_file, templates.CADPROJECT_JSON)
-    write_if_missing(target / "AGENTS.md", templates.AGENTS_MD)
-    write_if_missing(target / "skills" / "cad-workflow.md", templates.SKILL_CAD_WORKFLOW)
-    write_if_missing(target / "skills" / "modeling-rules.md", templates.SKILL_MODELING_RULES)
-    write_if_missing(target / "skills" / "validation-rules.md", templates.SKILL_VALIDATION_RULES)
+    write_if_missing(target / "CLAUDE.md", templates.WORKSPACE_CLAUDE_MD)
+    agents_link = target / "AGENTS.md"
+    if not agents_link.exists():
+        agents_link.symlink_to("CLAUDE.md")
+    write_if_missing(target / "skills" / "build123d-guide.md", templates.SKILL_BUILD123D_GUIDE)
+    write_if_missing(target / "skills" / "validation-strategy.md", templates.SKILL_VALIDATION_STRATEGY)
+    write_if_missing(target / "skills" / "common-errors.md", templates.SKILL_COMMON_ERRORS)
     (target / "models").mkdir(exist_ok=True)
     (target / "references" / "images").mkdir(parents=True, exist_ok=True)
     write_if_missing(target / "references" / "notes.md", templates.REFERENCE_NOTES)

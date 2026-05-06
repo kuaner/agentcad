@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "validate",
   "model": "fan_duct_adapter_8025",
-  "validatedAt": "2026-05-06T07:34:19.225327+00:00",
+  "validatedAt": "2026-05-06T08:16:00.955389+00:00",
   "checks": [
     {
       "name": "build",

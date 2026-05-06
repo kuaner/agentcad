@@ -46,14 +46,15 @@ examples/
 
 ## CLI Commands
 
+All commands auto-detect the workspace by walking up from cwd. Use `--project <dir>` only when operating from outside the workspace.
+
 ```bash
-cad init <project>                                # Create workspace
-cad new --project <project> <model>               # Create model scaffold
-cad build --project <project> <model> --json      # Build + export STEP/STL
-cad measure --project <project> <model> --json    # Measure STL geometry
-cad render --project <project> <model> --json     # SVG preview from STL
-cad validate --project <project> <model> --json   # Full validation pipeline
-cad deliver --project <project> <model> --json    # Delivery manifest
+cad new <model>                                    # Create model (auto-inits workspace if needed)
+cad build <model> --json                           # Build + export STEP/STL
+cad measure <model> --json                         # Measure STL geometry
+cad render <model> --json                          # SVG preview from STL
+cad validate <model> --json                        # Full validation pipeline
+cad deliver <model> --json                         # Delivery manifest
 ```
 
 All commands support `--json` for stable machine-readable output. Failures also return JSON with `stage`, `error.type`, `error.message`.
@@ -64,7 +65,7 @@ All commands support `--json` for stable machine-readable output. Failures also 
 project/
   AGENTS.md              # Agent instructions (auto-generated)
   cadproject.json        # Project config
-  skills/                # Skill markdown files
+  skills/                # build123d-guide.md, validation-strategy.md, common-errors.md
   references/            # Images, sketches, notes
   models/<name>/
     README.md
@@ -101,9 +102,16 @@ Section checks use STL triangle-plane intersections for validating ducts, tapers
 
 ## Running Tests
 
-No test suite is configured yet. Validation is done through the example models:
+```bash
+uv run pytest -v                    # All tests
+uv run pytest tests/test_stl.py     # STL module only
+```
+
+Tests cover: CLI dispatch, workspace init/new, STL reading/measurement/section,
+SVG rendering, JSON IO, validation checks and feature coverage.
+
+Integration validation through example models:
 
 ```bash
-uv run cad validate --project examples/fan-adapter-8025 fan_duct_adapter_8025 --json
-uv run cad validate --project examples/fan-adapter-8025 outlet_magnetic_screen_plate_8025 --json
+cd examples/fan-adapter-8025 && uv run cad validate fan_duct_adapter_8025 --json
 ```

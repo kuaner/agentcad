@@ -32,12 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"agentcad {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    init = sub.add_parser("init", help="create an AgentCAD workspace")
-    init.add_argument("path", nargs="?", default=".")
-    init.add_argument("--force", action="store_true")
-    init.add_argument("--json", action="store_true")
-
-    new = sub.add_parser("new", help="create a new model")
+    new = sub.add_parser("new", help="create a new model (auto-initializes workspace)")
     add_project_arg(new)
     new.add_argument("model")
     new.add_argument("--force", action="store_true")
@@ -78,11 +73,20 @@ def add_project_arg(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--project", default=".", help="project directory, defaults to current directory")
 
 
-def dispatch(args: argparse.Namespace) -> dict:
-    if args.command == "init":
-        return init_workspace(Path(args.path), force=args.force)
+def _resolve_project(args: argparse.Namespace) -> Path:
+    """Find existing project, or auto-init for 'new' command."""
+    try:
+        return find_project(Path(args.project))
+    except FileNotFoundError:
+        if args.command == "new":
+            target = Path(args.project).expanduser().resolve()
+            init_workspace(target)
+            return find_project(target)
+        raise
 
-    project = find_project(Path(args.project))
+
+def dispatch(args: argparse.Namespace) -> dict:
+    project = _resolve_project(args)
     if args.command == "new":
         return new_model(project, args.model, force=args.force)
     if args.command == "build":

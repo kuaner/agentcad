@@ -8,8 +8,8 @@ agent can iterate on CAD models with measurable feedback.
 
 ## Current V0 Scope
 
-- `cad init`: create an agent-readable CAD workspace.
-- `cad new`: create a model folder with `part.py`, `params.json`, and `design.json`.
+- `cad new`: create a model folder with `part.py`, `params.json`, and `design.json`. Auto-initializes workspace if needed.
+- `cad build`: execute build123d model code and export STEP/STL.
 - `cad build`: execute build123d model code and export STEP/STL.
 - `cad measure`: inspect STL geometry and write `geometry.json`.
 - `cad render`: create a dependency-free SVG preview from STL.
@@ -35,11 +35,10 @@ PYTHONPATH=src python3 -m agentcad --help
 ## Quick Example
 
 ```bash
-cad init /tmp/my-cad-project
+uv run cad new bracket --project /tmp/my-cad-project
 cd /tmp/my-cad-project
-uv run --project /path/to/agentcad cad new bracket
-uv run --project /path/to/agentcad cad validate bracket --json
-uv run --project /path/to/agentcad cad deliver bracket --json
+uv run cad validate bracket --json
+uv run cad deliver bracket --json
 ```
 
 The default generated model is a simple build123d cuboid. Agent rules are
