@@ -1,40 +1,21 @@
 from __future__ import annotations
 
 import importlib.resources
-import json
+from pathlib import Path
 
 
-def _read_text(filename: str) -> str:
-    """Read a template file from the templates package."""
-    return importlib.resources.files("agentcad._templates").joinpath(filename).read_text(encoding="utf-8")
+def _templates_dir() -> Path:
+    """Return the path to the _templates package directory."""
+    ref = importlib.resources.files("agentcad._templates")
+    # importlib.resources may return a Traversable; cast to Path
+    return Path(str(ref))
 
 
-# Static templates — loaded once at module level
-
-CADPROJECT_JSON = json.loads(_read_text("cadproject.json"))
-
-WORKSPACE_CLAUDE_MD = _read_text("workspace-claude.md")
-
-SKILL_BUILD123D_GUIDE = _read_text("build123d-guide.md")
-
-SKILL_VALIDATION_STRATEGY = _read_text("validation-strategy.md")
-
-REFERENCE_NOTES = _read_text("reference-notes.md")
+def workspace_dir() -> Path:
+    """Path to the workspace template tree."""
+    return _templates_dir() / "workspace"
 
 
-# Dynamic templates — {name} placeholder replaced at call time
-
-def model_readme(name: str) -> str:
-    return _read_text("model-readme.md").replace("{name}", name)
-
-
-def model_params() -> str:
-    return _read_text("model-params.json")
-
-
-def model_design(name: str) -> str:
-    return _read_text("model-design.json").replace("{name}", name)
-
-
-def model_part() -> str:
-    return _read_text("model-part.py")
+def model_dir() -> Path:
+    """Path to the model template tree."""
+    return _templates_dir() / "model"

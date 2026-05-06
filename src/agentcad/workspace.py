@@ -6,20 +6,35 @@ from pathlib import Path
 
 from . import templates
 
-
 PROJECT_FILE = "cadproject.json"
 
 
-def write_if_missing(path: Path, text: str) -> bool:
-    if path.exists():
-        return False
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
-    return True
+def _copy_tree(src: Path, dst: Path, substitutions: dict[str, str] | None = None) -> None:
+    """Copy a template directory tree to dst.
 
+    Files ending in .gitkeep create empty directories. All other files are
+    written with optional ``{key}`` substitution. Existing files are skipped.
+    """
+    for src_file in sorted(src.rglob("*")):
+        rel = src_file.relative_to(src)
+        dst_file = dst / rel
 
-def write_json_if_missing(path: Path, payload: dict) -> bool:
-    return write_if_missing(path, json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
+        if src_file.name == ".gitkeep":
+            dst_file.parent.mkdir(parents=True, exist_ok=True)
+            continue
+
+        if src_file.is_dir():
+            dst_file.mkdir(parents=True, exist_ok=True)
+            continue
+
+        if dst_file.exists():
+            continue
+
+        dst_file.parent.mkdir(parents=True, exist_ok=True)
+        content = src_file.read_text(encoding="utf-8")
+        if substitutions:
+            content = content.replace("{name}", substitutions.get("name", ""))
+        dst_file.write_text(content, encoding="utf-8")
 
 
 def init_workspace(target: Path, force: bool = False) -> dict:
@@ -29,16 +44,12 @@ def init_workspace(target: Path, force: bool = False) -> dict:
     if project_file.exists() and not force:
         return {"ok": True, "message": "workspace already exists", "project": str(target)}
 
-    write_json_if_missing(project_file, templates.CADPROJECT_JSON)
-    write_if_missing(target / "CLAUDE.md", templates.WORKSPACE_CLAUDE_MD)
+    _copy_tree(templates.workspace_dir(), target)
+
     agents_link = target / "AGENTS.md"
     if not agents_link.exists():
         agents_link.symlink_to("CLAUDE.md")
-    write_if_missing(target / "skills" / "build123d-guide.md", templates.SKILL_BUILD123D_GUIDE)
-    write_if_missing(target / "skills" / "validation-strategy.md", templates.SKILL_VALIDATION_STRATEGY)
-    (target / "models").mkdir(exist_ok=True)
-    (target / "references" / "images").mkdir(parents=True, exist_ok=True)
-    write_if_missing(target / "references" / "notes.md", templates.REFERENCE_NOTES)
+
     return {"ok": True, "message": "workspace initialized", "project": str(target)}
 
 
@@ -65,12 +76,9 @@ def new_model(project: Path, name: str, force: bool = False) -> dict:
     root = model_dir(project, safe)
     if root.exists() and not force:
         return {"ok": False, "stage": "new", "error": {"type": "ModelExists", "message": f"model exists: {safe}"}}
-    root.mkdir(parents=True, exist_ok=True)
-    (root / "outputs").mkdir(exist_ok=True)
-    write_if_missing(root / "README.md", templates.model_readme(safe))
-    write_if_missing(root / "params.json", templates.model_params())
-    write_if_missing(root / "design.json", templates.model_design(safe))
-    write_if_missing(root / "part.py", templates.model_part())
+
+    _copy_tree(templates.model_dir(), root, substitutions={"name": safe})
+
     return {"ok": True, "message": "model created", "model": safe, "path": str(root)}
 
 
