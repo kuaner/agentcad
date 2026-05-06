@@ -36,7 +36,6 @@ def init_workspace(target: Path, force: bool = False) -> dict:
         agents_link.symlink_to("CLAUDE.md")
     write_if_missing(target / "skills" / "build123d-guide.md", templates.SKILL_BUILD123D_GUIDE)
     write_if_missing(target / "skills" / "validation-strategy.md", templates.SKILL_VALIDATION_STRATEGY)
-    write_if_missing(target / "skills" / "common-errors.md", templates.SKILL_COMMON_ERRORS)
     (target / "models").mkdir(exist_ok=True)
     (target / "references" / "images").mkdir(parents=True, exist_ok=True)
     write_if_missing(target / "references" / "notes.md", templates.REFERENCE_NOTES)

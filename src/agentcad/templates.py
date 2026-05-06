@@ -138,9 +138,8 @@ All commands accept `--json` for machine-readable output.
 ## Key Resources
 
 Read the skill files in `skills/` for detailed guidance:
-- `build123d-guide.md` — build123d patterns, common features, pitfalls
-- `validation-strategy.md` — check type selection, section checks, tolerance
-- `common-errors.md` — build errors, validation failures, modeling pitfalls
+- `build123d-guide.md` — build123d API reference, patterns, common pitfalls
+- `validation-strategy.md` — check types, section checks, tolerance, troubleshooting
 
 ## Querying build123d Documentation
 
@@ -785,7 +784,7 @@ add(web)  # add the moved copy
 """
 
 
-SKILL_VALIDATION_STRATEGY = """# Validation Strategy
+SKILL_VALIDATION_STRATEGY = """# Validation Strategy & Troubleshooting
 
 ## design.json Structure
 
@@ -881,12 +880,8 @@ a comment that a geometry check for that position is not yet available.
 - Using metadata_equals as the sole check for a geometry feature
 - Setting tolerance to 0: STL mesh quantization makes exact matches unreliable
 - Not checking both ends of a taper or socket
-"""
 
-
-SKILL_COMMON_ERRORS = """# Common Errors and Fixes
-
-## Build Errors
+## Build Error Troubleshooting
 
 ### MissingResult: part.py must define global variable result
 
@@ -919,7 +914,7 @@ Common causes:
 Fix: reduce fillet/chamfer size, add a small offset between coplanar faces
 (0.01 mm is enough), or change boolean operation order.
 
-## Validation Failures
+## Validation Failure Troubleshooting
 
 ### bbox_size fails but geometry looks correct
 
@@ -953,40 +948,6 @@ feature has a non-empty `checks` array.
 - `diameter_outer_estimate` uses the 98th percentile radius, not the max. This
   filters outlier artifacts but may slightly underreport the true outer
   diameter. Adjust tolerance accordingly (typically 0.2-0.3 mm is safe).
-
-## Modeling Pitfalls
-
-### Chamfer/fillet hidden by overlapping geometry
-
-A chamfer coded correctly can be visually hidden if a later operation adds a
-cylinder or box that overlaps the chamfered region. The geometry is technically
-correct but the chamfer serves no purpose.
-
-Prevention: use `outer_diameter_at_z` or `diameter_decreases_along_z` checks
-at the chamfer location to verify the surface actually changes.
-
-### Wrong Align causing off-center parts
-
-```python
-# This box is centered at origin
-Box(40, 30, 20)
-
-# This box starts at Z=0 and extends upward
-Box(40, 30, 20, align=(Align.CENTER, Align.CENTER, Align.MIN))
-```
-
-Be explicit about alignment. If a flange should sit on top of another part,
-use Align.MIN on Z for the base and Align.MIN for the added part, then offset
-with `with Locations(...)`.
-
-### Hole depth does not go all the way through
-
-`Hole(radius)` without depth goes through the full part thickness. Specifying
-`depth=X` makes it X mm deep from the current workplane. If the workplane is
-not where you think it is, the hole may stop short.
-
-Fix: use `Hole(radius)` without depth for through-holes. For blind holes, be
-explicit about the workplane location.
 """
 
 

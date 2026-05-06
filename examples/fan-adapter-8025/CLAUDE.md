@@ -124,9 +124,8 @@ All commands accept `--json` for machine-readable output.
 ## Key Resources
 
 Read the skill files in `skills/` for detailed guidance:
-- `build123d-guide.md` — build123d patterns, common features, pitfalls
-- `validation-strategy.md` — check type selection, section checks, tolerance
-- `common-errors.md` — build errors, validation failures, modeling pitfalls
+- `build123d-guide.md` — build123d API reference, patterns, common pitfalls
+- `validation-strategy.md` — check types, section checks, tolerance, troubleshooting
 
 ## Querying build123d Documentation
 
