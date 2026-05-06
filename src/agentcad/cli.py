@@ -10,7 +10,7 @@ from .measure import measure_model
 from .render import render_model
 from .runner import build_model
 from .validate import deliver_model, validate_model
-from .workspace import find_project, init_workspace, new_model
+from .workspace import find_project, init_workspace, new_model, sync_workspace
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -66,6 +66,10 @@ def build_parser() -> argparse.ArgumentParser:
     deliver.add_argument("--no-validate", action="store_true")
     deliver.add_argument("--json", action="store_true")
 
+    sync = sub.add_parser("sync", help="update workspace scaffold files from templates")
+    add_project_arg(sync)
+    sync.add_argument("--json", action="store_true")
+
     return parser
 
 
@@ -75,17 +79,22 @@ def add_project_arg(parser: argparse.ArgumentParser) -> None:
 
 def _resolve_project(args: argparse.Namespace) -> Path:
     """Find existing project, or auto-init for 'new' command."""
+    project = Path(getattr(args, "project", "."))
     try:
-        return find_project(Path(args.project))
+        return find_project(project)
     except FileNotFoundError:
         if args.command == "new":
-            target = Path(args.project).expanduser().resolve()
+            target = project.expanduser().resolve()
             init_workspace(target)
             return find_project(target)
         raise
 
 
 def dispatch(args: argparse.Namespace) -> dict:
+    if args.command == "sync":
+        project = _resolve_project(args)
+        return sync_workspace(project)
+
     project = _resolve_project(args)
     if args.command == "new":
         return new_model(project, args.model, force=args.force)

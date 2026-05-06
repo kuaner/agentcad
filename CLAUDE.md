@@ -51,6 +51,7 @@ All commands auto-detect the workspace by walking up from cwd. Use `--project <d
 
 ```bash
 cad new <model>                                    # Create model (auto-inits workspace if needed)
+cad sync                                           # Update workspace scaffold files from templates
 cad build <model> --json                           # Build + export STEP/STL
 cad measure <model> --json                         # Measure STL geometry
 cad render <model> --json                          # SVG preview from STL

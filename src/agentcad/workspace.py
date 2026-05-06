@@ -9,11 +9,12 @@ from . import templates
 PROJECT_FILE = "cadproject.json"
 
 
-def _copy_tree(src: Path, dst: Path, substitutions: dict[str, str] | None = None) -> None:
+def _copy_tree(src: Path, dst: Path, substitutions: dict[str, str] | None = None, overwrite: bool = False) -> None:
     """Copy a template directory tree to dst.
 
     Files ending in .gitkeep create empty directories. All other files are
-    written with optional ``{key}`` substitution. Existing files are skipped.
+    written with optional ``{key}`` substitution. Existing files are skipped
+    unless overwrite=True.
     """
     for src_file in sorted(src.rglob("*")):
         rel = src_file.relative_to(src)
@@ -27,7 +28,7 @@ def _copy_tree(src: Path, dst: Path, substitutions: dict[str, str] | None = None
             dst_file.mkdir(parents=True, exist_ok=True)
             continue
 
-        if dst_file.exists():
+        if dst_file.exists() and not overwrite:
             continue
 
         dst_file.parent.mkdir(parents=True, exist_ok=True)
@@ -51,6 +52,23 @@ def init_workspace(target: Path, force: bool = False) -> dict:
         agents_link.symlink_to("CLAUDE.md")
 
     return {"ok": True, "message": "workspace initialized", "project": str(target)}
+
+
+def sync_workspace(project: Path) -> dict:
+    """Re-apply workspace scaffold files (CLAUDE.md, skills/, etc.) from templates."""
+    target = project.expanduser().resolve()
+    project_file = target / PROJECT_FILE
+    if not project_file.exists():
+        return {"ok": False, "stage": "sync", "error": {"type": "NotAWorkspace", "message": f"no {PROJECT_FILE} found in {target}"}}
+
+    _copy_tree(templates.workspace_dir(), target, overwrite=True)
+
+    agents_link = target / "AGENTS.md"
+    if agents_link.is_symlink() or agents_link.exists():
+        agents_link.unlink()
+    agents_link.symlink_to("CLAUDE.md")
+
+    return {"ok": True, "message": "workspace scaffold updated", "project": str(target)}
 
 
 def find_project(path: Path) -> Path:

@@ -60,8 +60,8 @@ models/<name>/
 | min_triangles          | Minimum triangle count (catches degenerate)     |
 | artifact_exists        | File exists at path (relative to model dir)     |
 | metadata_equals        | Value at path in metadata.json matches expected |
-| outer_diameter_at_z    | Outer diameter at a Z section plane             |
-| inner_diameter_at_z    | Inner diameter at a Z section plane             |
+| outer_diameter_at_z    | Outer diameter at a Z section plane (supports `center`) |
+| inner_diameter_at_z    | Inner diameter at a Z section plane (supports `center`) |
 | diameter_decreases_along_z | Diameter monotonically decreases over Z range |
 | volume_range           | Volume within min/max bounds                    |
 | feature_coverage       | (auto) Every feature references a check          |

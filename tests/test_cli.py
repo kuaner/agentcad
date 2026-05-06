@@ -49,3 +49,26 @@ def test_version():
     with pytest.raises(SystemExit) as exc_info:
         main(["--version"])
     assert exc_info.value.code == 0
+
+
+def test_sync_updates_workspace(tmp_path):
+    project = tmp_path / "proj"
+    main(["new", "--project", str(project), "bracket"])
+
+    # Modify a scaffold file
+    claude = project / "CLAUDE.md"
+    original = claude.read_text()
+    claude.write_text("OLD CONTENT")
+
+    # Sync should overwrite it
+    result = main(["sync", "--project", str(project), "--json"])
+    assert result == 0
+    assert claude.read_text() == original
+
+    # Model files should be untouched
+    assert (project / "models" / "bracket" / "part.py").exists()
+
+
+def test_sync_not_a_workspace(tmp_path):
+    result = main(["sync", "--project", str(tmp_path), "--json"])
+    assert result == 1
