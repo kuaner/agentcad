@@ -35,9 +35,10 @@ enforces feature-to-check coverage automatically.
 - `artifact_exists` — file exists at the given path (relative to model dir)
 
 ### Holes and circular features
-- `outer_diameter_at_z` — section plane intersection, outer diameter estimate
-- `inner_diameter_at_z` — section plane intersection, inner diameter estimate
-- These use STL triangle-plane intersection, best for axisymmetric geometry
+- `inner_diameter_at_z` — diameter of the innermost boundary at a Z section plane
+- `outer_diameter_at_z` — diameter of the outermost boundary at a Z section plane
+- Both accept `center` parameter to check off-axis holes (e.g., bolt holes at corners)
+- These use STL triangle-plane intersection
 
 ### Tapers, chamfers, and sockets
 - `diameter_decreases_along_z` — monotonic diameter change across Z samples
@@ -52,9 +53,11 @@ enforces feature-to-check coverage automatically.
 
 ## Section Checks in Detail
 
-Section checks slice the STL at a given Z height and estimate radial envelope
-around a center point. They work best for axisymmetric features (cylinders,
-ducts, sockets, tapers).
+Section checks slice the STL at a given Z height and estimate the radial
+envelope around a center point. The `center` parameter `[x, y]` controls where
+the measurement is centered — defaults to `[0, 0]`.
+
+### Checking on-axis features (centered at origin)
 
 ```json
 {
@@ -67,9 +70,27 @@ ducts, sockets, tapers).
 }
 ```
 
-For off-axis holes (e.g., bolt holes at corners), section checks centered at
-(0,0) will not work. Use `metadata_equals` to record the design intent and add
-a comment that a geometry check for that position is not yet available.
+### Checking off-axis holes (bolt holes, mounting holes)
+
+Set `center` to the hole position. `inner_diameter_at_z` measures the hole
+diameter at that location — the hole wall forms the innermost boundary.
+
+```json
+{
+  "id": "hole_at_corner",
+  "type": "inner_diameter_at_z",
+  "z": 5.0,
+  "expected": 5.0,
+  "tolerance": 0.3,
+  "center": [30.0, 20.0]
+}
+```
+
+For counterbored holes, check at two Z heights:
+- Through-hole section (below counterbore): `inner_diameter_at_z` → hole diameter
+- Counterbore section: `inner_diameter_at_z` → counterbore diameter
+
+Multiple holes can each have their own check with different `center` values.
 
 ## Tolerance Selection
 
@@ -155,10 +176,13 @@ feature has a non-empty `checks` array.
 
 ### Section checks return unexpected diameters
 
-- `center` defaults to [0, 0]. If the feature is off-center (e.g., a bolt hole
-  at a corner), the section slice will measure the wrong profile.
+- `center` defaults to [0, 0]. Set it to the feature's actual position for
+  off-axis measurements.
 - STL triangle density at the section plane affects precision. If the mesh is
   coarse, increase tolerance.
 - `diameter_outer_estimate` uses the 98th percentile radius, not the max. This
   filters outlier artifacts but may slightly underreport the true outer
   diameter. Adjust tolerance accordingly (typically 0.2-0.3 mm is safe).
+- `diameter_inner_estimate` uses the 2nd percentile of nonzero radii. It picks
+  up the nearest boundary around the center point, which is the hole wall for
+  correctly centered checks.

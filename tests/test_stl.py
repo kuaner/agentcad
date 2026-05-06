@@ -52,19 +52,19 @@ def _cube_stl():
     return _make_binary_stl(tris)
 
 
-def _cylinder_stl(radius=5.0, height=10.0, segments=24):
-    """Approximate cylinder centered at origin, Z from 0 to height."""
+def _cylinder_stl(radius=5.0, height=10.0, segments=24, offset=(0.0, 0.0)):
+    """Approximate cylinder centered at offset, Z from 0 to height."""
+    ox, oy = offset
     triangles = []
     for i in range(segments):
         a0 = 2 * 3.14159265358979 * i / segments
         a1 = 2 * 3.14159265358979 * (i + 1) / segments
-        x0, y0 = radius * a0, radius * a1  # wrong, fix
-        x0, y0 = radius * __import__("math").cos(a0), radius * __import__("math").sin(a0)
-        x1, y1 = radius * __import__("math").cos(a1), radius * __import__("math").sin(a1)
+        x0, y0 = radius * __import__("math").cos(a0) + ox, radius * __import__("math").sin(a0) + oy
+        x1, y1 = radius * __import__("math").cos(a1) + ox, radius * __import__("math").sin(a1) + oy
         # bottom cap
-        triangles.append(((0, 0, 0), (x1, y1, 0), (x0, y0, 0)))
+        triangles.append(((ox, oy, 0), (x1, y1, 0), (x0, y0, 0)))
         # top cap
-        triangles.append(((0, 0, height), (x0, y0, height), (x1, y1, height)))
+        triangles.append(((ox, oy, height), (x0, y0, height), (x1, y1, height)))
         # side
         triangles.append(((x0, y0, 0), (x1, y1, 0), (x1, y1, height)))
         triangles.append(((x0, y0, 0), (x1, y1, height), (x0, y0, height)))
@@ -181,3 +181,20 @@ def test_section_radius_empty():
     tri = [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
     section = section_radius_at_z([tri], z=10.0)
     assert section["ok"] is False
+
+
+def test_section_radius_off_axis():
+    """Cylinder centered at (30, 20) — inner_diameter_at_z with matching center."""
+    import tempfile, pathlib
+    with tempfile.TemporaryDirectory() as td:
+        stl_path = pathlib.Path(td) / "off_axis.stl"
+        stl_path.write_bytes(_cylinder_stl(radius=5.0, height=10.0, segments=48, offset=(30.0, 20.0)))
+        tris = read_stl(stl_path)
+    # With center at the cylinder position → detects the hole
+    section = section_radius_at_z(tris, z=5.0, center=(30.0, 20.0))
+    assert section["ok"] is True
+    assert abs(section["diameter_inner_estimate"] - 10.0) < 0.5
+    # With center at origin → no hole, large inner diameter
+    section_origin = section_radius_at_z(tris, z=5.0, center=(0.0, 0.0))
+    assert section_origin["ok"] is True
+    assert section_origin["diameter_inner_estimate"] > 30.0
