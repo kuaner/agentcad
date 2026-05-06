@@ -39,7 +39,10 @@ def build_model(project: Path, name: str) -> dict:
             namespace = runpy.run_path(str(source), run_name=f"__agentcad_model_{name}__")
     except Exception as exc:
         tb = traceback.format_exc()
+        line = _extract_error_line(tb, str(source))
         payload = _failure(name, "build", type(exc).__name__, str(exc), source)
+        if line is not None:
+            payload["error"]["line"] = line
         payload["stdout"] = stdout.getvalue()
         payload["stderr"] = stderr.getvalue() + tb
         payload["startedAt"] = started_at
@@ -108,6 +111,22 @@ def build_model(project: Path, name: str) -> dict:
     }
     write_json(build_report_path, payload)
     return payload
+
+
+def _extract_error_line(tb_text: str, source_path: str) -> int | None:
+    """Extract line number from traceback for the model source file."""
+    for line in tb_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("File") and source_path in stripped:
+            parts = stripped.split(",")
+            for part in parts:
+                part = part.strip()
+                if part.startswith("line "):
+                    try:
+                        return int(part.split()[1])
+                    except (IndexError, ValueError):
+                        pass
+    return None
 
 
 def _failure(model: str, stage: str, error_type: str, message: str, source: Path) -> dict:

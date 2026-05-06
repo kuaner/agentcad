@@ -127,3 +127,31 @@ Read the skill files in `skills/` for detailed guidance:
 - `build123d-guide.md` — build123d patterns, common features, pitfalls
 - `validation-strategy.md` — check type selection, section checks, tolerance
 - `common-errors.md` — build errors, validation failures, modeling pitfalls
+
+## Querying build123d Documentation
+
+When you need API details beyond the skill files (e.g., how to select edges for
+fillet, what parameters CounterBoreHole accepts, how Location arithmetic works),
+query the build123d documentation directly:
+
+```
+WebFetch https://build123d.readthedocs.io/en/latest/<page>.html
+```
+
+Key documentation pages:
+
+- **Objects reference**: `objects` — Box, Cylinder, Cone, Sphere, Torus, Wedge
+- **Operations**: `operations` — fillet, chamfer, hole, split, mirror, offset
+- **Topology selection**: `topology_selection` — filter_by, sort_by, group_by
+- **Selectors tutorial**: `tutorial_selectors` — edge/face selection patterns
+- **BuildPart**: `build_part` — BuildPart context manager details
+- **BuildSketch**: `build_sketch` — 2D sketch construction
+- **Moving objects**: `moving_objects` — Location, rotation, alignment
+- **Key concepts**: `key_concepts_builder` — Align, Mode, Select enums
+- **Cheat sheet**: `cheat_sheet` — quick syntax reference
+- **Examples**: `general_examples` — real-world model examples
+
+All URLs follow the pattern:
+`https://build123d.readthedocs.io/en/latest/<page>.html`
+
+When stuck on a build123d API question, fetch the relevant page before guessing.

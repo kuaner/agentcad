@@ -141,6 +141,34 @@ Read the skill files in `skills/` for detailed guidance:
 - `build123d-guide.md` — build123d patterns, common features, pitfalls
 - `validation-strategy.md` — check type selection, section checks, tolerance
 - `common-errors.md` — build errors, validation failures, modeling pitfalls
+
+## Querying build123d Documentation
+
+When you need API details beyond the skill files (e.g., how to select edges for
+fillet, what parameters CounterBoreHole accepts, how Location arithmetic works),
+query the build123d documentation directly:
+
+```
+WebFetch https://build123d.readthedocs.io/en/latest/<page>.html
+```
+
+Key documentation pages:
+
+- **Objects reference**: `objects` — Box, Cylinder, Cone, Sphere, Torus, Wedge
+- **Operations**: `operations` — fillet, chamfer, hole, split, mirror, offset
+- **Topology selection**: `topology_selection` — filter_by, sort_by, group_by
+- **Selectors tutorial**: `tutorial_selectors` — edge/face selection patterns
+- **BuildPart**: `build_part` — BuildPart context manager details
+- **BuildSketch**: `build_sketch` — 2D sketch construction
+- **Moving objects**: `moving_objects` — Location, rotation, alignment
+- **Key concepts**: `key_concepts_builder` — Align, Mode, Select enums
+- **Cheat sheet**: `cheat_sheet` — quick syntax reference
+- **Examples**: `general_examples` — real-world model examples
+
+All URLs follow the pattern:
+`https://build123d.readthedocs.io/en/latest/<page>.html`
+
+When stuck on a build123d API question, fetch the relevant page before guessing.
 """
 
 
@@ -216,16 +244,42 @@ result = bp.part
 ```python
 with BuildPart() as bp:
     add(Box(30, 30, 10, align=(Align.CENTER, Align.CENTER, Align.MIN)))
-    # Fillet top edges
-    fillet(bp.edges().filter_by(Axis.Z)[-4:], radius=3)
+    # Fillet top edges (vertical edges with highest Z center)
+    top_edges = bp.edges().filter_by(Axis.Z).sort_by(Axis.Z)[-4:]
+    fillet(top_edges, radius=3)
     # Chamfer bottom edges
-    chamfer(bp.edges().filter_by(Axis.Z)[:4], length=1)
+    bottom_edges = bp.edges().filter_by(Axis.Z).sort_by(Axis.Z)[:4]
+    chamfer(bottom_edges, length=1)
 result = bp.part
 ```
 
-Select edges carefully. `filter_by(Axis)` picks edges parallel to that axis.
-Use edge selectors BEFORE boolean operations that might destroy the edges you
-want to fillet.
+**Edge selection strategy** (most robust to geometry changes):
+
+1. `filter_by(Axis.Z)` — select edges parallel to Z axis
+2. `filter_by(GeomType.LINE)` — select straight edges only
+3. `filter_by(GeomType.CIRCLE)` — select circular edges (for cylinders)
+4. `sort_by(Axis.Z)[-1]` — pick the highest (topmost) edge
+5. `sort_by(SortBy.RADIUS)[-2:]` — pick the two largest circles
+6. `sort_by(Axis.Z)` then filter by `center().Z` for specific heights
+
+**L-bracket interior fillet example:**
+```python
+# After adding base plate and vertical web:
+junction_edges = [
+    e for e in bp.edges().filter_by(GeomType.LINE).filter_by(Axis.X)
+    if abs(e.center().Z - base_thickness) < 0.1
+    and abs(e.center().Y - (base_width / 2 - web_thickness / 2)) < 0.1
+]
+if junction_edges:
+    fillet(junction_edges, radius=fillet_radius)
+```
+
+**Key rules:**
+- Use `sort_by` not `group_by` — `sort_by` returns a sorted list you can slice
+- Use `e.center()` to get the center point of an edge for position filtering
+- Apply fillet BEFORE holes/pockets that change edge topology
+- If fillet radius is too large for the edge, it will fail — reduce radius
+- `fillet(edges, radius=r)` applies the same radius to all selected edges
 
 ### Tubes and Sockets
 
