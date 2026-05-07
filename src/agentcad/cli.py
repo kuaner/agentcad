@@ -97,6 +97,8 @@ def build_parser() -> argparse.ArgumentParser:
     probe.add_argument("--x", default=None, help="X position(s) to probe (YZ plane), comma-separated")
     probe.add_argument("--y", default=None, help="Y position(s) to probe (XZ plane), comma-separated")
     probe.add_argument("--center", default="0,0", help="cx,cy for radial Z measurements (default: 0,0)")
+    probe.add_argument("--cx", type=float, default=None, help="center X for radial Z measurements (alias to --center first value)")
+    probe.add_argument("--cy", type=float, default=None, help="center Y for radial Z measurements (alias to --center second value)")
     probe.add_argument("--region", default=None, help="x0,y0,x1,y1 — solid/void region check at Z")
     probe.add_argument("--scan", action="store_true", help="scan the full axis profile instead of a single section")
     probe.add_argument("--axis", choices=["x", "y", "z"], default="z", help="axis to scan (default: z)")
@@ -126,6 +128,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     sync = sub.add_parser("sync", help="update workspace scaffold files from templates")
     add_project_arg(sync)
+    sync.add_argument("--dry-run", action="store_true", help="preview template updates without writing files")
+    sync.add_argument("--only", default=None, help="sync only one template path prefix (e.g. references/)")
+    sync.add_argument("--prune-deprecated", action="store_true", help="remove deprecated scaffold paths like skills/")
     sync.add_argument("--json", action="store_true")
 
     return parser
@@ -151,7 +156,12 @@ def _resolve_project(args: argparse.Namespace) -> Path:
 def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "sync":
         project = _resolve_project(args)
-        return sync_workspace(project)
+        return sync_workspace(
+            project,
+            dry_run=getattr(args, "dry_run", False),
+            only=getattr(args, "only", None),
+            prune_deprecated=getattr(args, "prune_deprecated", False),
+        )
 
     project = _resolve_project(args)
     if args.command == "new":
@@ -195,7 +205,11 @@ def dispatch(args: argparse.Namespace) -> dict:
         z_values = [float(v.strip()) for v in args.z.split(",") if v.strip()] if args.z else None
         x_values = [float(v.strip()) for v in args.x.split(",") if v.strip()] if args.x else None
         y_values = [float(v.strip()) for v in args.y.split(",") if v.strip()] if args.y else None
-        cx, cy = (float(v) for v in args.center.split(","))
+        if args.cx is not None or args.cy is not None:
+            cx = float(args.cx if args.cx is not None else 0.0)
+            cy = float(args.cy if args.cy is not None else 0.0)
+        else:
+            cx, cy = (float(v) for v in args.center.split(","))
         region = None
         if args.region:
             x0, y0, x1, y1 = (float(v) for v in args.region.split(","))
