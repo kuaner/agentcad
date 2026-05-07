@@ -54,11 +54,11 @@ Layered defense:
 
 | Layer | Tool | What it sees |
 |---|---|---|
-| Design-time | `cad precheck` | Schema, feature coverage, declarative shape clearance. No STL. |
-| Build-time | `cad build` | Source executes, STEP / STL export, hash cache |
-| Post-build | `cad measure`, `cad probe`, `cad inspect` | Mesh facts (bbox, watertight, sections, voids) |
-| Validation | `cad validate` | All declared checks; auto debug SVGs on failure |
-| Pre-delivery | `cad review` | Pairwise relations matrix, must-view SVGs, gap detection |
+| Design-time | `agentcad precheck` | Schema, feature coverage, declarative shape clearance. No STL. |
+| Build-time | `agentcad build` | Source executes, STEP / STL export, hash cache |
+| Post-build | `agentcad measure`, `agentcad probe`, `agentcad inspect` | Mesh facts (bbox, watertight, sections, voids) |
+| Validation | `agentcad validate` | All declared checks; auto debug SVGs on failure |
+| Pre-delivery | `agentcad review` | Pairwise relations matrix, must-view SVGs, gap detection |
 
 A bug that can be caught at design time **must** be caught there.
 Pushing checks downstream when a static solver could have caught them is
@@ -114,17 +114,17 @@ templates):
 ```text
 1.  Read user requirements; capture them as features in design.json.
 2.  Plan checks per feature (the four-question table for TDD).
-3.  Run `cad precheck` to confirm schema + feature coverage + clearance.
+3.  Run `agentcad precheck` to confirm schema + feature coverage + clearance.
 4.  Implement params.json (tunable dimensions only).
 5.  Implement part.py (incrementally: red -> green per feature).
-6.  Run `cad validate` after each feature; expect the matching check to
+6.  Run `agentcad validate` after each feature; expect the matching check to
     flip from red to green.
-7.  Run `cad probe --scan` and `cad inspect` to discover step changes
+7.  Run `agentcad probe --scan` and `agentcad inspect` to discover step changes
     and confirm internal structure matches intent.
-8.  Run `cad render` for must-view sections and the iso preview.
-9.  Run `cad review` to inspect the pairwise relations matrix and the
+8.  Run `agentcad render` for must-view sections and the iso preview.
+9.  Run `agentcad review` to inspect the pairwise relations matrix and the
     must-view SVG list.
-10. Run `cad deliver` only after `review` passes.
+10. Run `agentcad deliver` only after `review` passes.
 ```
 
 Agents must not manually export STEP / STL from `part.py`; the runner
@@ -186,20 +186,20 @@ introduced only when repeated patterns justify it (V3+).
 ## 6. CLI Commands
 
 ```bash
-cad new <model>                                     # scaffold + auto-init
-cad sync                                            # refresh templates
-cad precheck <model> --json                         # design-time solve
-cad build <model> --json                            # part.py -> STEP + STL
-cad measure <model> --json                          # mesh stats + structural facts
-cad render <model> --view iso --json                # iso/front/top/side/back
-cad render <model> --section-z|x|y <v>              # cross-section SVG
-cad probe <model> --z|--x|--y <v> --json            # cross-section diameters
-cad probe <model> --scan --axis x|y|z --json        # axis profile + step changes
-cad inspect <model> --json                          # three-axis scan + sections + suggested probes
-cad validate <model> --json                         # full pipeline
-cad review <model> --json                           # pre-delivery checklist
-cad deliver <model> --json                          # delivery manifest
-cad report <model>                                  # Markdown summary
+agentcad new <model>                                     # scaffold + auto-init
+agentcad sync                                            # refresh templates
+agentcad precheck <model> --json                         # design-time solve
+agentcad build <model> --json                            # part.py -> STEP + STL
+agentcad measure <model> --json                          # mesh stats + structural facts
+agentcad render <model> --view iso --json                # iso/front/top/side/back
+agentcad render <model> --section-z|x|y <v>              # cross-section SVG
+agentcad probe <model> --z|--x|--y <v> --json            # cross-section diameters
+agentcad probe <model> --scan --axis x|y|z --json        # axis profile + step changes
+agentcad inspect <model> --json                          # three-axis scan + sections + suggested probes
+agentcad validate <model> --json                         # full pipeline
+agentcad review <model> --json                           # pre-delivery checklist
+agentcad deliver <model> --json                          # delivery manifest
+agentcad report <model>                                  # Markdown summary
 ```
 
 Failures return JSON containing `stage`, `error.type`, `error.message`,
@@ -233,7 +233,7 @@ GUI. PNG, GLTF, and interactive viewers are future enhancements.
 - topology-aware mesh statistics
 - artifact hashes + stale build detection
 - three-axis probe (`--z / --x / --y`) and `--scan` profile
-- `cad inspect`: three-axis scan + auto sections + suggested probes
+- `agentcad inspect`: three-axis scan + auto sections + suggested probes
 - automatic debug SVGs on failed section checks
 
 ### V2 — Design spec standardization ✅ delivered
@@ -243,15 +243,15 @@ GUI. PNG, GLTF, and interactive viewers are future enhancements.
 - weak-check warnings (a feature with only `bbox_size` / `watertight`
   flags as weak)
 - `feature_coverage` automatic check
-- Markdown report (`cad report`)
+- Markdown report (`agentcad report`)
 
 ### V2.5 — Design-time observability ✅ delivered
 
 - `agentcad/geometry.py`: pure shape primitives
 - four geometric-relation checks: `min_clearance`,
   `hole_accessibility`, `min_wall_thickness`, `feature_position`
-- `cad precheck` — static design-time solver
-- `cad review` — pre-delivery checklist with pairwise relations matrix
+- `agentcad precheck` — static design-time solver
+- `agentcad review` — pre-delivery checklist with pairwise relations matrix
   and must-view SVG list
 - common-error catalog and mandatory TDD red-green workflow encoded in
   the `CLAUDE.md` template
@@ -295,7 +295,7 @@ loss of validation strength.
 
 ### V5 — CAD CI
 
-- `cad validate all`
+- `agentcad validate all`
 - regression snapshots for STEP / STL hashes and validation outputs
 - batch model generation
 - benchmark suite (build time, validation time, mesh size)

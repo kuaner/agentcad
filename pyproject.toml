@@ -17,7 +17,6 @@ dependencies = [
 ]
 
 [project.scripts]
-cad = "agentcad.cli:main"
 agentcad = "agentcad.cli:main"
 
 [tool.setuptools.packages.find]

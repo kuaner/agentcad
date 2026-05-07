@@ -76,7 +76,7 @@ Each helper:
 3. `tests/test_features.py` — unit + integration tests per helper:
    - building a single helper produces the expected geometry hash;
    - the matching checks pass against the resulting STL;
-   - re-running `cad build` does not duplicate feature / check entries
+   - re-running `agentcad build` does not duplicate feature / check entries
      in `design.json`.
 4. `examples/feature-library/` — a minimal showcase model exercising
    every helper.
@@ -91,8 +91,8 @@ Each helper:
 - All seven helpers ship with tests.
 - Helpers fail loudly (raise) when invoked with parameters that would
   produce a `min_clearance` violation against a declared neighbour, so
-  errors surface during `cad build` rather than `cad validate`.
-- `cad precheck` on a helper-driven model passes without manual
+  errors surface during `agentcad build` rather than `agentcad validate`.
+- `agentcad precheck` on a helper-driven model passes without manual
   authoring of `design.json` checks beyond features the helpers do not
   cover.
 - The rewritten fan-adapter has the same or stronger validation than
@@ -130,10 +130,10 @@ in two different model directories with no shared coordinate system.
   assembly references models by name, supplies a transform per model,
   and a list of mate points.
 - New CLI:
-  - `cad assembly init <name>` — scaffold an assembly directory.
-  - `cad assembly validate <name>` — run inter-model
+  - `agentcad assembly init <name>` — scaffold an assembly directory.
+  - `agentcad assembly validate <name>` — run inter-model
     `min_clearance` / `hole_accessibility` / `feature_position` checks.
-  - `cad assembly render <name> --view iso|exploded` — render combined
+  - `agentcad assembly render <name> --view iso|exploded` — render combined
     SVG / glTF preview.
 - Inter-model relational checks: the existing four geometric-relation
   checks gain a `feature_a_model` / `feature_b_model` syntax so they can
@@ -151,7 +151,7 @@ in two different model directories with no shared coordinate system.
 
 ## V5 — CAD CI
 
-- `cad validate all` walks every model in the workspace.
+- `agentcad validate all` walks every model in the workspace.
 - Regression snapshots: hash STEP / STL outputs and store
   `validation.json`; PRs that change either are flagged.
 - Benchmark suite: tracks build time, validation time, mesh size
@@ -189,11 +189,11 @@ PRs alongside whichever milestone they support.
   treats any empty intersection as a void. Tighten by requiring the
   `region` argument when the model is hollow, so a missed mesh
   slice does not silently pass.
-- **Probe ergonomics**: `cad probe --center=-10,5` requires the `=`
+- **Probe ergonomics**: `agentcad probe --center=-10,5` requires the `=`
   workaround for negative numbers. Add `--cx -10 --cy 5` aliases.
 - **Render speed**: section SVG rendering on the iPhone case takes
   >1 s; profile and cache the triangle-plane intersection.
-- **`cad sync` diff mode**: today `cad sync` overwrites template files;
+- **`agentcad sync` diff mode**: today `agentcad sync` overwrites template files;
   add `--dry-run` to print a diff and `--only <path>` to update one
   file.
 - **`min_wall_thickness` 3D mode**: today the check works on a single Z

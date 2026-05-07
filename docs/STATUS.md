@@ -23,7 +23,7 @@ loop.
 ```bash
 cd /Users/kuaner/Documents/code/agentcad
 uv sync
-uv run cad --help
+uv run agentcad --help
 ```
 
 - `build123d` is a required dependency.
@@ -34,23 +34,23 @@ uv run cad --help
 ## Implemented CLI
 
 ```bash
-cad new <model>                                     # scaffold + auto-init workspace
-cad sync                                            # refresh workspace files from templates
-cad precheck <model> --json                         # design-time solve before code
-cad build <model> --json                            # build123d -> STEP + STL (hash-cached)
-cad measure <model> --json                          # mesh stats + structural facts
-cad render <model> --view iso --json                # iso/front/top/side/back SVG
-cad render <model> --section-z <z>                  # cross-section SVG (also --section-x, --section-y)
-cad probe <model> --z <z> --json                    # cross-section diameters / void at Z
-cad probe <model> --scan --axis x|y|z --json        # axis profile + step changes
-cad inspect <model> --json                          # three-axis scan + auto sections + suggested probes
-cad validate <model> --json                         # build + measure + render + design checks
-cad review <model> --json                           # pre-delivery checklist + relations matrix
-cad deliver <model> --json                          # delivery manifest
-cad report <model>                                  # Markdown validation summary
+agentcad new <model>                                     # scaffold + auto-init workspace
+agentcad sync                                            # refresh workspace files from templates
+agentcad precheck <model> --json                         # design-time solve before code
+agentcad build <model> --json                            # build123d -> STEP + STL (hash-cached)
+agentcad measure <model> --json                          # mesh stats + structural facts
+agentcad render <model> --view iso --json                # iso/front/top/side/back SVG
+agentcad render <model> --section-z <z>                  # cross-section SVG (also --section-x, --section-y)
+agentcad probe <model> --z <z> --json                    # cross-section diameters / void at Z
+agentcad probe <model> --scan --axis x|y|z --json        # axis profile + step changes
+agentcad inspect <model> --json                          # three-axis scan + auto sections + suggested probes
+agentcad validate <model> --json                         # build + measure + render + design checks
+agentcad review <model> --json                           # pre-delivery checklist + relations matrix
+agentcad deliver <model> --json                          # delivery manifest
+agentcad report <model>                                  # Markdown validation summary
 ```
 
-`cad validate` is the post-build self-check. `cad precheck` and `cad review`
+`agentcad validate` is the post-build self-check. `agentcad precheck` and `agentcad review`
 flank it as design-time and pre-delivery gates.
 
 ## Workspace Layout
@@ -124,8 +124,8 @@ Post-build mesh checks:
 Geometric relation checks (added in the latest milestone):
 
 - `min_clearance` — declarative shape pair, edge-to-edge distance ≥ N mm.
-  Evaluated **statically** in `cad precheck` (no STL needed) and again in
-  `cad validate` for sanity.
+  Evaluated **statically** in `agentcad precheck` (no STL needed) and again in
+  `agentcad validate` for sanity.
 - `hole_accessibility` — annular tool envelope around a hole is free of
   material at the working plane.
 - `min_wall_thickness` — minimum point-pair distance inside a region at Z.
@@ -208,7 +208,7 @@ the model and incidentally surfaced two real bugs:
 4. Metadata checks pin design intent (assembly direction, install side)
    but cannot replace mesh-level checks for actual geometry.
 5. Section checks catch hidden / ineffective tapers and chamfers.
-6. `cad probe --scan` reveals step changes (cavity start, wall transitions)
+6. `agentcad probe --scan` reveals step changes (cavity start, wall transitions)
    that are otherwise invisible in iso previews; `point_count` deltas catch
    hollow shells that have constant outer-bbox profiles.
 7. Two real build123d traps that always come back:
@@ -231,7 +231,7 @@ Both are documented in `references/build123d-guide.md`.
 - `test_validate.py`, `test_weak_check.py` — post-build validation + weak-check warnings
 - `test_probe.py` — probe + scan
 - `test_geometry.py` — pure shape primitives (AABB, clearance, accessibility, wall thickness)
-- `test_precheck_review.py` — `cad precheck` and `cad review` integration
+- `test_precheck_review.py` — `agentcad precheck` and `agentcad review` integration
 - `test_jsonio.py`
 
 ## Roadmap delivered
@@ -239,8 +239,8 @@ Both are documented in `references/build123d-guide.md`.
 | Milestone | Status | Notes |
 |---|---|---|
 | V0 — minimal agent loop | ✅ delivered | new / build / measure / render / validate / deliver |
-| V1 — geometry observability | ✅ delivered | multi-view render, section SVGs, hash cache, three-axis probe + scan, `cad inspect`, debug SVG on failure |
-| V2 — design spec standardization | ✅ delivered | check IDs, schema validation, weak-check warnings, Markdown report (`cad report`) |
-| V2.5 — design-time observability | ✅ delivered (new) | `cad precheck`, `cad review`, four geometric relation checks, common-error catalog, mandatory TDD prompt |
+| V1 — geometry observability | ✅ delivered | multi-view render, section SVGs, hash cache, three-axis probe + scan, `agentcad inspect`, debug SVG on failure |
+| V2 — design spec standardization | ✅ delivered | check IDs, schema validation, weak-check warnings, Markdown report (`agentcad report`) |
+| V2.5 — design-time observability | ✅ delivered (new) | `agentcad precheck`, `agentcad review`, four geometric relation checks, common-error catalog, mandatory TDD prompt |
 
 Next milestones (V3+) are tracked in [`DESIGN.md`](DESIGN.md).

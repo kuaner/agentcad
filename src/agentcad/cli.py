@@ -35,7 +35,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="cad", description="Agent-first CAD workflow runtime")
+    parser = argparse.ArgumentParser(prog="agentcad", description="Agent-first CAD workflow runtime")
     parser.add_argument("--version", action="version", version=f"agentcad {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -183,7 +183,7 @@ def dispatch(args: argparse.Namespace) -> dict:
                 if not stl_path.exists():
                     return {"ok": False, "stage": "render", "model": args.model,
                             "error": {"type": "STLMissing",
-                                      "message": f"STL not found, run 'cad build {args.model}' first"}}
+                                      "message": f"STL not found, run 'agentcad build {args.model}' first"}}
                 triangles = read_stl(stl_path)
                 out_dir = outputs_dir(project, args.model)
                 svg_path = out_dir / f"section.{axis_name}{val:.2f}.svg"

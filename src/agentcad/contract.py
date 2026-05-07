@@ -146,7 +146,7 @@ def evaluate_weak_check_warnings_dict(design: dict[str, Any]) -> list[dict]:
                 "feature": feature_id,
                 "linkedCheckTypes": sorted(t for t in linked_types if t),
                 "message": f"feature '{feature_id}' has no geometry checks — geometry is not verified",
-                "hint": "Use cad probe/inspect and add section/diameter/clearance checks",
+                "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks",
             })
     return warnings
 

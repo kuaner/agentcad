@@ -17,18 +17,18 @@ design contract -> precheck -> params/source -> build
 
 | Stage | Command | Purpose |
 |---|---|---|
-| Scaffold | `cad new <model>` | Create model folder; auto-init workspace |
-| Sync | `cad sync` | Refresh workspace scaffold from latest templates |
-| Precheck | `cad precheck <model>` | Solve `design.json` statically (schema, feature coverage, `min_clearance`) **before** part.py is written |
-| Build | `cad build <model>` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
-| Measure | `cad measure <model>` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
-| Render | `cad render <model>` | Iso/front/top/side/back SVG previews + Z/X/Y cross-section SVGs |
-| Probe | `cad probe <model>` | Cross-section diameter / bbox / void at specified Z, X, Y; `--scan` to discover step changes |
-| Inspect | `cad inspect <model>` | Three-axis scan + automatic section SVGs + suggested probes |
-| Validate | `cad validate <model>` | Build + measure + render + design checks + feature coverage; auto-emits debug SVGs on failure |
-| Review | `cad review <model>` | Pre-delivery checklist with pairwise relations matrix and must-view SVG list |
-| Deliver | `cad deliver <model>` | Delivery manifest |
-| Report | `cad report <model>` | Markdown summary of validation result |
+| Scaffold | `agentcad new <model>` | Create model folder; auto-init workspace |
+| Sync | `agentcad sync` | Refresh workspace scaffold from latest templates |
+| Precheck | `agentcad precheck <model>` | Solve `design.json` statically (schema, feature coverage, `min_clearance`) **before** part.py is written |
+| Build | `agentcad build <model>` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
+| Measure | `agentcad measure <model>` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
+| Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews + Z/X/Y cross-section SVGs |
+| Probe | `agentcad probe <model>` | Cross-section diameter / bbox / void at specified Z, X, Y; `--scan` to discover step changes |
+| Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + suggested probes |
+| Validate | `agentcad validate <model>` | Build + measure + render + design checks + feature coverage; auto-emits debug SVGs on failure |
+| Review | `agentcad review <model>` | Pre-delivery checklist with pairwise relations matrix and must-view SVG list |
+| Deliver | `agentcad deliver <model>` | Delivery manifest |
+| Report | `agentcad report <model>` | Markdown summary of validation result |
 
 Every command supports `--json` for stable machine-readable output; failures
 return JSON containing `stage`, `error.type`, `error.message`.
@@ -57,11 +57,11 @@ The four "geometric relation" checks (last block) close the historical gap
 where `inner_diameter_at_z` would happily report a 4.5 mm hole that was
 half-covered by an adjacent wall.
 
-## Install for local development with uv
+## Install with uv
 
 ```bash
 uv sync
-uv run cad --help
+uv run agentcad --help
 ```
 
 `build123d` is a required dependency. The repository pins Python 3.12
@@ -74,23 +74,36 @@ Without installing, run from source with:
 PYTHONPATH=src python3 -m agentcad --help
 ```
 
+Install as a global tool (recommended for daily usage / release validation):
+
+```bash
+uv tool install .
+agentcad --help
+```
+
+Upgrade after new releases:
+
+```bash
+uv tool upgrade agentcad
+```
+
 ## Quick example
 
 ```bash
-uv run cad new bracket --project /tmp/my-cad-project
+uv run agentcad new bracket --project /tmp/my-cad-project
 cd /tmp/my-cad-project
 
 # 1. Design-time: solve the contract before writing geometry
-uv run cad precheck bracket --json
+uv run agentcad precheck bracket --json
 
 # 2. Implement part.py, then run the post-build pipeline
-uv run cad validate bracket --json
+uv run agentcad validate bracket --json
 
 # 3. Pre-delivery review (relations matrix + must-view SVGs)
-uv run cad review bracket --json
+uv run agentcad review bracket --json
 
 # 4. Deliver
-uv run cad deliver bracket --json
+uv run agentcad deliver bracket --json
 ```
 
 The default generated model is a simple build123d cuboid. Agent rules and
@@ -109,8 +122,8 @@ Re-run any example:
 
 ```bash
 cd examples/fan-adapter-8025
-uv run cad validate fan_duct_adapter_8025 --json
-uv run cad review fan_duct_adapter_8025 --json
+uv run agentcad validate fan_duct_adapter_8025 --json
+uv run agentcad review fan_duct_adapter_8025 --json
 ```
 
 ## Tests

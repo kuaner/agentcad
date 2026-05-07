@@ -1,6 +1,6 @@
 """Pre-delivery design self-review: a structured checklist for agents.
 
-``cad review`` is the gatekeeper before ``cad deliver``.  It aggregates
+``agentcad review`` is the gatekeeper before ``agentcad deliver``.  It aggregates
 artifacts from build / measure / validate, produces a relations matrix
 between every pair of declared shapes, lists key SVGs that must be visually
 inspected, and emits a JSON checklist the agent must address.
@@ -50,7 +50,7 @@ def review_model(project: Path, name: str) -> dict:
     checklist.append(_item(
         "design_present", design is not None,
         title="design.json exists and is parseable",
-        action="run 'cad new <name>' to scaffold or fix syntax",
+        action="run 'agentcad new <name>' to scaffold or fix syntax",
         evidence={"path": str(design_path)},
     ))
     if design is None:
@@ -59,8 +59,8 @@ def review_model(project: Path, name: str) -> dict:
     checklist.append(_item(
         "validation_passes",
         bool(validation and validation.get("ok")),
-        title="cad validate is green",
-        action="run 'cad validate <name> --json' and fix the first failing check",
+        title="agentcad validate is green",
+        action="run 'agentcad validate <name> --json' and fix the first failing check",
         evidence={
             "path": str(validation_path),
             "failed_checks": [
@@ -106,7 +106,7 @@ def review_model(project: Path, name: str) -> dict:
         all(Path(item["path"]).exists() for item in must_view),
         title="key cross-section SVGs exist for visual review",
         action=(
-            "run 'cad render <name> --section-z <z>' for each missing layer "
+            "run 'agentcad render <name> --section-z <z>' for each missing layer "
             "interface — review the SVGs visually"
         ),
         evidence={"sections": must_view},

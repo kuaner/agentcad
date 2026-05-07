@@ -13,16 +13,16 @@ delivery), respectively.
 ## Tech Stack
 
 - **Language**: Python 3.12 (pinned via `.python-version`; 3.13 rejected due to missing `vtk` wheel)
-- **Package manager**: uv (`uv sync`, `uv run cad ...`)
+- **Package manager**: uv (`uv sync`, `uv run agentcad ...`)
 - **CAD backend**: build123d
-- **Entry points**: `cad` and `agentcad` CLI commands (both map to `agentcad.cli:main`)
+- **Entry point**: `agentcad` CLI command (maps to `agentcad.cli:main`)
 - **Build system**: setuptools (pyproject.toml)
 
 ## Development Setup
 
 ```bash
 uv sync
-uv run cad --help
+uv run agentcad --help
 # Or without install:
 PYTHONPATH=src python3 -m agentcad --help
 ```
@@ -33,7 +33,7 @@ PYTHONPATH=src python3 -m agentcad --help
 src/agentcad/          # Main package
   cli.py               # CLI argument parsing and dispatch
   runner.py             # build123d runner: executes part.py, exports STEP/STL
-  workspace.py          # cad init/new, project discovery, model directory helpers
+  workspace.py          # agentcad init/new, project discovery, model directory helpers
   measure.py            # STL geometry measurement -> geometry.json
   render.py             # Dependency-free SVG preview renderer from STL
   validate.py           # Full validation pipeline: build + measure + render + design checks + feature coverage
@@ -63,19 +63,19 @@ examples/
 All commands auto-detect the workspace by walking up from cwd. Use `--project <dir>` only when operating from outside the workspace.
 
 ```bash
-cad new <model>                                    # Create model (auto-inits workspace if needed)
-cad sync                                           # Update workspace scaffold files from templates
-cad precheck <model> --json                        # Static design solve before writing part.py
-cad build <model> --json                           # Build + export STEP/STL
-cad measure <model> --json                         # Measure STL geometry
-cad render <model> --json                          # SVG preview from STL
-cad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
-cad validate <model> --json                        # Full validation pipeline
-cad review <model> --json                          # Pre-delivery checklist + relations matrix
-cad deliver <model> --json                         # Delivery manifest
-cad probe <model> --scan --axis z|x|y --json       # Profile scan for step changes / void detection
-cad inspect <model> --json                         # Three-axis scan + section SVGs + suggested probes
-cad report <model>                                 # Markdown validation report
+agentcad new <model>                                    # Create model (auto-inits workspace if needed)
+agentcad sync                                           # Update workspace scaffold files from templates
+agentcad precheck <model> --json                        # Static design solve before writing part.py
+agentcad build <model> --json                           # Build + export STEP/STL
+agentcad measure <model> --json                         # Measure STL geometry
+agentcad render <model> --json                          # SVG preview from STL
+agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
+agentcad validate <model> --json                        # Full validation pipeline
+agentcad review <model> --json                          # Pre-delivery checklist + relations matrix
+agentcad deliver <model> --json                         # Delivery manifest
+agentcad probe <model> --scan --axis z|x|y --json       # Profile scan for step changes / void detection
+agentcad inspect <model> --json                         # Three-axis scan + section SVGs + suggested probes
+agentcad report <model>                                 # Markdown validation report
 ```
 
 All commands support `--json` for stable machine-readable output. Failures also return JSON with `stage`, `error.type`, `error.message`.
@@ -119,7 +119,7 @@ project/
 Existing: `bbox_size`, `watertight`, `min_triangles`, `artifact_exists`, `metadata_equals`, `outer_diameter_at_z`, `inner_diameter_at_z`, `diameter_decreases_along_z`, `volume_range`, `section_bbox_at_z`, automatic `feature_coverage`.
 
 **Geometric relations (new):**
-- `min_clearance` — declarative shape pair clearance ≥ N mm (no STL needed; runs in `cad precheck`)
+- `min_clearance` — declarative shape pair clearance ≥ N mm (no STL needed; runs in `agentcad precheck`)
 - `hole_accessibility` — tool/bolt envelope can reach a hole at given Z without obstruction
 - `min_wall_thickness` — minimum wall thickness in a region at Z
 - `feature_position` — a 3D point is in expected solid/void state
@@ -139,5 +139,5 @@ SVG rendering, JSON IO, validation checks and feature coverage.
 Integration validation through example models:
 
 ```bash
-cd examples/fan-adapter-8025 && uv run cad validate fan_duct_adapter_8025 --json
+cd examples/fan-adapter-8025 && uv run agentcad validate fan_duct_adapter_8025 --json
 ```

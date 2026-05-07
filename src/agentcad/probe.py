@@ -41,7 +41,7 @@ def probe_model(
             "model": name,
             "error": {
                 "type": "STLMissing",
-                "message": f"STL not found — run 'cad build {name}' first: {stl_path}",
+                "message": f"STL not found — run 'agentcad build {name}' first: {stl_path}",
             },
         }
 
@@ -106,7 +106,7 @@ def probe_scan(
             "model": name,
             "error": {
                 "type": "STLMissing",
-                "message": f"STL not found — run 'cad build {name}' first: {stl_path}",
+                "message": f"STL not found — run 'agentcad build {name}' first: {stl_path}",
             },
         }
 
@@ -122,11 +122,11 @@ def probe_scan(
     for step in scan.get("step_changes", []):
         pos = step["pos"]
         if axis_int == AXIS_Z:
-            cmd = f"cad probe {name} --z {pos} --json"
+            cmd = f"agentcad probe {name} --z {pos} --json"
         elif axis_int == AXIS_X:
-            cmd = f"cad probe {name} --x {pos} --json"
+            cmd = f"agentcad probe {name} --x {pos} --json"
         else:
-            cmd = f"cad probe {name} --y {pos} --json"
+            cmd = f"agentcad probe {name} --y {pos} --json"
         suggested.append({
             "pos": pos,
             "hint": step.get("hint", ""),
