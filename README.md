@@ -57,61 +57,18 @@ The four "geometric relation" checks (last block) close the historical gap
 where `inner_diameter_at_z` would happily report a 4.5 mm hole that was
 half-covered by an adjacent wall.
 
-## Install with uv
-
-```bash
-uv sync
-uv run agentcad --help
-```
-
-`build123d` is a required dependency. The repository pins Python 3.12
-through `.python-version` because the CAD backend relies on native geometry
-packages (`vtk` has no `cp313` wheel as of writing).
-
-Without installing, run from source with:
-
-```bash
-PYTHONPATH=src python3 -m agentcad --help
-```
-
-Install as a global tool (recommended for daily usage / release validation):
-
-```bash
-uv tool install .
-agentcad --help
-```
-
-Upgrade after new releases:
-
-```bash
-uv tool upgrade agentcad-cli
-```
-
-## Publish to PyPI
-
-This repository includes GitHub Actions for CI and publishing:
-
-- `.github/workflows/ci.yml`: runs tests on push / PR
-- `.github/workflows/publish.yml`: publishes on `v*` tags (after CI passes)
-
-Release flow:
-
-```bash
-# 1) bump version in pyproject.toml
-# 2) commit + push
-git tag v0.1.1
-git push origin v0.1.1
-```
-
-PyPI authentication uses Trusted Publishing (OIDC). In PyPI, configure a
-Trusted Publisher for this repository/workflow and keep the GitHub
-Environment name as `pypi`.
-
-After the publish workflow succeeds, users can install directly:
+## Quick start
 
 ```bash
 uv tool install agentcad-cli
 agentcad --help
+```
+
+For local development:
+
+```bash
+uv sync
+uv run agentcad --help
 ```
 
 ## Quick example
