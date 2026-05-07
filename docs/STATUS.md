@@ -37,17 +37,17 @@ uv run agentcad --help
 agentcad init [--model <model>]                          # scaffold workspace (and optional first model)
 agentcad new <model>                                      # add model in existing workspace
 agentcad sync                                            # refresh workspace files from templates
-agentcad precheck <model> --json                         # design-time solve before code
-agentcad build <model> --json                            # build123d -> STEP + STL (hash-cached)
-agentcad measure <model> --json                          # mesh stats + structural facts
-agentcad render <model> --view iso --json                # iso/front/top/side/back SVG
+agentcad precheck <model>                         # design-time solve before code
+agentcad build <model>                            # build123d -> STEP + STL (hash-cached)
+agentcad measure <model>                          # mesh stats + structural facts
+agentcad render <model> --view iso                # iso/front/top/side/back SVG
 agentcad render <model> --section-z <z>                  # cross-section SVG (also --section-x, --section-y)
-agentcad probe <model> --z <z> --json                    # cross-section diameters / void at Z
-agentcad probe <model> --scan --axis x|y|z --json        # axis profile + step changes
-agentcad inspect <model> --json                          # three-axis scan + auto sections + suggested probes
-agentcad validate <model> --json                         # build + measure + render + design checks
-agentcad review <model> --json                           # pre-delivery checklist + relations matrix
-agentcad deliver <model> --json                          # delivery manifest
+agentcad probe <model> --z <z>                    # cross-section diameters / void at Z
+agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
+agentcad inspect <model>                          # three-axis scan + auto sections + suggested probes
+agentcad validate <model>                         # build + measure + render + design checks
+agentcad review <model>                           # pre-delivery checklist + relations matrix
+agentcad deliver <model>                          # delivery manifest
 agentcad report <model>                                  # Markdown validation summary
 ```
 

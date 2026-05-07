@@ -189,17 +189,17 @@ introduced only when repeated patterns justify it (V3+).
 agentcad init [--model <model>]                          # scaffold workspace (and optional first model)
 agentcad new <model>                                      # add model in existing workspace
 agentcad sync                                            # refresh templates
-agentcad precheck <model> --json                         # design-time solve
-agentcad build <model> --json                            # part.py -> STEP + STL
-agentcad measure <model> --json                          # mesh stats + structural facts
-agentcad render <model> --view iso --json                # iso/front/top/side/back
+agentcad precheck <model>                         # design-time solve
+agentcad build <model>                            # part.py -> STEP + STL
+agentcad measure <model>                          # mesh stats + structural facts
+agentcad render <model> --view iso                # iso/front/top/side/back
 agentcad render <model> --section-z|x|y <v>              # cross-section SVG
-agentcad probe <model> --z|--x|--y <v> --json            # cross-section diameters
-agentcad probe <model> --scan --axis x|y|z --json        # axis profile + step changes
-agentcad inspect <model> --json                          # three-axis scan + sections + suggested probes
-agentcad validate <model> --json                         # full pipeline
-agentcad review <model> --json                           # pre-delivery checklist
-agentcad deliver <model> --json                          # delivery manifest
+agentcad probe <model> --z|--x|--y <v>            # cross-section diameters
+agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
+agentcad inspect <model>                          # three-axis scan + sections + suggested probes
+agentcad validate <model>                         # full pipeline
+agentcad review <model>                           # pre-delivery checklist
+agentcad deliver <model>                          # delivery manifest
 agentcad report <model>                                  # Markdown summary
 ```
 

@@ -27,10 +27,10 @@ def main(argv: list[str] | None = None) -> int:
         payload = dispatch(args)
     except Exception as exc:
         payload = {"ok": False, "stage": getattr(args, "command", "cli"), "error": {"type": type(exc).__name__, "message": str(exc)}}
-        print_payload(payload, getattr(args, "json", False))
+        print_payload(payload)
         return 1
 
-    print_payload(payload, getattr(args, "json", False))
+    print_payload(payload)
     return 0 if payload.get("ok", True) else 1
 
 
@@ -43,24 +43,20 @@ def build_parser() -> argparse.ArgumentParser:
     add_project_arg(init)
     init.add_argument("--model", default=None, help="create an initial model after workspace initialization")
     init.add_argument("--force", action="store_true")
-    init.add_argument("--json", action="store_true")
 
     new = sub.add_parser("new", help="create a new model (auto-initializes workspace)")
     add_project_arg(new)
     new.add_argument("model")
     new.add_argument("--force", action="store_true")
-    new.add_argument("--json", action="store_true")
 
     build = sub.add_parser("build", help="build a model and export STEP/STL")
     add_project_arg(build)
     build.add_argument("model")
     build.add_argument("--force", action="store_true", help="force rebuild even if source is unchanged")
-    build.add_argument("--json", action="store_true")
 
     measure = sub.add_parser("measure", help="measure generated STL geometry")
     add_project_arg(measure)
     measure.add_argument("model")
-    measure.add_argument("--json", action="store_true")
 
     render = sub.add_parser("render", help="render an SVG preview from STL")
     add_project_arg(render)
@@ -77,7 +73,6 @@ def build_parser() -> argparse.ArgumentParser:
                         help="render an X cross-section SVG (YZ plane) at this position (mm)")
     render.add_argument("--section-y", dest="section_y", type=float, default=None,
                         help="render a Y cross-section SVG (XZ plane) at this position (mm)")
-    render.add_argument("--json", action="store_true")
 
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
     add_project_arg(validate)
@@ -88,13 +83,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="comma-separated list of views to render during validation (default: iso,back)",
     )
-    validate.add_argument("--json", action="store_true")
 
     deliver = sub.add_parser("deliver", help="write a delivery manifest")
     add_project_arg(deliver)
     deliver.add_argument("model")
     deliver.add_argument("--no-validate", action="store_true")
-    deliver.add_argument("--json", action="store_true")
 
     probe = sub.add_parser("probe", help="probe STL cross-section to get geometry values for design.json")
     add_project_arg(probe)
@@ -109,35 +102,29 @@ def build_parser() -> argparse.ArgumentParser:
     probe.add_argument("--scan", action="store_true", help="scan the full axis profile instead of a single section")
     probe.add_argument("--axis", choices=["x", "y", "z"], default="z", help="axis to scan (default: z)")
     probe.add_argument("--samples", type=int, default=20, help="number of scan samples (default: 20)")
-    probe.add_argument("--json", action="store_true")
 
     report = sub.add_parser("report", help="generate a human-readable Markdown validation report")
     add_project_arg(report)
     report.add_argument("model")
-    report.add_argument("--json", action="store_true")
 
     inspect = sub.add_parser("inspect", help="three-axis scan + section SVGs + suggested probe commands")
     add_project_arg(inspect)
     inspect.add_argument("model")
     inspect.add_argument("--samples", type=int, default=20, help="scan samples per axis (default: 20)")
-    inspect.add_argument("--json", action="store_true")
 
     precheck = sub.add_parser("precheck", help="solve design.json statically (before writing part.py)")
     add_project_arg(precheck)
     precheck.add_argument("model")
-    precheck.add_argument("--json", action="store_true")
 
     review = sub.add_parser("review", help="pre-delivery checklist + pairwise relations matrix")
     add_project_arg(review)
     review.add_argument("model")
-    review.add_argument("--json", action="store_true")
 
     sync = sub.add_parser("sync", help="update workspace scaffold files from templates")
     add_project_arg(sync)
     sync.add_argument("--dry-run", action="store_true", help="preview template updates without writing files")
     sync.add_argument("--only", default=None, help="sync only one template path prefix (e.g. references/)")
     sync.add_argument("--prune-deprecated", action="store_true", help="remove deprecated scaffold paths like skills/")
-    sync.add_argument("--json", action="store_true")
 
     return parser
 

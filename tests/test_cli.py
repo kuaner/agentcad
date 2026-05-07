@@ -49,7 +49,7 @@ def test_new_duplicate_force(tmp_path):
 def test_build_missing_model(tmp_path):
     project = tmp_path / "proj"
     main(["new", "--project", str(project), "bracket"])
-    result = main(["build", "--project", str(project), "nonexistent", "--json"])
+    result = main(["build", "--project", str(project), "nonexistent"])
     assert result == 1
 
 
@@ -57,7 +57,7 @@ def test_validate_default_model(tmp_path):
     """Validate the default scaffold model (should build and validate ok)."""
     project = tmp_path / "proj"
     main(["new", "--project", str(project), "test_block"])
-    result = main(["validate", "--project", str(project), "test_block", "--json"])
+    result = main(["validate", "--project", str(project), "test_block"])
     assert result == 0
 
 
@@ -78,7 +78,7 @@ def test_sync_updates_workspace(tmp_path):
     claude.write_text("OLD CONTENT")
 
     # Sync should overwrite it
-    result = main(["sync", "--project", str(project), "--json"])
+    result = main(["sync", "--project", str(project)])
     assert result == 0
     assert claude.read_text() == original
 
@@ -87,7 +87,7 @@ def test_sync_updates_workspace(tmp_path):
 
 
 def test_sync_not_a_workspace(tmp_path):
-    result = main(["sync", "--project", str(tmp_path), "--json"])
+    result = main(["sync", "--project", str(tmp_path)])
     assert result == 1
 
 
@@ -97,7 +97,7 @@ def test_sync_dry_run_does_not_overwrite(tmp_path):
     claude = project / "CLAUDE.md"
     claude.write_text("LOCAL", encoding="utf-8")
 
-    result = main(["sync", "--project", str(project), "--dry-run", "--json"])
+    result = main(["sync", "--project", str(project), "--dry-run"])
     assert result == 0
     assert claude.read_text(encoding="utf-8") == "LOCAL"
 
@@ -114,7 +114,7 @@ def test_probe_cx_cy_alias(monkeypatch, tmp_path):
     monkeypatch.setattr(cli_mod, "probe_model", fake_probe)
     result = main([
         "probe", "--project", str(project), "bracket",
-        "--z", "1.0", "--cx", "-10.5", "--cy", "4.25", "--json",
+        "--z", "1.0", "--cx", "-10.5", "--cy", "4.25",
     ])
     assert result == 0
     assert captured["center"] == (-10.5, 4.25)
@@ -132,7 +132,7 @@ def test_probe_center_and_cx_merge(monkeypatch, tmp_path):
     monkeypatch.setattr(cli_mod, "probe_model", fake_probe)
     result = main([
         "probe", "--project", str(project), "bracket",
-        "--z", "1.0", "--center=1,2", "--cx", "3", "--json",
+        "--z", "1.0", "--center=1,2", "--cx", "3",
     ])
     assert result == 0
     assert captured["center"] == (3.0, 2.0)

@@ -66,20 +66,20 @@ All commands auto-detect the workspace by walking up from cwd. Use `--project <d
 agentcad init [--model <model>]                          # Initialize workspace (optionally create first model)
 agentcad new <model>                                      # Create model inside an existing workspace
 agentcad sync                                           # Update workspace scaffold files from templates
-agentcad precheck <model> --json                        # Static design solve before writing part.py
-agentcad build <model> --json                           # Build + export STEP/STL
-agentcad measure <model> --json                         # Measure STL geometry
-agentcad render <model> --json                          # SVG preview from STL
+agentcad precheck <model>                        # Static design solve before writing part.py
+agentcad build <model>                           # Build + export STEP/STL
+agentcad measure <model>                         # Measure STL geometry
+agentcad render <model>                          # SVG preview from STL
 agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
-agentcad validate <model> --json                        # Full validation pipeline
-agentcad review <model> --json                          # Pre-delivery checklist + relations matrix
-agentcad deliver <model> --json                         # Delivery manifest
-agentcad probe <model> --scan --axis z|x|y --json       # Profile scan for step changes / void detection
-agentcad inspect <model> --json                         # Three-axis scan + section SVGs + suggested probes
+agentcad validate <model>                        # Full validation pipeline
+agentcad review <model>                          # Pre-delivery checklist + relations matrix
+agentcad deliver <model>                         # Delivery manifest
+agentcad probe <model> --scan --axis z|x|y       # Profile scan for step changes / void detection
+agentcad inspect <model>                         # Three-axis scan + section SVGs + suggested probes
 agentcad report <model>                                 # Markdown validation report
 ```
 
-All commands support `--json` for stable machine-readable output. Failures also return JSON with `stage`, `error.type`, `error.message`.
+All commands return stable machine-readable JSON output. Failures include `stage`, `error.type`, and `error.message`.
 
 ## Workspace Protocol
 
@@ -140,5 +140,5 @@ SVG rendering, JSON IO, validation checks and feature coverage.
 Integration validation through example models:
 
 ```bash
-cd examples/fan-adapter-8025 && uv run agentcad validate fan_duct_adapter_8025 --json
+cd examples/fan-adapter-8025 && uv run agentcad validate fan_duct_adapter_8025
 ```

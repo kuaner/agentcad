@@ -13,7 +13,7 @@ exist precisely to catch the failure modes listed below in
 2. **Contract**: write `models/<name>/design.json` with features + checks.
    Declare shapes inline for `min_clearance` checks (see below).
 3. **Params**: put tunable dimensions in `models/<name>/params.json`.
-4. **Precheck**: `agentcad precheck <name> --json`. This solves the design contract
+4. **Precheck**: `agentcad precheck <name>`. This solves the design contract
    *statically* — without building. It catches interferences, schema errors,
    and feature-coverage gaps before you write code. **Do not write part.py
    while precheck fails.**
@@ -21,13 +21,13 @@ exist precisely to catch the failure modes listed below in
    - Final object MUST be assigned to global variable `result`.
    - Optional `metadata` dict gets written to metadata.json.
 6. **Build**: `agentcad build <name>` (auto-cached unless `--force`).
-7. **Measure**: `agentcad measure <name> --json` for STL geometry stats.
+7. **Measure**: `agentcad measure <name>` for STL geometry stats.
 8. **Render**: `agentcad render <name> --views iso,back` (validate auto-renders).
-9. **Validate**: `agentcad validate <name> --json`. Must be green.
-10. **Review**: `agentcad review <name> --json`. Final pre-delivery checklist —
+9. **Validate**: `agentcad validate <name>`. Must be green.
+10. **Review**: `agentcad review <name>`. Final pre-delivery checklist —
     pairwise relations matrix, must-view SVGs, missing-check reminders.
     **Do not run `agentcad deliver` while review fails.**
-11. Run `agentcad deliver <name> --json` ONLY after review passes.
+11. Run `agentcad deliver <name>` ONLY after review passes.
 
 Do NOT manually export STEP/STL from part.py. The runner owns all exports.
 
@@ -193,7 +193,7 @@ After finishing `design.json`, write a minimal `part.py` that produces the
 outer envelope only (no internal features) and run:
 
 ```bash
-agentcad validate <model> --json
+agentcad validate <model>
 ```
 
 Expected outcome:
@@ -228,10 +228,10 @@ features before validating — incremental feedback is the whole point of TDD.
 at `z = (z_bottom + z_top) / 2`.
 
 **When you do not know the expected value:** run `agentcad build`, then
-`agentcad probe <model> --z <z> --json`. The `suggested_checks` field is ready to
+`agentcad probe <model> --z <z>`. The `suggested_checks` field is ready to
 paste straight into `design.json`.
 
-**When you do not know which Z to probe:** run `agentcad probe <model> --scan --json`
+**When you do not know which Z to probe:** run `agentcad probe <model> --scan`
 to surface step changes (cavity start, wall transitions, etc.) automatically.
 
 ## design.json Schema Rules
@@ -339,32 +339,32 @@ Use `Locations` only with 3D primitives (Box, Cylinder, Cone). Use explicit
 ```bash
 agentcad init [--model <model>]                 # Initialize workspace (optional first model)
 agentcad new <model>                           # Create model in existing workspace
-agentcad precheck <model> --json               # Static design solve (run BEFORE writing part.py)
-agentcad build <model> --json                  # Build and export STEP/STL (cached if unchanged)
-agentcad build <model> --force --json          # Force rebuild even when source is unchanged
-agentcad measure <model> --json                # Measure STL geometry
-agentcad render <model> --json                 # Generate SVG preview (iso)
-agentcad render <model> --views iso,back --json  # Render multiple views at once
-agentcad validate <model> --json               # Run full validation (auto-renders iso+back)
-agentcad review <model> --json                 # Pre-delivery checklist + relations matrix
-agentcad deliver <model> --json                # Write delivery manifest (only after review passes)
-agentcad probe <model> --z <z> --json                   # Probe Z cross-section (XY plane)
-agentcad probe <model> --z <z> "--center=cx,cy" --json  # Probe Z at off-axis center
+agentcad precheck <model>               # Static design solve (run BEFORE writing part.py)
+agentcad build <model>                  # Build and export STEP/STL (cached if unchanged)
+agentcad build <model> --force          # Force rebuild even when source is unchanged
+agentcad measure <model>                # Measure STL geometry
+agentcad render <model>                 # Generate SVG preview (iso)
+agentcad render <model> --views iso,back  # Render multiple views at once
+agentcad validate <model>               # Run full validation (auto-renders iso+back)
+agentcad review <model>                 # Pre-delivery checklist + relations matrix
+agentcad deliver <model>                # Write delivery manifest (only after review passes)
+agentcad probe <model> --z <z>                   # Probe Z cross-section (XY plane)
+agentcad probe <model> --z <z> "--center=cx,cy"  # Probe Z at off-axis center
 agentcad probe <model> --z <z> --region x0,y0,x1,y1    # Check solid/void in region
-agentcad probe <model> --x <x> --json                   # Probe X cross-section (YZ plane)
-agentcad probe <model> --y <y> --json                   # Probe Y cross-section (XZ plane)
-agentcad probe <model> --scan --json                    # Auto Z-axis profile scan
-agentcad probe <model> --scan --axis x --json           # X-axis scan
-agentcad probe <model> --scan --axis y --json           # Y-axis scan
-agentcad render <model> --section-z <z> --json          # Section SVG at Z height
-agentcad render <model> --section-x <x> --json          # Section SVG at X position (YZ)
-agentcad render <model> --section-y <y> --json          # Section SVG at Y position (XZ)
-agentcad inspect <model> --json                         # Three-axis scan + section SVGs + suggested probes
+agentcad probe <model> --x <x>                   # Probe X cross-section (YZ plane)
+agentcad probe <model> --y <y>                   # Probe Y cross-section (XZ plane)
+agentcad probe <model> --scan                    # Auto Z-axis profile scan
+agentcad probe <model> --scan --axis x           # X-axis scan
+agentcad probe <model> --scan --axis y           # Y-axis scan
+agentcad render <model> --section-z <z>          # Section SVG at Z height
+agentcad render <model> --section-x <x>          # Section SVG at X position (YZ)
+agentcad render <model> --section-y <y>          # Section SVG at Y position (XZ)
+agentcad inspect <model>                         # Three-axis scan + section SVGs + suggested probes
 agentcad report <model>                                 # Generate Markdown validation report
 ```
 
 All commands accept `--project <dir>` (defaults to current directory).
-All commands accept `--json` for machine-readable output.
+All commands output machine-readable JSON by default.
 
 ### agentcad probe — Discover expected values before writing design.json
 
@@ -374,13 +374,13 @@ snippets with actual measured values:
 
 ```bash
 # Find inner diameter of a camera cutout centred at (-10.3, 53.3) at z=0.75
-agentcad probe my_case "--center=-10.3,53.3" --z 0.75 --json
+agentcad probe my_case "--center=-10.3,53.3" --z 0.75
 # → suggested_checks.inner_diameter_at_z.expected = 44.49 (actual measured value)
 ```
 
 For multiple Z heights in one call (e.g., to profile a taper):
 ```bash
-agentcad probe my_part --z 2.0,5.0,8.0 --json
+agentcad probe my_part --z 2.0,5.0,8.0
 ```
 
 ## Key Resources

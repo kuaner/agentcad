@@ -11,13 +11,13 @@ AgentCAD model folder.
 ## Recommended workflow
 
 ```bash
-agentcad precheck {name} --json     # 1. solve design.json statically
+agentcad precheck {name}     # 1. solve design.json statically
 # write part.py once precheck is green
-agentcad build {name} --json        # 2. generate STEP/STL
-agentcad measure {name} --json      # 3. measure geometry stats
-agentcad validate {name} --json     # 4. run all checks (auto-renders SVGs)
-agentcad review {name} --json       # 5. pre-delivery checklist + relations matrix
-agentcad deliver {name} --json      # 6. write delivery manifest
+agentcad build {name}        # 2. generate STEP/STL
+agentcad measure {name}      # 3. measure geometry stats
+agentcad validate {name}     # 4. run all checks (auto-renders SVGs)
+agentcad review {name}       # 5. pre-delivery checklist + relations matrix
+agentcad deliver {name}      # 6. write delivery manifest
 ```
 
 ## Common errors to design *against*

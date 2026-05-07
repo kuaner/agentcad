@@ -17,14 +17,5 @@ def write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
-def print_payload(payload: Any, as_json: bool = False) -> None:
-    if as_json:
-        sys.stdout.write(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
-        return
-    if isinstance(payload, dict):
-        ok = payload.get("ok")
-        status = "ok" if ok is True else "error" if ok is False else "info"
-        message = payload.get("message") or payload.get("error", {}).get("message") or payload.get("stage") or ""
-        sys.stdout.write(f"{status}: {message}\n")
-    else:
-        sys.stdout.write(str(payload) + "\n")
+def print_payload(payload: Any) -> None:
+    sys.stdout.write(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")

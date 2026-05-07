@@ -8,30 +8,30 @@ that you can paste directly into design.json.
 
 ```bash
 # 1. Build the model first
-agentcad build my_model --json
+agentcad build my_model
 
 # 2. Probe a cross-section (single Z, off-axis center)
-agentcad probe my_model --z 5.0 "--center=cx,cy" --json
+agentcad probe my_model --z 5.0 "--center=cx,cy"
 # Output includes:
 #   section.diameter_inner_estimate  →  use as expected for inner_diameter_at_z
 #   section.diameter_outer_estimate  →  use as expected for outer_diameter_at_z
 #   suggested_checks                 →  ready-to-paste JSON for design.json
 
 # 3. Probe a rectangular region to check solid/void state
-agentcad probe my_model --z 0.75 --region "-15,-10,5,15" --json
+agentcad probe my_model --z 0.75 --region "-15,-10,5,15"
 # Output includes:
 #   region_section.region_has_points → true = solid, false = void
 #   suggested_checks.section_bbox_at_z → ready-to-paste check
 
 # 4. Probe multiple heights in one call (e.g., taper profile)
-agentcad probe my_model --z 2.0,5.0,8.0 --json
+agentcad probe my_model --z 2.0,5.0,8.0
 ```
 
 **When center contains negative numbers**, use `=` syntax to avoid argparse
 treating the value as a flag:
 ```bash
-agentcad probe my_model --z 0.75 "--center=-10.3,53.3" --json  # correct
-agentcad probe my_model --z 0.75 --center -10.3,53.3 --json    # WRONG: -10.3 parsed as flag
+agentcad probe my_model --z 0.75 "--center=-10.3,53.3"  # correct
+agentcad probe my_model --z 0.75 --center -10.3,53.3    # WRONG: -10.3 parsed as flag
 ```
 
 ## design.json Structure

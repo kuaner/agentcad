@@ -31,8 +31,9 @@ design contract -> precheck -> params/source -> build
 | Deliver | `agentcad deliver <model>` | Delivery manifest |
 | Report | `agentcad report <model>` | Markdown summary of validation result |
 
-Every command supports `--json` for stable machine-readable output; failures
-return JSON containing `stage`, `error.type`, `error.message`.
+Every command prints JSON by default for stable machine-readable output;
+add `--text` for human-readable output. Failures include `stage`,
+`error.type`, and `error.message`.
 
 ## Validation check types
 
@@ -93,20 +94,20 @@ uv run agentcad --help
 ## Quick example
 
 ```bash
-uv run agentcad init --model bracket --project /tmp/my-cad-project
+agentcad init --model bracket --project /tmp/my-cad-project
 cd /tmp/my-cad-project
 
 # 1. Design-time: solve the contract before writing geometry
-uv run agentcad precheck bracket --json
+agentcad precheck bracket
 
 # 2. Implement part.py, then run the post-build pipeline
-uv run agentcad validate bracket --json
+agentcad validate bracket
 
 # 3. Pre-delivery review (relations matrix + must-view SVGs)
-uv run agentcad review bracket --json
+agentcad review bracket
 
 # 4. Deliver
-uv run agentcad deliver bracket --json
+agentcad deliver bracket
 ```
 
 The default generated model is a simple build123d cuboid. Agent rules and
@@ -125,8 +126,8 @@ Re-run any example:
 
 ```bash
 cd examples/fan-adapter-8025
-uv run agentcad validate fan_duct_adapter_8025 --json
-uv run agentcad review fan_duct_adapter_8025 --json
+uv run agentcad validate fan_duct_adapter_8025
+uv run agentcad review fan_duct_adapter_8025
 ```
 
 ## Tests
