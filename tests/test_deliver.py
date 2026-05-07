@@ -12,6 +12,8 @@ def test_deliver_includes_only_existing_artifacts(tmp_path: Path, monkeypatch):
     out_dir = tmp_path / "models" / "m" / "outputs"
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "m.step").write_text("x", encoding="utf-8")
+    (out_dir / "preview.back.svg").write_text("<svg/>", encoding="utf-8")
+    (tmp_path / "models" / "m" / "metadata.json").write_text("{}", encoding="utf-8")
 
     def fake_validate(project, name, render_view="iso", render_views=None):
         return {"ok": True, "stage": "validate"}
@@ -21,5 +23,6 @@ def test_deliver_includes_only_existing_artifacts(tmp_path: Path, monkeypatch):
     artifacts = result["artifacts"]
     assert "step" in artifacts
     assert "stl" not in artifacts
-    assert "preview" not in artifacts
+    assert "preview_back" in artifacts
+    assert "metadata" in artifacts
     assert "deliverable" in artifacts

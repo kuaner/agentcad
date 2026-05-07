@@ -100,15 +100,20 @@ def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict
     out_dir.mkdir(parents=True, exist_ok=True)
     validation = validate_model(project, name) if run_validation else read_json(out_dir / "validation.json", default={"ok": False, "message": "validation report missing"})
     deliver_path = out_dir / "deliverable.json"
+    preview_candidates = {
+        f"preview_{p.stem.split('.')[1]}": str(p)
+        for p in sorted(out_dir.glob("preview.*.svg"))
+        if len(p.stem.split(".")) > 1
+    }
     artifact_candidates = {
         "step": str(out_dir / f"{name}.step"),
         "stl": str(out_dir / f"{name}.stl"),
-        "preview": str(out_dir / "preview.iso.svg"),
         "geometry": str(out_dir / "geometry.json"),
         "validation": str(out_dir / "validation.json"),
-        "metadata": str(out_dir / "metadata.json"),
+        "metadata": str(model_dir(project, name) / "metadata.json"),
         "precheck": str(out_dir / "precheck.json"),
         "review": str(out_dir / "review.json"),
+        **preview_candidates,
         "deliverable": str(deliver_path),
     }
     artifacts = {k: v for k, v in artifact_candidates.items() if k == "deliverable" or Path(v).exists()}
