@@ -84,7 +84,7 @@ agentcad --help
 Upgrade after new releases:
 
 ```bash
-uv tool upgrade agentcad
+uv tool upgrade agentcad-cli
 ```
 
 ## Publish to PyPI
@@ -110,7 +110,7 @@ Environment name as `pypi`.
 After the publish workflow succeeds, users can install directly:
 
 ```bash
-uv tool install agentcad
+uv tool install agentcad-cli
 agentcad --help
 ```
 
