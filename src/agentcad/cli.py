@@ -205,11 +205,11 @@ def dispatch(args: argparse.Namespace) -> dict:
         z_values = [float(v.strip()) for v in args.z.split(",") if v.strip()] if args.z else None
         x_values = [float(v.strip()) for v in args.x.split(",") if v.strip()] if args.x else None
         y_values = [float(v.strip()) for v in args.y.split(",") if v.strip()] if args.y else None
-        if args.cx is not None or args.cy is not None:
-            cx = float(args.cx if args.cx is not None else 0.0)
-            cy = float(args.cy if args.cy is not None else 0.0)
-        else:
-            cx, cy = (float(v) for v in args.center.split(","))
+        cx, cy = (float(v) for v in args.center.split(","))
+        if args.cx is not None:
+            cx = float(args.cx)
+        if args.cy is not None:
+            cy = float(args.cy)
         region = None
         if args.region:
             x0, y0, x1, y1 = (float(v) for v in args.region.split(","))
