@@ -39,6 +39,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"agentcad {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
+    init = sub.add_parser("init", help="initialize a workspace (optionally create first model)")
+    add_project_arg(init)
+    init.add_argument("--model", default=None, help="create an initial model after workspace initialization")
+    init.add_argument("--force", action="store_true")
+    init.add_argument("--json", action="store_true")
+
     new = sub.add_parser("new", help="create a new model (auto-initializes workspace)")
     add_project_arg(new)
     new.add_argument("model")
@@ -141,19 +147,39 @@ def add_project_arg(parser: argparse.ArgumentParser) -> None:
 
 
 def _resolve_project(args: argparse.Namespace) -> Path:
-    """Find existing project, or auto-init for 'new' command."""
+    """Find existing project, or auto-init when creating a new model."""
     project = Path(getattr(args, "project", "."))
     try:
         return find_project(project)
     except FileNotFoundError:
         if args.command == "new":
-            target = project.expanduser().resolve()
+            # For `agentcad new <name>` in a plain directory, scaffold a
+            # dedicated project folder named after the model by default.
+            if project == Path("."):
+                target = (Path.cwd() / args.model).expanduser().resolve()
+            else:
+                target = project.expanduser().resolve()
             init_workspace(target)
             return find_project(target)
         raise
 
 
 def dispatch(args: argparse.Namespace) -> dict:
+    if args.command == "init":
+        target = Path(getattr(args, "project", ".")).expanduser().resolve()
+        init_payload = init_workspace(target, force=getattr(args, "force", False))
+        model_name = getattr(args, "model", None)
+        if not model_name:
+            return init_payload
+        model_payload = new_model(target, model_name, force=getattr(args, "force", False))
+        return {
+            "ok": bool(init_payload.get("ok")) and bool(model_payload.get("ok")),
+            "stage": "init",
+            "project": str(target),
+            "workspace": init_payload,
+            "model": model_payload,
+        }
+
     if args.command == "sync":
         project = _resolve_project(args)
         return sync_workspace(

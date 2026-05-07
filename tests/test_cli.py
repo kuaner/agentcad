@@ -16,6 +16,22 @@ def test_new_auto_init(tmp_path):
     assert (tmp_path / "newproject" / "models" / "bracket" / "part.py").exists()
 
 
+def test_init_creates_workspace_and_optional_model(tmp_path):
+    project = tmp_path / "initproj"
+    result = main(["init", "--project", str(project), "--model", "demo"])
+    assert result == 0
+    assert (project / "cadproject.json").exists()
+    assert (project / "models" / "demo" / "part.py").exists()
+
+
+def test_new_default_creates_project_dir_named_after_model(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = main(["new", "fan8025"])
+    assert result == 0
+    assert (tmp_path / "fan8025" / "cadproject.json").exists()
+    assert (tmp_path / "fan8025" / "models" / "fan8025" / "part.py").exists()
+
+
 def test_new_duplicate_fails(tmp_path):
     project = tmp_path / "proj"
     main(["new", "--project", str(project), "bracket"])

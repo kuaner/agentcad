@@ -33,7 +33,7 @@ PYTHONPATH=src python3 -m agentcad --help
 src/agentcad/          # Main package
   cli.py               # CLI argument parsing and dispatch
   runner.py             # build123d runner: executes part.py, exports STEP/STL
-  workspace.py          # agentcad init/new, project discovery, model directory helpers
+  workspace.py          # workspace init/new, project discovery, model directory helpers
   measure.py            # STL geometry measurement -> geometry.json
   render.py             # Dependency-free SVG preview renderer from STL
   validate.py           # Full validation pipeline: build + measure + render + design checks + feature coverage
@@ -63,7 +63,8 @@ examples/
 All commands auto-detect the workspace by walking up from cwd. Use `--project <dir>` only when operating from outside the workspace.
 
 ```bash
-agentcad new <model>                                    # Create model (auto-inits workspace if needed)
+agentcad init [--model <model>]                          # Initialize workspace (optionally create first model)
+agentcad new <model>                                      # Create model inside an existing workspace
 agentcad sync                                           # Update workspace scaffold files from templates
 agentcad precheck <model> --json                        # Static design solve before writing part.py
 agentcad build <model> --json                           # Build + export STEP/STL

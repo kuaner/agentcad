@@ -17,7 +17,8 @@ design contract -> precheck -> params/source -> build
 
 | Stage | Command | Purpose |
 |---|---|---|
-| Scaffold | `agentcad new <model>` | Create model folder; auto-init workspace |
+| Init | `agentcad init [--model <name>]` | Initialize workspace scaffold (optionally create first model) |
+| Scaffold | `agentcad new <model>` | Create model folder inside an existing workspace |
 | Sync | `agentcad sync` | Refresh workspace scaffold from latest templates |
 | Precheck | `agentcad precheck <model>` | Solve `design.json` statically (schema, feature coverage, `min_clearance`) **before** part.py is written |
 | Build | `agentcad build <model>` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
@@ -69,7 +70,7 @@ Create a workspace and start modeling:
 ```bash
 mkdir my-agentcad-project
 cd my-agentcad-project
-agentcad new demo
+agentcad init --model demo
 ```
 
 Then open this directory in Claude Code / Cursor and continue from
@@ -79,7 +80,7 @@ Then open this directory in Claude Code / Cursor and continue from
 workspace root, for example:
 
 ```bash
-agentcad new demo --project /tmp/agentcad-demo
+agentcad init --model demo --project /tmp/agentcad-demo
 ```
 
 For local development:
@@ -92,7 +93,7 @@ uv run agentcad --help
 ## Quick example
 
 ```bash
-uv run agentcad new bracket --project /tmp/my-cad-project
+uv run agentcad init --model bracket --project /tmp/my-cad-project
 cd /tmp/my-cad-project
 
 # 1. Design-time: solve the contract before writing geometry

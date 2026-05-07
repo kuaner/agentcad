@@ -186,7 +186,8 @@ introduced only when repeated patterns justify it (V3+).
 ## 6. CLI Commands
 
 ```bash
-agentcad new <model>                                     # scaffold + auto-init
+agentcad init [--model <model>]                          # scaffold workspace (and optional first model)
+agentcad new <model>                                      # add model in existing workspace
 agentcad sync                                            # refresh templates
 agentcad precheck <model> --json                         # design-time solve
 agentcad build <model> --json                            # part.py -> STEP + STL

@@ -337,7 +337,8 @@ Use `Locations` only with 3D primitives (Box, Cylinder, Cone). Use explicit
 ## CLI Quick Reference
 
 ```bash
-agentcad new <model>                           # Create model (auto-inits workspace)
+agentcad init [--model <model>]                 # Initialize workspace (optional first model)
+agentcad new <model>                           # Create model in existing workspace
 agentcad precheck <model> --json               # Static design solve (run BEFORE writing part.py)
 agentcad build <model> --json                  # Build and export STEP/STL (cached if unchanged)
 agentcad build <model> --force --json          # Force rebuild even when source is unchanged
