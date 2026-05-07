@@ -40,7 +40,7 @@ wall" bug at design time, before any code is written.
 }
 ```
 
-See `../skills/validation-strategy.md` for a complete catalog of design errors
-and the check types that catch them.
+See `../references/validation-strategy.md` for a complete catalog of design
+errors and the check types that catch them.
 
 Generated artifacts go to `outputs/`.

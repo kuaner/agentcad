@@ -86,7 +86,7 @@ All commands support `--json` for stable machine-readable output. Failures also 
 project/
   AGENTS.md              # Agent instructions (auto-generated)
   cadproject.json        # Project config
-  skills/                # build123d-guide.md, validation-strategy.md
+  references/            # build123d-guide.md, validation-strategy.md, images, notes
   references/            # Images, sketches, notes
   models/<name>/
     README.md

@@ -3,7 +3,7 @@
 You are working in an AgentCAD workspace. Your job is to create and refine CAD
 models using the `cad` CLI and build123d geometry library.
 
-## Workflow (10 stages — do NOT skip stages)
+## Workflow (11 stages — do NOT skip stages)
 
 Two new stages — **precheck** (before code) and **review** (before deliver) —
 exist precisely to catch the failure modes listed below in
@@ -384,15 +384,18 @@ cad probe my_part --z 2.0,5.0,8.0 --json
 
 ## Key Resources
 
-Read the skill files in `skills/` for detailed guidance:
-- `build123d-guide.md` — build123d API reference, patterns, common pitfalls
-- `validation-strategy.md` — check types, section checks, tolerance, troubleshooting
+Always-on reference docs in `references/` (read them as needed):
+- `references/build123d-guide.md` — build123d API reference, patterns, common pitfalls
+- `references/validation-strategy.md` — check types, section checks, tolerance, troubleshooting
+
+`references/` is the home for project documentation that should be readable
+by both humans and agents throughout the modeling loop.
 
 ## Querying build123d Documentation
 
-When you need API details beyond the skill files (e.g., how to select edges for
-fillet, what parameters CounterBoreHole accepts, how Location arithmetic works),
-query the build123d documentation directly:
+When you need API details beyond the reference docs (e.g., how to select
+edges for fillet, what parameters CounterBoreHole accepts, how Location
+arithmetic works), query the build123d documentation directly:
 
 ```
 WebFetch https://build123d.readthedocs.io/en/latest/<page>.html
