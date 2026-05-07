@@ -70,10 +70,10 @@ Create a workspace and start modeling:
 ```bash
 agentcad init my-agentcad-project --model demo
 cd my-agentcad-project
+claude
 ```
 
-Then open this directory in Claude Code / Cursor and continue from
-`models/demo/part.py`.
+Then ask Claude to design your target model (for example: "Design an adapter from an 8025 fan to a round duct") — it will read `CLAUDE.md` in this workspace and follow the workflow automatically.
 
 For local development:
 
