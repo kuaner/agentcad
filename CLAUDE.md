@@ -87,7 +87,6 @@ project/
   AGENTS.md              # Agent instructions (auto-generated)
   cadproject.json        # Project config
   references/            # build123d-guide.md, validation-strategy.md, images, notes
-  references/            # Images, sketches, notes
   models/<name>/
     README.md
     design.json          # Feature contract + validation checks

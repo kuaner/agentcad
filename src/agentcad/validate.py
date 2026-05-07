@@ -109,6 +109,7 @@ def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict
         "metadata": str(out_dir / "metadata.json"),
         "precheck": str(out_dir / "precheck.json"),
         "review": str(out_dir / "review.json"),
+        "deliverable": str(deliver_path),
     }
     payload = {
         "ok": bool(validation.get("ok")),
@@ -121,7 +122,6 @@ def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict
     if not validation.get("ok"):
         payload["error"] = {"type": "ValidationFailed", "message": "validation must pass before delivery"}
     write_json(deliver_path, payload)
-    payload["artifacts"]["deliverable"] = str(deliver_path)
     return payload
 
 
