@@ -101,7 +101,9 @@ def sync_workspace(
             if path.exists():
                 pruned.append(str(path.relative_to(target)))
                 if not dry_run:
-                    if path.is_dir():
+                    if path.is_symlink():
+                        path.unlink()
+                    elif path.is_dir():
                         shutil.rmtree(path)
                     else:
                         path.unlink()

@@ -122,6 +122,7 @@ def test_sync_workspace_dry_run(tmp_path):
     assert result["dry_run"] is True
     assert claude.read_text(encoding="utf-8") == "LOCAL CHANGE"
     assert "CLAUDE.md" in result["planned_updates"]
+    assert "AGENTS.md" in result["planned_updates"]
     assert result["updated"] == []
 
     # Non-dry run should restore scaffold content.
@@ -160,3 +161,17 @@ def test_sync_workspace_prune_deprecated(tmp_path):
     real = sync_workspace(tmp_path, prune_deprecated=True)
     assert "skills" in real["pruned"]
     assert not legacy.exists()
+
+
+def test_sync_workspace_prune_deprecated_symlink(tmp_path):
+    init_workspace(tmp_path)
+    outside = tmp_path / "outside-dir"
+    outside.mkdir()
+    (outside / "keep.txt").write_text("keep", encoding="utf-8")
+    legacy_link = tmp_path / "skills"
+    legacy_link.symlink_to(outside, target_is_directory=True)
+
+    result = sync_workspace(tmp_path, prune_deprecated=True)
+    assert "skills" in result["pruned"]
+    assert not legacy_link.exists()
+    assert (outside / "keep.txt").exists()
