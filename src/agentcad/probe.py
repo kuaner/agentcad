@@ -2,29 +2,35 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .section import AXIS_X, AXIS_Y, AXIS_Z, scan_profile, section_segments, write_section_svg
 from .stl import read_stl, section_bbox_at_z, section_radius_at_z
 from .workspace import outputs_dir
+
+_AXIS_MAP = {"x": AXIS_X, "y": AXIS_Y, "z": AXIS_Z}
+_AXIS_NAME = {AXIS_X: "X", AXIS_Y: "Y", AXIS_Z: "Z"}
 
 
 def probe_model(
     project: Path,
     name: str,
-    z_values: list[float],
+    z_values: list[float] | None = None,
+    x_values: list[float] | None = None,
+    y_values: list[float] | None = None,
     center: tuple[float, float] = (0.0, 0.0),
     region: tuple[tuple[float, float], tuple[float, float]] | None = None,
 ) -> dict:
-    """Probe STL geometry at one or more Z cross-sections.
+    """Probe STL geometry at one or more cross-sections along any axis.
 
-    Outputs radial envelope statistics and, optionally, region analysis.
-    Also emits ``suggested_checks`` — ready-to-paste snippets for design.json
-    that help agents write meaningful validation contracts without guessing
-    expected values.
+    Supports Z sections (radial + region analysis) and X/Y sections (bbox analysis).
+    Returns ``suggested_checks`` — ready-to-paste snippets for design.json.
 
     Args:
         project: Project root path.
         name: Model name.
-        z_values: One or more Z heights to probe.
-        center: (cx, cy) for radial measurements.
+        z_values: Z heights to probe (radial measurement with optional region).
+        x_values: X positions to probe (YZ plane bbox).
+        y_values: Y positions to probe (XZ plane bbox).
+        center: (cx, cy) for radial Z measurements.
         region: Optional ((x_min, y_min), (x_max, y_max)) for bbox region check.
     """
     stl_path = outputs_dir(project, name) / f"{name}.stl"
@@ -40,65 +46,170 @@ def probe_model(
         }
 
     triangles = read_stl(stl_path)
+    all_results: list[dict] = []
+
+    # Z probes — radial measurements
+    for z in (z_values or []):
+        all_results.append(_probe_z(triangles, z, center, region))
+
+    # X probes — YZ plane bbox
+    for x in (x_values or []):
+        all_results.append(_probe_axis(triangles, AXIS_X, x))
+
+    # Y probes — XZ plane bbox
+    for y in (y_values or []):
+        all_results.append(_probe_axis(triangles, AXIS_Y, y))
+
+    total = len(all_results)
+    if total == 0:
+        return {"ok": False, "stage": "probe", "model": name,
+                "error": {"type": "NoProbe", "message": "specify at least one of --z, --x, --y"}}
+
     cx, cy = center
-
-    results = []
-    for z in z_values:
-        section = section_radius_at_z(triangles, z, center=center)
-        entry: dict = {"z": z, "section": section}
-
-        if section.get("ok"):
-            outer_d = section.get("diameter_outer_estimate")
-            inner_d = section.get("diameter_inner_estimate")
-            suggested: dict = {}
-            if outer_d is not None:
-                suggested["outer_diameter_at_z"] = {
-                    "type": "outer_diameter_at_z",
-                    "z": z,
-                    "center": [cx, cy],
-                    "expected": round(outer_d, 2),
-                    "tolerance": 1.0,
-                }
-            if inner_d is not None and inner_d > 0.5:
-                suggested["inner_diameter_at_z"] = {
-                    "type": "inner_diameter_at_z",
-                    "z": z,
-                    "center": [cx, cy],
-                    "expected": round(inner_d, 2),
-                    "tolerance": 2.0,
-                }
-
-            if region is not None:
-                bbox_section = section_bbox_at_z(triangles, z, region=region)
-                has_pts = bbox_section.get("region_has_points", False)
-                entry["region_section"] = bbox_section
-                (rx0, ry0), (rx1, ry1) = region
-                suggested["section_bbox_at_z"] = {
-                    "type": "section_bbox_at_z",
-                    "z": z,
-                    "region": [[rx0, ry0], [rx1, ry1]],
-                    "expected": "solid" if has_pts else "void",
-                }
-
-            entry["suggested_checks"] = suggested
-        else:
-            entry["error"] = section.get("error", "no intersections at this Z")
-
-        results.append(entry)
-
-    single = len(z_values) == 1
     payload: dict = {
         "ok": True,
         "stage": "probe",
         "model": name,
         "center": [cx, cy],
     }
-    if single:
-        r = results[0]
-        payload.update({k: v for k, v in r.items() if k != "z"})
-        payload["z"] = z_values[0]
+    if total == 1:
+        r = all_results[0]
+        payload.update(r)
     else:
-        payload["results"] = results
-        payload["z_values"] = z_values
+        payload["results"] = all_results
 
     return payload
+
+
+def probe_scan(
+    project: Path,
+    name: str,
+    axis: str = "z",
+    samples: int = 20,
+) -> dict:
+    """Scan the model along an axis and report cross-section profile.
+
+    Detects step changes (geometry transitions) and suggests probe commands
+    for investigating interesting positions further.
+
+    Args:
+        project: Project root path.
+        name: Model name.
+        axis: "x", "y", or "z".
+        samples: Number of cross-sections to sample.
+    """
+    stl_path = outputs_dir(project, name) / f"{name}.stl"
+    if not stl_path.exists():
+        return {
+            "ok": False,
+            "stage": "probe",
+            "model": name,
+            "error": {
+                "type": "STLMissing",
+                "message": f"STL not found — run 'cad build {name}' first: {stl_path}",
+            },
+        }
+
+    axis_int = _AXIS_MAP.get(axis.lower(), AXIS_Z)
+    triangles = read_stl(stl_path)
+    scan = scan_profile(triangles, axis=axis_int, samples=samples)
+
+    if not scan.get("ok"):
+        return {"ok": False, "stage": "probe", "model": name, "error": scan.get("error")}
+
+    # Build suggested probe commands for each step change
+    suggested = []
+    for step in scan.get("step_changes", []):
+        pos = step["pos"]
+        if axis_int == AXIS_Z:
+            cmd = f"cad probe {name} --z {pos} --json"
+        elif axis_int == AXIS_X:
+            cmd = f"cad probe {name} --x {pos} --json"
+        else:
+            cmd = f"cad probe {name} --y {pos} --json"
+        suggested.append({
+            "pos": pos,
+            "hint": step.get("hint", ""),
+            "command": cmd,
+        })
+
+    return {
+        "ok": True,
+        "stage": "probe",
+        "model": name,
+        "scan": scan,
+        "suggested_probes": suggested,
+    }
+
+
+# ── Internal helpers ──────────────────────────────────────────────────────────
+
+def _probe_z(
+    triangles: list,
+    z: float,
+    center: tuple[float, float],
+    region: tuple[tuple[float, float], tuple[float, float]] | None,
+) -> dict:
+    cx, cy = center
+    section = section_radius_at_z(triangles, z, center=center)
+    entry: dict = {"axis": "Z", "pos": z, "z": z, "section": section}
+
+    if section.get("ok"):
+        outer_d = section.get("diameter_outer_estimate")
+        inner_d = section.get("diameter_inner_estimate")
+        suggested: dict = {}
+        if outer_d is not None:
+            suggested["outer_diameter_at_z"] = {
+                "type": "outer_diameter_at_z",
+                "z": z, "center": [cx, cy],
+                "expected": round(outer_d, 2), "tolerance": 1.0,
+            }
+        if inner_d is not None and inner_d > 0.5:
+            suggested["inner_diameter_at_z"] = {
+                "type": "inner_diameter_at_z",
+                "z": z, "center": [cx, cy],
+                "expected": round(inner_d, 2), "tolerance": 2.0,
+            }
+        if region is not None:
+            bbox_section = section_bbox_at_z(triangles, z, region=region)
+            has_pts = bbox_section.get("region_has_points", False)
+            (rx0, ry0), (rx1, ry1) = region
+            entry["region_section"] = bbox_section
+            suggested["section_bbox_at_z"] = {
+                "type": "section_bbox_at_z",
+                "z": z,
+                "region": [[rx0, ry0], [rx1, ry1]],
+                "expected": "solid" if has_pts else "void",
+            }
+        entry["suggested_checks"] = suggested
+    else:
+        entry["error"] = section.get("error", "no intersections at this Z")
+
+    return entry
+
+
+def _probe_axis(triangles: list, axis: int, value: float) -> dict:
+    """Probe a non-Z axis: report the YZ or XZ bounding box."""
+    segs = section_segments(triangles, axis, value)
+    axis_name = _AXIS_NAME[axis]
+    entry: dict = {"axis": axis_name, "pos": value}
+
+    if not segs:
+        entry["error"] = f"no intersections at {axis_name}={value}"
+        return entry
+
+    us = [p[0] for seg in segs for p in seg]
+    vs = [p[1] for seg in segs for p in seg]
+    u_size = max(us) - min(us)
+    v_size = max(vs) - min(vs)
+    entry["section"] = {
+        "ok": True,
+        "u_size": round(u_size, 3),
+        "v_size": round(v_size, 3),
+        "u_min": round(min(us), 3),
+        "u_max": round(max(us), 3),
+        "v_min": round(min(vs), 3),
+        "v_max": round(max(vs), 3),
+        "segment_count": len(segs),
+    }
+    return entry

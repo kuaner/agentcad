@@ -5,14 +5,17 @@ import sys
 from pathlib import Path
 
 from . import __version__
+from .inspect import inspect_model
 from .jsonio import print_payload
 from .measure import measure_model
-from .probe import probe_model
+from .probe import probe_model, probe_scan
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .report import report_model
 from .runner import build_model
+from .section import AXIS_X, AXIS_Y, AXIS_Z, write_section_svg
+from .stl import read_stl
 from .validate import deliver_model, validate_model
-from .workspace import find_project, init_workspace, new_model, sync_workspace
+from .workspace import find_project, init_workspace, new_model, outputs_dir, sync_workspace
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -60,6 +63,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="comma-separated list of views to render (e.g. iso,back,top); overrides --view",
     )
+    render.add_argument("--section-z", dest="section_z", type=float, default=None,
+                        help="render a Z cross-section SVG at this height (mm)")
+    render.add_argument("--section-x", dest="section_x", type=float, default=None,
+                        help="render an X cross-section SVG (YZ plane) at this position (mm)")
+    render.add_argument("--section-y", dest="section_y", type=float, default=None,
+                        help="render a Y cross-section SVG (XZ plane) at this position (mm)")
     render.add_argument("--json", action="store_true")
 
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
@@ -82,27 +91,26 @@ def build_parser() -> argparse.ArgumentParser:
     probe = sub.add_parser("probe", help="probe STL cross-section to get geometry values for design.json")
     add_project_arg(probe)
     probe.add_argument("model")
-    probe.add_argument(
-        "--z",
-        required=True,
-        help="Z height(s) to probe, comma-separated (e.g. 0.75 or 0.5,1.0,2.0)",
-    )
-    probe.add_argument(
-        "--center",
-        default="0,0",
-        help="cx,cy for radial measurements (default: 0,0)",
-    )
-    probe.add_argument(
-        "--region",
-        default=None,
-        help="x_min,y_min,x_max,y_max — check solid/void in this rectangle at the given Z",
-    )
+    probe.add_argument("--z", default=None, help="Z height(s) to probe, comma-separated")
+    probe.add_argument("--x", default=None, help="X position(s) to probe (YZ plane), comma-separated")
+    probe.add_argument("--y", default=None, help="Y position(s) to probe (XZ plane), comma-separated")
+    probe.add_argument("--center", default="0,0", help="cx,cy for radial Z measurements (default: 0,0)")
+    probe.add_argument("--region", default=None, help="x0,y0,x1,y1 — solid/void region check at Z")
+    probe.add_argument("--scan", action="store_true", help="scan the full axis profile instead of a single section")
+    probe.add_argument("--axis", choices=["x", "y", "z"], default="z", help="axis to scan (default: z)")
+    probe.add_argument("--samples", type=int, default=20, help="number of scan samples (default: 20)")
     probe.add_argument("--json", action="store_true")
 
     report = sub.add_parser("report", help="generate a human-readable Markdown validation report")
     add_project_arg(report)
     report.add_argument("model")
     report.add_argument("--json", action="store_true")
+
+    inspect = sub.add_parser("inspect", help="three-axis scan + section SVGs + suggested probe commands")
+    add_project_arg(inspect)
+    inspect.add_argument("model")
+    inspect.add_argument("--samples", type=int, default=20, help="scan samples per axis (default: 20)")
+    inspect.add_argument("--json", action="store_true")
 
     sync = sub.add_parser("sync", help="update workspace scaffold files from templates")
     add_project_arg(sync)
@@ -141,6 +149,23 @@ def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "measure":
         return measure_model(project, args.model)
     if args.command == "render":
+        # Section SVG modes take priority over 3D view rendering.
+        for attr, axis_int, axis_name in (
+            ("section_z", AXIS_Z, "z"),
+            ("section_x", AXIS_X, "x"),
+            ("section_y", AXIS_Y, "y"),
+        ):
+            val = getattr(args, attr, None)
+            if val is not None:
+                stl_path = outputs_dir(project, args.model) / f"{args.model}.stl"
+                if not stl_path.exists():
+                    return {"ok": False, "stage": "render", "model": args.model,
+                            "error": {"type": "STLMissing",
+                                      "message": f"STL not found, run 'cad build {args.model}' first"}}
+                triangles = read_stl(stl_path)
+                out_dir = outputs_dir(project, args.model)
+                svg_path = out_dir / f"section.{axis_name}{val:.2f}.svg"
+                return write_section_svg(triangles, axis_int, val, svg_path)
         views_arg = getattr(args, "views", None)
         if views_arg:
             views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS]
@@ -153,15 +178,23 @@ def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "deliver":
         return deliver_model(project, args.model, run_validation=not args.no_validate)
     if args.command == "probe":
-        z_values = [float(z.strip()) for z in args.z.split(",") if z.strip()]
+        if args.scan:
+            return probe_scan(project, args.model, axis=args.axis, samples=args.samples)
+        z_values = [float(v.strip()) for v in args.z.split(",") if v.strip()] if args.z else None
+        x_values = [float(v.strip()) for v in args.x.split(",") if v.strip()] if args.x else None
+        y_values = [float(v.strip()) for v in args.y.split(",") if v.strip()] if args.y else None
         cx, cy = (float(v) for v in args.center.split(","))
         region = None
         if args.region:
             x0, y0, x1, y1 = (float(v) for v in args.region.split(","))
             region = ((x0, y0), (x1, y1))
-        return probe_model(project, args.model, z_values=z_values, center=(cx, cy), region=region)
+        return probe_model(project, args.model,
+                           z_values=z_values, x_values=x_values, y_values=y_values,
+                           center=(cx, cy), region=region)
     if args.command == "report":
         return report_model(project, args.model)
+    if args.command == "inspect":
+        return inspect_model(project, args.model, scan_samples=args.samples)
 
     raise ValueError(f"unknown command: {args.command}")
 

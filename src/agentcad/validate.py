@@ -7,6 +7,7 @@ from .jsonio import read_json, write_json
 from .measure import measure_model
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .runner import build_model, utc_now
+from .section import AXIS_Z, scan_profile, write_section_svg
 from .stl import read_stl, section_bbox_at_z, section_radius_at_z
 from .workspace import model_dir, outputs_dir
 
@@ -59,6 +60,7 @@ def validate_model(
         stage_check("render", bool(multi_render.get("ok")), primary_render),
     ]
     geometry_warnings: list[dict] = []
+    auto_scan: dict = {}
     if measure.get("ok"):
         schema_errors = validate_design_schema(project, name)
         if schema_errors:
@@ -68,6 +70,22 @@ def validate_model(
             checks.extend(evaluate_design_checks(project, name, measure))
             geometry_warnings = evaluate_weak_check_warnings(project, name)
 
+        # Auto Z-scan: always run, detect step changes, render section SVGs.
+        stl_path = out_dir / f"{name}.stl"
+        if stl_path.exists():
+            triangles = read_stl(stl_path)
+            scan = scan_profile(triangles, axis=AXIS_Z, samples=16, step_threshold=3.0)
+            if scan.get("ok"):
+                section_artifacts: dict[str, str] = {}
+                for step in scan.get("step_changes", []):
+                    z = step["pos"]
+                    svg_path = out_dir / f"section.z{z:.2f}.svg"
+                    write_section_svg(triangles, AXIS_Z, z, svg_path)
+                    key = f"section_z{z:.2f}".replace(".", "_")
+                    section_artifacts[key] = str(svg_path)
+                scan["section_svgs"] = section_artifacts
+                auto_scan = scan
+
     preview_artifacts = multi_render.get("artifacts") or {}
     artifacts: dict = {
         "validation": str(validation_path),
@@ -76,8 +94,13 @@ def validate_model(
         "step": str(out_dir / f"{name}.step"),
         "stl": str(out_dir / f"{name}.stl"),
         **preview_artifacts,
+        **(auto_scan.get("section_svgs") or {}),
     }
-    payload = _validation_payload(name, checks, artifacts=artifacts, warnings=geometry_warnings or None)
+    payload = _validation_payload(
+        name, checks, artifacts=artifacts,
+        warnings=geometry_warnings or None,
+        auto_scan=auto_scan or None,
+    )
     write_json(validation_path, payload)
     return payload
 
@@ -367,7 +390,7 @@ def evaluate_section_diameter(project: Path, name: str, check: dict, diameter_ki
     key = "diameter_outer_estimate" if diameter_kind == "outer" else "diameter_inner_estimate"
     actual = section.get(key)
     ok = bool(section.get("ok")) and actual is not None and abs(float(actual) - expected) <= tolerance
-    return {
+    result: dict = {
         "name": check.get("id") or f"{diameter_kind}_diameter_at_z:{z}",
         "type": f"{diameter_kind}_diameter_at_z",
         "ok": ok,
@@ -377,6 +400,11 @@ def evaluate_section_diameter(project: Path, name: str, check: dict, diameter_ki
         "tolerance": tolerance,
         "section": section,
     }
+    if not ok:
+        svg_path = outputs_dir(project, name) / f"debug.{check.get('id') or 'section'}.z{z:.2f}.svg"
+        info = write_section_svg(triangles, AXIS_Z, z, svg_path)
+        result["debug_svg"] = info.get("svg")
+    return result
 
 
 def evaluate_section_bbox(project: Path, name: str, check: dict, get_triangles=None) -> dict:
@@ -406,7 +434,7 @@ def evaluate_section_bbox(project: Path, name: str, check: dict, get_triangles=N
     if region is not None:
         has_points = bool(section.get("region_has_points"))
         ok = (has_points and expected_state == "solid") or (not has_points and expected_state == "void")
-        return {
+        result: dict = {
             "name": check.get("id") or "section_bbox_at_z",
             "type": "section_bbox_at_z",
             "ok": ok,
@@ -417,6 +445,11 @@ def evaluate_section_bbox(project: Path, name: str, check: dict, get_triangles=N
             "region_point_count": section.get("region_point_count"),
             "section": section,
         }
+        if not ok:
+            svg_path = outputs_dir(project, name) / f"debug.{check.get('id') or 'section_bbox'}.z{float(raw_z):.2f}.svg"
+            info = write_section_svg(triangles, AXIS_Z, float(raw_z), svg_path)
+            result["debug_svg"] = info.get("svg")
+        return result
     return {"name": check.get("id") or "section_bbox_at_z", "type": "section_bbox_at_z", "ok": True, "z": float(raw_z), "section": section}
 
 
@@ -463,6 +496,7 @@ def _validation_payload(
     checks: list[dict],
     artifacts: dict[str, str],
     warnings: list[dict] | None = None,
+    auto_scan: dict | None = None,
 ) -> dict:
     ok = all(bool(check.get("ok")) for check in checks)
     payload: dict = {
@@ -476,6 +510,8 @@ def _validation_payload(
     }
     if warnings:
         payload["warnings"] = warnings
+    if auto_scan:
+        payload["auto_scan"] = auto_scan
     return payload
 
 

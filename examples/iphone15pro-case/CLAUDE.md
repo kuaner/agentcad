@@ -97,6 +97,61 @@ models/<name>/
 }
 ```
 
+## CAD TDD：强制工作流（先写 Check，再写 Geometry）
+
+**任何特征必须先有可通过/可失败的 check，再有 geometry。顺序不可颠倒。**
+
+### 编码前必须回答的四个问题（每个特征一张表）
+
+在开始写 `part.py` 之前，对计划实现的每一个特征填写此表：
+
+| 特征名 | 形状 | 中心 (cx,cy) | Z 切片位置 | expected 值 | check 类型 |
+|--------|------|-------------|-----------|------------|-----------|
+| 外壳   | 矩形 | —           | —         | [w, h, t]  | bbox_size  |
+| 摄像头孔 | 矩形 W×H | (cx,cy) | wall_back/2 | min(W,H) | inner_diameter_at_z |
+| 内腔   | void | center      | wall_back+2 | "void" | section_bbox_at_z |
+| USB-C 口 | 矩形 W×H | (0,y) | z_mid | min(W,H) | inner_diameter_at_z |
+
+如果一个特征填不出这四列 → 说明还没想清楚，**不能开始写代码**。
+
+### Step 1 — Red 验证
+
+写完 `design.json` 后，先写一个只有外壳轮廓（无内部特征）的最小 `part.py`，运行：
+
+```bash
+cad validate <model> --json
+```
+
+期望结果：
+- `bbox_size` → ✅ 通过（外壳正确）
+- 所有 section check → ❌ 失败（内部特征尚未建模）
+
+**如果 section check 在没有特征的情况下通过了 → check 写错了，回到表格重新设计。**
+
+### Step 2 — Green（逐个实现特征）
+
+每实现一个特征后立刻运行 `cad validate`，看对应 check 从 ❌ 变 ✅。
+不要批量实现再统一验证——逐步反馈是 TDD 的核心价值。
+
+### Feature → Check 速查表
+
+| 特征类型 | check 类型 | Z 切片位置 | expected 计算 | tolerance |
+|---------|-----------|-----------|--------------|-----------|
+| 圆孔 ⌀D | inner_diameter_at_z | 孔 Z 中间 | D | 0.3 |
+| 矩形孔 W×H | inner_diameter_at_z | 孔 Z 中间 | min(W,H) | 3-5 |
+| 矩形 void 区域 | section_bbox_at_z expected="void" | 特征 Z 中间 | — | — |
+| 实体面（背板、凸台）| section_bbox_at_z expected="solid" | 面 Z 中间 | — | — |
+| 外轮廓 | bbox_size | — | [total_w, d, h] | 0.5 |
+| 锥面 / 导向 | diameter_decreases_along_z | z_range | — | — |
+
+**Z 切片位置公式：**  特征在 Z 轴上占 [z_bottom, z_top] → 切片 z = (z_bottom + z_top) / 2
+
+**不知道 expected 值时：** 先 `cad build`，再 `cad probe <model> --z <z> --json`
+→ 输出的 `suggested_checks` 直接可粘贴进 `design.json`。
+
+**不知道特征在哪个 Z：** 运行 `cad probe <model> --scan --json`
+→ 自动发现台阶位置（内腔起点、壁面变化等）。
+
 ## design.json Schema Rules
 
 `cad validate` checks the schema before running any geometry checks. Violations
@@ -160,10 +215,19 @@ cad render <model> --json                 # Generate SVG preview (iso)
 cad render <model> --views iso,back --json  # Render multiple views at once
 cad validate <model> --json               # Run full validation (auto-renders iso+back)
 cad deliver <model> --json                # Write delivery manifest
-cad probe <model> --z <z> --json          # Probe STL cross-section at height Z
-cad probe <model> --z <z> "--center=cx,cy" --json  # Probe at off-axis center
+cad probe <model> --z <z> --json                   # Probe Z cross-section (XY plane)
+cad probe <model> --z <z> "--center=cx,cy" --json  # Probe Z at off-axis center
 cad probe <model> --z <z> --region x0,y0,x1,y1    # Check solid/void in region
-cad report <model>                        # Generate Markdown validation report
+cad probe <model> --x <x> --json                   # Probe X cross-section (YZ plane)
+cad probe <model> --y <y> --json                   # Probe Y cross-section (XZ plane)
+cad probe <model> --scan --json                    # Auto Z-axis profile scan
+cad probe <model> --scan --axis x --json           # X-axis scan
+cad probe <model> --scan --axis y --json           # Y-axis scan
+cad render <model> --section-z <z> --json          # Section SVG at Z height
+cad render <model> --section-x <x> --json          # Section SVG at X position (YZ)
+cad render <model> --section-y <y> --json          # Section SVG at Y position (XZ)
+cad inspect <model> --json                         # Three-axis scan + section SVGs + suggested probes
+cad report <model>                                 # Generate Markdown validation report
 ```
 
 All commands accept `--project <dir>` (defaults to current directory).
