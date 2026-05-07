@@ -321,21 +321,3 @@ loss of validation strength.
 4. **PNG export for review?** Not required for V3. Reconsider once
    helpers and assemblies make section SVGs inadequate.
 
-## 10. Relationship To Forgent3D
-
-Forgent3D is viewer-first: it pairs an interactive previewer with agent
-feedback tools. AgentCAD is workflow-first: it gives coding agents a
-CLI runtime for autonomous build / measure / validate / deliver loops.
-
-Lessons borrowed from Forgent3D:
-
-- fixed project protocol
-- agent instruction scaffolding
-- system-owned export runner
-- measurable geometry feedback
-- preview artifacts
-- iterative failure recovery
-
-The main difference is that AgentCAD does not require a desktop UI or
-MCP server in the core loop, and it goes further on design-time
-correctness (pre-build solver, relational checks, pre-delivery review).
