@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "stage": "deliver",
+  "model": "mounting_bracket",
+  "createdAt": "2026-05-07T04:21:42.165293+00:00",
+  "validationOk": true,
+  "artifacts": {
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/mounting_bracket.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/mounting_bracket.stl",
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/geometry.json",
+    "validation": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/validation.json",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/build.json",
+    "preview_back": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/preview.back.svg",
+    "preview_iso": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/preview.iso.svg"
+  },
+  "manifest": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/deliverable.json",
+  "message": "delivery manifest written"
+}

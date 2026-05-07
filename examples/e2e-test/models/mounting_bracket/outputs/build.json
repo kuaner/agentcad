@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "stage": "build",
+  "model": "mounting_bracket",
+  "sourceHash": "2910f56449ac7c5f",
+  "startedAt": "2026-05-07T05:42:58.836770+00:00",
+  "endedAt": "2026-05-07T05:43:00.815135+00:00",
+  "artifacts": {
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/mounting_bracket.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/mounting_bracket.stl",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/build.json",
+    "metadata": null
+  },
+  "stdout": "",
+  "stderr": "",
+  "message": "model built"
+}

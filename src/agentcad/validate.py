@@ -3,6 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from .geometry import (
+    hole_accessibility_at_z,
+    min_clearance_3d,
+    min_wall_thickness_at_z,
+    parse_shape,
+)
 from .jsonio import read_json, write_json
 from .measure import measure_model
 from .render import VIEW_DIRS, render_model, render_models_multi
@@ -152,6 +158,10 @@ _VALID_CHECK_TYPES = frozenset({
     "inner_diameter_at_z",
     "diameter_decreases_along_z",
     "section_bbox_at_z",
+    "min_clearance",
+    "hole_accessibility",
+    "min_wall_thickness",
+    "feature_position",
 })
 
 
@@ -363,12 +373,218 @@ def evaluate_check(project: Path, name: str, check: dict, measure_payload: dict,
         return {"name": check.get("id") or "volume_range", "type": check_type, "ok": ok, "actual": actual, "min": minimum, "max": maximum}
     if check_type == "section_bbox_at_z":
         return evaluate_section_bbox(project, name, check, get_triangles=get_triangles)
+    if check_type == "min_clearance":
+        return evaluate_min_clearance(check)
+    if check_type == "hole_accessibility":
+        return evaluate_hole_accessibility(project, name, check, get_triangles=get_triangles)
+    if check_type == "min_wall_thickness":
+        return evaluate_min_wall_thickness(project, name, check, get_triangles=get_triangles)
+    if check_type == "feature_position":
+        return evaluate_feature_position(project, name, check, get_triangles=get_triangles)
     return {
         "name": check.get("id") or check_type,
         "type": check_type,
         "ok": False,
         "error": f"unsupported check type: {check_type}",
     }
+
+
+def evaluate_min_clearance(check: dict) -> dict:
+    """Validate that two declared shapes have at least min_mm clearance.
+
+    Pure-geometry check: needs only design.json data, no STL.  This catches
+    classic interference errors (hole edge under a wall, hole near board edge,
+    hole-to-hole pitch too tight) before the part is even built.
+    """
+    name = check.get("id") or "min_clearance"
+    try:
+        shape_a = parse_shape(check.get("feature_a") or check.get("a"))
+        shape_b = parse_shape(check.get("feature_b") or check.get("b"))
+    except (ValueError, KeyError, TypeError) as exc:
+        return {"name": name, "type": "min_clearance", "ok": False,
+                "error": f"invalid shape descriptor: {exc}"}
+    min_mm = float(check.get("min_mm", 0.0))
+    tolerance = float(check.get("tolerance", 0.0))
+    result = min_clearance_3d(shape_a, shape_b)
+    actual = result["clearance_mm"]
+    ok = actual >= (min_mm - tolerance)
+    payload = {
+        "name": name, "type": "min_clearance", "ok": ok,
+        "min_mm": min_mm, "tolerance": tolerance,
+        "actual_mm": actual,
+        "z_overlap_mm": result["z_overlap_mm"],
+        "xy_clearance_mm": result["xy_clearance_mm"],
+        "interferes": result["interferes"],
+    }
+    if not ok:
+        payload["hint"] = (
+            "shapes interfere or do not meet clearance — check params: "
+            f"increase distance by ≥ {min_mm - actual:.3f}mm"
+        )
+    return payload
+
+
+def evaluate_hole_accessibility(
+    project: Path, name: str, check: dict, get_triangles=None,
+) -> dict:
+    """Verify a hole is reachable by a tool/bolt of given clearance radius.
+
+    Inputs:
+      ``z``: the section plane (e.g., the top face of the base plate)
+      ``center``: [cx, cy] — hole centre on that plane
+      ``hole_radius``: actual hole radius (mm)
+      ``clearance_radius``: tool envelope (mm), e.g., bolt-head outer radius
+    Reports OK when no STL material exists between hole_radius and
+    clearance_radius at that Z plane.
+    """
+    check_id = check.get("id") or "hole_accessibility"
+    raw_z = check.get("z")
+    raw_center = check.get("center")
+    if raw_z is None or raw_center is None:
+        return {"name": check_id, "type": "hole_accessibility", "ok": False,
+                "error": "check requires 'z' and 'center' fields"}
+    try:
+        cx, cy = float(raw_center[0]), float(raw_center[1])
+        hole_r = float(check.get("hole_radius", check.get("hole_diameter", 0)) or 0) \
+            or float(check["hole_diameter"]) / 2
+        clearance_r = float(check.get("clearance_radius",
+                                      check.get("clearance_diameter", 0)) or 0) \
+            or float(check["clearance_diameter"]) / 2
+    except (KeyError, TypeError, ValueError, IndexError) as exc:
+        return {"name": check_id, "type": "hole_accessibility", "ok": False,
+                "error": f"invalid hole_accessibility parameters: {exc}"}
+    if clearance_r <= hole_r:
+        return {"name": check_id, "type": "hole_accessibility", "ok": False,
+                "error": "clearance_radius must exceed hole_radius"}
+    triangles = get_triangles() if get_triangles is not None else read_stl(
+        outputs_dir(project, name) / f"{name}.stl"
+    )
+    result = hole_accessibility_at_z(triangles, float(raw_z), (cx, cy), hole_r, clearance_r)
+    payload = {
+        "name": check_id, "type": "hole_accessibility", "ok": result["ok"],
+        "z": float(raw_z), "center": [cx, cy],
+        "hole_radius": hole_r, "clearance_radius": clearance_r,
+        "blocking_point_count": result["blocking_point_count"],
+        "min_blocking_radius": result["min_blocking_radius"],
+    }
+    if not result["ok"]:
+        out_dir = outputs_dir(project, name)
+        svg_path = out_dir / f"debug.{check_id}.z{float(raw_z):.2f}.svg"
+        info = write_section_svg(triangles, AXIS_Z, float(raw_z), svg_path)
+        payload["debug_svg"] = info.get("svg")
+        payload["hint"] = (
+            f"material at radius={result['min_blocking_radius']:.2f}mm blocks "
+            f"tool envelope of {clearance_r}mm — move hole or shrink tool"
+        )
+    return payload
+
+
+def evaluate_min_wall_thickness(
+    project: Path, name: str, check: dict, get_triangles=None,
+) -> dict:
+    """Spot-check minimum wall thickness at a Z section.
+
+    Optional ``region`` ([[x0,y0],[x1,y1]]) restricts the analysis to a
+    rectangle.  Reports min pair distance after near-coincident point
+    deduplication.
+    """
+    check_id = check.get("id") or "min_wall_thickness"
+    raw_z = check.get("z")
+    if raw_z is None:
+        return {"name": check_id, "type": "min_wall_thickness", "ok": False,
+                "error": "check requires 'z' field"}
+    min_mm = float(check.get("min_mm", 0.0))
+    tolerance = float(check.get("tolerance", 0.0))
+    raw_region = check.get("region")
+    region = None
+    if raw_region is not None:
+        try:
+            (x0, y0), (x1, y1) = raw_region[0], raw_region[1]
+            region = ((float(x0), float(y0)), (float(x1), float(y1)))
+        except (TypeError, IndexError, ValueError):
+            return {"name": check_id, "type": "min_wall_thickness", "ok": False,
+                    "error": "region must be [[x0,y0],[x1,y1]]"}
+    triangles = get_triangles() if get_triangles is not None else read_stl(
+        outputs_dir(project, name) / f"{name}.stl"
+    )
+    sample_res = float(check.get("sample_resolution", 0.5))
+    result = min_wall_thickness_at_z(triangles, float(raw_z), region=region,
+                                     sample_resolution=sample_res)
+    if not result.get("ok"):
+        return {"name": check_id, "type": "min_wall_thickness", "ok": False,
+                "z": float(raw_z), "region": raw_region,
+                "error": result.get("error")}
+    actual = float(result["min_thickness_mm"])
+    ok = actual >= (min_mm - tolerance)
+    payload = {
+        "name": check_id, "type": "min_wall_thickness", "ok": ok,
+        "z": float(raw_z), "region": raw_region,
+        "min_mm": min_mm, "tolerance": tolerance,
+        "actual_mm": actual, "min_pair": result.get("min_pair"),
+        "sample_count": result.get("point_count"),
+    }
+    if not ok:
+        out_dir = outputs_dir(project, name)
+        svg_path = out_dir / f"debug.{check_id}.z{float(raw_z):.2f}.svg"
+        info = write_section_svg(triangles, AXIS_Z, float(raw_z), svg_path)
+        payload["debug_svg"] = info.get("svg")
+        payload["hint"] = (
+            f"thickness {actual:.3f}mm < min {min_mm}mm (tolerance ±{tolerance}); "
+            "increase wall_thickness param or move feature"
+        )
+    return payload
+
+
+def evaluate_feature_position(
+    project: Path, name: str, check: dict, get_triangles=None,
+) -> dict:
+    """Verify a labelled point is in the expected solid/void state.
+
+    Inputs:
+      ``point``: [x, y, z] world-coordinate point
+      ``expected``: ``"solid"`` or ``"void"``
+      ``tolerance_mm``: optional sample radius for robustness (default 0.0)
+
+    Implementation: read the section at ``z``, check whether any STL
+    intersection point lies within ``tolerance_mm`` of (x,y).  Material
+    nearby ⇒ solid; clear ⇒ void.
+    """
+    check_id = check.get("id") or "feature_position"
+    raw_point = check.get("point")
+    expected = str(check.get("expected", "solid")).lower()
+    if raw_point is None or expected not in ("solid", "void"):
+        return {"name": check_id, "type": "feature_position", "ok": False,
+                "error": "check requires 'point':[x,y,z] and expected='solid'|'void'"}
+    try:
+        x, y, z = float(raw_point[0]), float(raw_point[1]), float(raw_point[2])
+    except (TypeError, IndexError, ValueError):
+        return {"name": check_id, "type": "feature_position", "ok": False,
+                "error": "'point' must be [x, y, z]"}
+    tolerance = float(check.get("tolerance_mm", 0.5))
+    triangles = get_triangles() if get_triangles is not None else read_stl(
+        outputs_dir(project, name) / f"{name}.stl"
+    )
+    section = section_bbox_at_z(triangles, z, region=(
+        (x - tolerance, y - tolerance), (x + tolerance, y + tolerance)
+    ))
+    if not section.get("ok"):
+        return {"name": check_id, "type": "feature_position", "ok": False,
+                "z": z, "point": [x, y, z], "error": section.get("error")}
+    has_material = bool(section.get("region_has_points"))
+    actual = "solid" if has_material else "void"
+    ok = actual == expected
+    payload = {
+        "name": check_id, "type": "feature_position", "ok": ok,
+        "point": [x, y, z], "tolerance_mm": tolerance,
+        "expected": expected, "actual": actual,
+        "region_point_count": section.get("region_point_count"),
+    }
+    if not ok:
+        out_dir = outputs_dir(project, name)
+        svg_path = out_dir / f"debug.{check_id}.z{z:.2f}.svg"
+        info = write_section_svg(triangles, AXIS_Z, z, svg_path)
+        payload["debug_svg"] = info.get("svg")
+    return payload
 
 
 def evaluate_section_diameter(project: Path, name: str, check: dict, diameter_kind: str, get_triangles=None) -> dict:

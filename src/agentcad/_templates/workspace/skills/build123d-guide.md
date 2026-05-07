@@ -640,9 +640,32 @@ returns a ShapeList. Both work with `fillet()`. But `[-0:]` is wrong — use `[-
 `rotation=(90, 0, 0)` to rotate around X, or `rotation=(0, 90, 0)` to rotate
 around Y.
 
-### 8. Using .moved() correctly
-`.moved(Location(...))` returns a NEW object. The original is unchanged.
+### 8. ⚠️ CRITICAL: `Box(...).moved()` inside BuildPart double-adds
+
+Inside a `BuildPart` context, `Box(...)` is **immediately added to the part
+at its construction location**. Calling `.moved(...)` returns a NEW object,
+but the original `Box(...)` was already added. If you then `add()` the moved
+copy, the part contains the box twice — once at the original location and
+once at the moved location.
+
 ```python
-web = Box(L, W, H, align=...).moved(Location((0, offset, Z)))
-add(web)  # add the moved copy
+# ❌ WRONG — Box appears twice in the final part!
+with BuildPart() as bp:
+    Box(50, 4, 30).moved(Location((0, 18, 15)))   # Box first added at origin,
+                                                   # then moved-copy is discarded
+    # OR equally wrong:
+    web = Box(50, 4, 30, align=...).moved(Location((0, 18, 15)))
+    add(web)   # original Box already added at origin; this adds it again at (0,18,15)
+
+# ✅ CORRECT — use Locations to position the Box during creation
+with BuildPart() as bp:
+    with Locations((0, 18, 15)):
+        Box(50, 4, 30)
 ```
+
+Rule: **inside a builder, position objects with `Locations` during creation,
+not by `.moved()` afterwards.** `.moved()` is safe only on standalone Shape
+objects you build outside a builder context.
+
+`cad probe <model> --scan --axis y --json` is the fastest way to detect this
+bug — you will see a doubled mass distribution along the moved axis.

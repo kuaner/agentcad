@@ -8,9 +8,11 @@ from . import __version__
 from .inspect import inspect_model
 from .jsonio import print_payload
 from .measure import measure_model
+from .precheck import precheck_model
 from .probe import probe_model, probe_scan
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .report import report_model
+from .review import review_model
 from .runner import build_model
 from .section import AXIS_X, AXIS_Y, AXIS_Z, write_section_svg
 from .stl import read_stl
@@ -112,6 +114,16 @@ def build_parser() -> argparse.ArgumentParser:
     inspect.add_argument("--samples", type=int, default=20, help="scan samples per axis (default: 20)")
     inspect.add_argument("--json", action="store_true")
 
+    precheck = sub.add_parser("precheck", help="solve design.json statically (before writing part.py)")
+    add_project_arg(precheck)
+    precheck.add_argument("model")
+    precheck.add_argument("--json", action="store_true")
+
+    review = sub.add_parser("review", help="pre-delivery checklist + pairwise relations matrix")
+    add_project_arg(review)
+    review.add_argument("model")
+    review.add_argument("--json", action="store_true")
+
     sync = sub.add_parser("sync", help="update workspace scaffold files from templates")
     add_project_arg(sync)
     sync.add_argument("--json", action="store_true")
@@ -195,6 +207,10 @@ def dispatch(args: argparse.Namespace) -> dict:
         return report_model(project, args.model)
     if args.command == "inspect":
         return inspect_model(project, args.model, scan_samples=args.samples)
+    if args.command == "precheck":
+        return precheck_model(project, args.model)
+    if args.command == "review":
+        return review_model(project, args.model)
 
     raise ValueError(f"unknown command: {args.command}")
 

@@ -85,6 +85,81 @@ enforces feature-to-check coverage automatically.
 ### Mesh quality
 - `min_triangles` — minimum triangle count (catches degenerate exports)
 
+### Geometric relations between features (NEW — design-time)
+
+These checks are evaluated by `cad precheck` *before* you write any code.
+They operate on declarative shape descriptors in design.json — no STL needed.
+
+- `min_clearance` — edge-to-edge gap between two declared shapes is ≥ min_mm.
+  Catches the most insidious class of bugs: hole edge under a wall, hole near
+  board edge, hole-to-hole pitch too tight. **Use this for every hole.**
+- `hole_accessibility` — at a given Z plane, no STL material exists in the
+  annulus between hole_radius and clearance_radius. Catches "screw goes in
+  but you cannot turn the wrench".
+- `min_wall_thickness` — minimum point-pair distance inside a region at Z.
+  Catches walls that are technically present but too thin to manufacture.
+  Region must cross *two opposing walls*.
+- `feature_position` — a 3D point is in the expected solid/void state.
+  Useful for verifying hole orientation or feature placement direction.
+
+#### Shape descriptors
+
+```json
+// Z-axis cylinder (most holes)
+{"type": "cylinder", "axis": "z",
+ "center": [cx, cy], "radius": r,
+ "z_range": [z0, z1]}
+
+// X- or Y-axis cylinder (transverse holes through walls)
+{"type": "cylinder", "axis": "y",
+ "center": [cx, cz],   // (cx, cz) for axis=y
+ "radius": r,
+ "y_range": [y0, y1]}
+
+// Axis-aligned box
+{"type": "box",
+ "x_range": [x0, x1],
+ "y_range": [y0, y1],
+ "z_range": [z0, z1]}
+```
+
+#### min_clearance example: hole next to a wall
+
+```json
+{
+  "id": "left_hole_wall_clearance",
+  "type": "min_clearance",
+  "feature_a": {"type": "cylinder", "axis": "z",
+                "center": [-15.0, 15.0], "radius": 2.25,
+                "z_range": [0.0, 4.0]},
+  "feature_b": {"type": "box",
+                "x_range": [-25.0, 25.0],
+                "y_range": [16.0, 20.0],
+                "z_range": [0.0, 30.0]},
+  "min_mm": 0.0
+}
+```
+
+`actual_mm` is **edge-to-edge distance**: negative means interference,
+0 = touching, positive = clearance. The classic "hole_y=15, wall_y=16,
+hole_radius=2.25" case returns -1.25mm and immediately fails precheck.
+
+#### hole_accessibility example: bolt access on base plate
+
+```json
+{
+  "id": "left_hole_bolt_access",
+  "type": "hole_accessibility",
+  "z": 0.0,
+  "center": [-15.0, 15.0],
+  "hole_radius": 2.25,
+  "clearance_radius": 5.5
+}
+```
+
+Reports OK only if no STL material falls in the annulus 2.25 < r < 5.5 at
+Z=0 around the hole centre.
+
 ## Section Checks in Detail
 
 Section checks slice the STL at a given Z height and estimate the radial
@@ -195,6 +270,19 @@ present at the expected height.
 - Relying on watertight alone to confirm a cutout exists: a solid back panel
   and a back panel with a hole are both watertight — use `inner_diameter_at_z`
   with the cutout center, or `section_bbox_at_z` to verify the geometry directly
+- **Forgetting `min_clearance` for holes near walls**: `inner_diameter_at_z`
+  passes for any hole that has the right diameter — even a hole half-buried
+  under an adjacent wall. Always add a clearance check whose `feature_a` is
+  the hole cylinder and `feature_b` is each adjacent solid.
+- **Center-to-face instead of edge-to-edge**: judging "is this hole far
+  enough from the wall?" by `hole_y - wall_y` is wrong. It must be
+  `hole_y + hole_radius - wall_y_min`. `min_clearance` does this for you.
+- **Skipping `cad precheck`**: precheck catches design-contract bugs before
+  any code is written. Skipping it pushes failure modes downstream where
+  they are harder to localise.
+- **Skipping `cad review`**: review aggregates the pairwise relations
+  matrix and flags missing-check categories (e.g., "no hole_accessibility
+  declared"). Skipping it lets these gaps reach delivery.
 
 ## Build Error Troubleshooting
 

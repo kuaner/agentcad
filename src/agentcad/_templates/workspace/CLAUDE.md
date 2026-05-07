@@ -3,20 +3,31 @@
 You are working in an AgentCAD workspace. Your job is to create and refine CAD
 models using the `cad` CLI and build123d geometry library.
 
-## Workflow
+## Workflow (10 stages — do NOT skip stages)
 
-1. Read the user's request. Identify every visible or functional feature.
-2. Write a Feature Contract in `models/<name>/design.json`:
-   - List each feature with an id, intent, and linked check ids.
-   - Define measurable checks (bbox, diameter, watertight, etc.).
-3. Put tunable dimensions in `models/<name>/params.json`.
-4. Implement geometry in `models/<name>/part.py` using build123d.
-   - The final object MUST be assigned to the global variable `result`.
-   - Optional: assign `metadata` dict for design intent that checks can reference.
-5. Run `cad validate <name> --json`.
-6. If validation fails, read the JSON output, fix the FIRST failing check, and
-   rerun validation. Repeat until all checks pass.
-7. Run `cad deliver <name> --json` ONLY after validation passes.
+Two new stages — **precheck** (before code) and **review** (before deliver) —
+exist precisely to catch the failure modes listed below in
+"Common Design Errors". Skipping them lets silent bugs pass.
+
+1. **Understand**: read the user request, identify every feature.
+2. **Contract**: write `models/<name>/design.json` with features + checks.
+   Declare shapes inline for `min_clearance` checks (see below).
+3. **Params**: put tunable dimensions in `models/<name>/params.json`.
+4. **Precheck**: `cad precheck <name> --json`. This solves the design contract
+   *statically* — without building. It catches interferences, schema errors,
+   and feature-coverage gaps before you write code. **Do not write part.py
+   while precheck fails.**
+5. **Implement**: write `models/<name>/part.py` using build123d.
+   - Final object MUST be assigned to global variable `result`.
+   - Optional `metadata` dict gets written to metadata.json.
+6. **Build**: `cad build <name>` (auto-cached unless `--force`).
+7. **Measure**: `cad measure <name> --json` for STL geometry stats.
+8. **Render**: `cad render <name> --views iso,back` (validate auto-renders).
+9. **Validate**: `cad validate <name> --json`. Must be green.
+10. **Review**: `cad review <name> --json`. Final pre-delivery checklist —
+    pairwise relations matrix, must-view SVGs, missing-check reminders.
+    **Do not run `cad deliver` while review fails.**
+11. Run `cad deliver <name> --json` ONLY after review passes.
 
 Do NOT manually export STEP/STL from part.py. The runner owns all exports.
 
@@ -65,7 +76,11 @@ models/<name>/
 | diameter_decreases_along_z | Diameter monotonically decreases over Z range |
 | volume_range           | Volume within min/max bounds                    |
 | section_bbox_at_z      | Check an XY region at Z is "solid" or "void"    |
-| feature_coverage       | (auto) Every feature references a check          |
+| **min_clearance**      | **Two declared shapes have ≥ N mm edge-to-edge gap** (precheck-able, no STL needed) |
+| **hole_accessibility** | **Tool envelope of given radius can reach a hole at Z** (catches buried holes) |
+| **min_wall_thickness** | **Min point-pair distance in a region** at Z (catches thin walls)               |
+| **feature_position**   | **A point at (x,y,z) is in expected solid/void state**                           |
+| feature_coverage       | (auto) Every feature references a check         |
 
 ## design.json Example
 
@@ -97,60 +112,127 @@ models/<name>/
 }
 ```
 
-## CAD TDD：强制工作流（先写 Check，再写 Geometry）
+## Common Design Errors (mandatory pre-design checklist)
 
-**任何特征必须先有可通过/可失败的 check，再有 geometry。顺序不可颠倒。**
+Walk this list before writing every design.json. Each error lists a tool that
+catches it automatically.
 
-### 编码前必须回答的四个问题（每个特征一张表）
+### A. Inter-feature spatial relations (most common, hardest to validate)
 
-在开始写 `part.py` 之前，对计划实现的每一个特征填写此表：
+| Error | Symptom | How to prevent it |
+|---|---|---|
+| **Hole-wall interference** (hole edge buried under adjacent solid) | Top-down view shows hole half-covered by a wall, yet `inner_diameter_at_z` still passes | Add a `min_clearance` check: `feature_a` = hole cylinder, `feature_b` = adjacent box. Precheck reports the gap directly. |
+| **Hole-edge break** | Hole sits too close to part edge, leaving a C-shaped opening after machining | Add a `min_clearance` check with `feature_b` set to the external bounding box's near edge; verify clearance > 0 |
+| **Hole-to-hole punch-through** | Two holes spaced < their diameter apart, so the walls between them open up | Add a `min_clearance` check pairing both hole cylinders with `min_mm = 2 * wall_thickness` |
+| **Rib obstructs assembly hole** | Bolt threads in but the wrench cannot turn | Add a `hole_accessibility` check with `clearance_radius` set to the wrench socket radius |
+| **center-to-face used instead of edge-to-edge** (the classic human error) | Mental math says "hole_y=15, wall_y=16 ⇒ 1 mm gap", forgetting to subtract the 2.25 mm radius | **Always reason in edges: `hole_center ± hole_radius` must not enter the neighbouring solid's range.** |
 
-| 特征名 | 形状 | 中心 (cx,cy) | Z 切片位置 | expected 值 | check 类型 |
+### B. Manufacturability
+
+| Error | Symptom | How to prevent it |
+|---|---|---|
+| **Wall too thin** | FDM print snaps; injection moulding short-shot | Add a `min_wall_thickness` check; the region must cross both wall faces; `min_mm ≥ 1.0` (FDM) or `≥ 0.8` (injection) |
+| **Feature smaller than tool radius** | Sharp inner corners cannot be milled; ⌀1 mm holes cannot be drilled | Keep every radius in params.json ≥ 0.5 mm; add fillet radius ≥ 1 mm at sharp inner corners |
+| **Undercuts / overhangs** | 3D printing requires support material | Inspect the iso / section SVGs in the review stage |
+
+### C. Assembly and accessibility
+
+| Error | Symptom | How to prevent it |
+|---|---|---|
+| **No room to drive the bolt** | Socket wrench will not seat | `hole_accessibility` check with `clearance_radius = (bolt_head_outer_diameter / 2) + 1` |
+| **Blind hole shallower than the bolt** | Bolt bottoms out | `feature_position` at the bottom of the hole verifies solid; ensure `hole_depth ≥ bolt_length + 1` |
+| **Tolerance stack-up** | Three features pass individually but the stack is out of spec | Roll the cumulative tolerance into the `min_mm` of a `min_clearance` check |
+
+### D. Geometric integrity (build123d traps)
+
+| Error | Symptom | How to prevent it |
+|---|---|---|
+| **`Box(...).moved(Location(...))` double-adds** | The shape appears once at the original location and once at the moved location | **Always use `with Locations((x, y, z)): Box(...)`; never `.moved()` inside a builder context.** |
+| **`Locations + BuildSketch(Plane.XY)`** | The sketch stays at Z=0 and never moves to the intended Z | **BuildSketch must use `Plane(origin=(x, y, z))`; an outer `Locations` does not move the sketch plane.** |
+| **Zero-volume subtraction** | `Mode.SUBTRACT` cuts nothing | When build fails after precheck passes, run `cad probe --scan` and confirm the `step_changes` match the intended features |
+| **Tiny residual sliver** | A 0.001 mm Z-range error leaves a paper-thin shell behind | Add a +0.1 mm overshoot to subtraction radii / depths |
+
+### E. Intent vs. implementation drift
+
+| Error | Symptom | How to prevent it |
+|---|---|---|
+| **Feature in the wrong direction** (hole drilled the wrong way) | Validate passes but the function is broken | Use `feature_position` to assert a void point along the hole axis, then visually confirm via section SVG |
+| **Param field silently ignored** | Editing params.json does not change the model | `print(PARAMS)` at the top of part.py; the effective values land in build.json |
+| **bbox passes but interior is wrong** | Outer envelope is correct, hole positions and walls are not | bbox alone is insufficient — every feature needs a section / diameter / clearance check |
+
+### Hard rules (violation ⇒ rewrite design.json)
+
+1. **Every hole needs a `min_clearance` check** for each surrounding wall or adjacent solid.
+2. **Reason edge-to-edge, never center-to-face**: clearance must be measured between feature edges, not between centerlines and faces.
+3. **Every feature has at least one geometry check** (not just bbox/watertight). Resolve every weak-check warning before proceeding.
+4. **Run `cad review` before every `cad deliver`** and visually inspect every entry in `must_view`.
+
+## CAD TDD: mandatory workflow (checks first, geometry second)
+
+**Every feature must have a check that can pass or fail before any geometry
+is written. The order is not negotiable.**
+
+### Four questions to answer per feature before coding
+
+For every feature you plan to implement, fill in this table before writing
+`part.py`:
+
+| Feature | Shape | Center (cx, cy) | Z slice | Expected value | Check type |
 |--------|------|-------------|-----------|------------|-----------|
-| 外壳   | 矩形 | —           | —         | [w, h, t]  | bbox_size  |
-| 摄像头孔 | 矩形 W×H | (cx,cy) | wall_back/2 | min(W,H) | inner_diameter_at_z |
-| 内腔   | void | center      | wall_back+2 | "void" | section_bbox_at_z |
-| USB-C 口 | 矩形 W×H | (0,y) | z_mid | min(W,H) | inner_diameter_at_z |
+| Outer shell | rectangle | — | — | [w, h, t] | bbox_size |
+| Camera hole | W×H rectangle | (cx, cy) | wall_back/2 | min(W, H) | inner_diameter_at_z |
+| Inner cavity | void | center | wall_back+2 | "void" | section_bbox_at_z |
+| USB-C port | W×H rectangle | (0, y) | z_mid | min(W, H) | inner_diameter_at_z |
 
-如果一个特征填不出这四列 → 说明还没想清楚，**不能开始写代码**。
+If you cannot fill in all four columns for a feature, you have not thought
+it through — **do not start coding**.
 
-### Step 1 — Red 验证
+### Step 1 — Red phase
 
-写完 `design.json` 后，先写一个只有外壳轮廓（无内部特征）的最小 `part.py`，运行：
+After finishing `design.json`, write a minimal `part.py` that produces the
+outer envelope only (no internal features) and run:
 
 ```bash
 cad validate <model> --json
 ```
 
-期望结果：
-- `bbox_size` → ✅ 通过（外壳正确）
-- 所有 section check → ❌ 失败（内部特征尚未建模）
+Expected outcome:
+- `bbox_size` → ✅ passes (outer shell is correct)
+- Every section check → ❌ fails (internal features not yet built)
 
-**如果 section check 在没有特征的情况下通过了 → check 写错了，回到表格重新设计。**
+**If a section check passes while its feature is missing, the check is
+wrong — return to the table and redesign it.**
 
-### Step 2 — Green（逐个实现特征）
+### Step 2 — Green phase (one feature at a time)
 
-每实现一个特征后立刻运行 `cad validate`，看对应 check 从 ❌ 变 ✅。
-不要批量实现再统一验证——逐步反馈是 TDD 的核心价值。
+Implement one feature at a time and rerun `cad validate` immediately to
+watch the matching check flip from ❌ to ✅. Do not batch up multiple
+features before validating — incremental feedback is the whole point of TDD.
 
-### Feature → Check 速查表
+### Feature → Check cheat sheet
 
-| 特征类型 | check 类型 | Z 切片位置 | expected 计算 | tolerance |
+| Feature type | Check type | Z slice | Expected value | Tolerance |
 |---------|-----------|-----------|--------------|-----------|
-| 圆孔 ⌀D | inner_diameter_at_z | 孔 Z 中间 | D | 0.3 |
-| 矩形孔 W×H | inner_diameter_at_z | 孔 Z 中间 | min(W,H) | 3-5 |
-| 矩形 void 区域 | section_bbox_at_z expected="void" | 特征 Z 中间 | — | — |
-| 实体面（背板、凸台）| section_bbox_at_z expected="solid" | 面 Z 中间 | — | — |
-| 外轮廓 | bbox_size | — | [total_w, d, h] | 0.5 |
-| 锥面 / 导向 | diameter_decreases_along_z | z_range | — | — |
+| Circular hole ⌀D | inner_diameter_at_z | mid-Z of hole | D | 0.3 |
+| Rectangular hole W×H | inner_diameter_at_z | mid-Z of hole | min(W, H) | 3–5 |
+| Rectangular void region | section_bbox_at_z expected="void" | mid-Z of feature | — | — |
+| Solid face (back panel, boss) | section_bbox_at_z expected="solid" | mid-Z of face | — | — |
+| Outer envelope | bbox_size | — | [total_w, d, h] | 0.5 |
+| Taper / lead-in | diameter_decreases_along_z | z_range | — | — |
+| **Any hole vs. adjacent solid** | **min_clearance** | — | feature_a / feature_b shape descriptors | min_mm=0 |
+| **Bolt assembly hole** | **hole_accessibility** | working plane Z of the hole | hole_radius, clearance_radius | — |
+| **Thin wall / rib** | **min_wall_thickness** | section Z, region restricted to the wall cross-section | min_mm=1.0 | 0.1 |
+| **Direction / position marker** | **feature_position** | point=[x, y, z] | expected="solid"\|"void" | tol=0.5 |
 
-**Z 切片位置公式：**  特征在 Z 轴上占 [z_bottom, z_top] → 切片 z = (z_bottom + z_top) / 2
+**Z slice formula:** if a feature occupies `[z_bottom, z_top]` along Z, slice
+at `z = (z_bottom + z_top) / 2`.
 
-**不知道 expected 值时：** 先 `cad build`，再 `cad probe <model> --z <z> --json`
-→ 输出的 `suggested_checks` 直接可粘贴进 `design.json`。
+**When you do not know the expected value:** run `cad build`, then
+`cad probe <model> --z <z> --json`. The `suggested_checks` field is ready to
+paste straight into `design.json`.
 
-**不知道特征在哪个 Z：** 运行 `cad probe <model> --scan --json`
-→ 自动发现台阶位置（内腔起点、壁面变化等）。
+**When you do not know which Z to probe:** run `cad probe <model> --scan --json`
+to surface step changes (cavity start, wall transitions, etc.) automatically.
 
 ## design.json Schema Rules
 
@@ -161,6 +243,54 @@ cause the entire validation to fail with a `design_schema` error.
 - **`type` must be one of the supported check types** (see table above)
 - **Feature `checks` arrays reference check ids** — typos will cause `feature_coverage` to fail
 - **No duplicate check ids** — each `id` must appear exactly once in `checks`
+
+## Shape Descriptors (used by min_clearance and other relational checks)
+
+Relational checks (`min_clearance`, etc.) consume a unified shape descriptor.
+Three shapes are supported, all axis-aligned:
+
+```json
+// Cylinder along Z (most common — describes a hole through a plate)
+{"type": "cylinder", "axis": "z",
+ "center": [-15.0, 15.0], "radius": 2.25,
+ "z_range": [0.0, 4.0]}
+
+// Cylinder along Y (describes a transverse hole through an upright wall)
+{"type": "cylinder", "axis": "y",
+ "center": [0.0, 20.0],   // (cx, cz) for axis=y
+ "radius": 2.25,
+ "y_range": [16.0, 20.0]}
+
+// Axis-aligned box (describes walls, plates, bosses)
+{"type": "box",
+ "x_range": [-25.0, 25.0],
+ "y_range": [16.0, 20.0],
+ "z_range": [0.0, 30.0]}
+```
+
+Full `min_clearance` check example:
+
+```json
+{
+  "id": "left_hole_wall_clearance",
+  "type": "min_clearance",
+  "feature_a": {"type": "cylinder", "axis": "z",
+                "center": [-15.0, 15.0], "radius": 2.25,
+                "z_range": [0.0, 4.0]},
+  "feature_b": {"type": "box",
+                "x_range": [-25.0, 25.0],
+                "y_range": [16.0, 20.0],
+                "z_range": [0.0, 30.0]},
+  "min_mm": 0.0
+}
+```
+
+The reported `actual_mm` is the **edge-to-edge distance**: negative means
+interference, zero means touching, positive means clearance.
+
+`cad precheck` evaluates every `min_clearance` check **before the build
+runs**, so the classic "hole edge buried under a wall" bug is caught the
+moment design.json is finalised — long before any geometry is generated.
 
 ## Validation Strategy
 
@@ -208,13 +338,15 @@ Use `Locations` only with 3D primitives (Box, Cylinder, Cone). Use explicit
 
 ```bash
 cad new <model>                           # Create model (auto-inits workspace)
+cad precheck <model> --json               # Static design solve (run BEFORE writing part.py)
 cad build <model> --json                  # Build and export STEP/STL (cached if unchanged)
 cad build <model> --force --json          # Force rebuild even when source is unchanged
 cad measure <model> --json                # Measure STL geometry
 cad render <model> --json                 # Generate SVG preview (iso)
 cad render <model> --views iso,back --json  # Render multiple views at once
 cad validate <model> --json               # Run full validation (auto-renders iso+back)
-cad deliver <model> --json                # Write delivery manifest
+cad review <model> --json                 # Pre-delivery checklist + relations matrix
+cad deliver <model> --json                # Write delivery manifest (only after review passes)
 cad probe <model> --z <z> --json                   # Probe Z cross-section (XY plane)
 cad probe <model> --z <z> "--center=cx,cy" --json  # Probe Z at off-axis center
 cad probe <model> --z <z> --region x0,y0,x1,y1    # Check solid/void in region

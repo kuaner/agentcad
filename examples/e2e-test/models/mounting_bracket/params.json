@@ -1,0 +1,11 @@
+{
+  "base_width": 50.0,
+  "base_depth": 40.0,
+  "base_thickness": 4.0,
+  "wall_height": 30.0,
+  "wall_thickness": 4.0,
+  "hole_diameter": 4.5,
+  "base_hole_x_offset": 15.0,
+  "base_hole_y_offset": 13.0,
+  "upright_hole_z": 20.0
+}

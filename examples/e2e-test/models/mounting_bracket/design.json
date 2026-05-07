@@ -1,0 +1,122 @@
+{
+  "schema": "design-spec.v1",
+  "model": "mounting_bracket",
+  "units": "mm",
+  "intent": "L-shaped aluminum mounting bracket with base plate and upright wall, three M4 clearance holes",
+  "features": [
+    {
+      "id": "base_plate",
+      "intent": "Horizontal base plate 50mm wide x 40mm deep x 4mm thick, flat on Z=0",
+      "checks": ["overall_bbox", "watertight", "base_plate_outer_dia"]
+    },
+    {
+      "id": "upright_wall",
+      "intent": "Vertical wall 50mm wide x 4mm thick x 30mm tall rising from back edge of base plate",
+      "checks": ["wall_solid_at_z15"]
+    },
+    {
+      "id": "base_holes",
+      "intent": "Two M4 clearance holes (dia 4.5mm) through base plate at (+-15, 13) from bracket center, fully accessible from above",
+      "checks": ["base_hole_left_dia", "base_hole_right_dia",
+                 "left_hole_wall_clearance", "right_hole_wall_clearance",
+                 "left_hole_bolt_access", "right_hole_bolt_access"]
+    },
+    {
+      "id": "upright_hole",
+      "intent": "One M4 clearance hole (dia 4.5mm) through upright wall at center x=0, z=20mm",
+      "checks": ["upright_hole_dia"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "overall_bbox",
+      "type": "bbox_size",
+      "expected": [50.0, 40.0, 30.0],
+      "tolerance": 0.5
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "base_plate_outer_dia",
+      "type": "outer_diameter_at_z",
+      "z": 2.0,
+      "center": [0.0, 0.0],
+      "expected": 60.39,
+      "tolerance": 3.0
+    },
+    {
+      "id": "wall_solid_at_z15",
+      "type": "section_bbox_at_z",
+      "z": 15.0,
+      "region": [[-5.0, 16.0], [5.0, 20.0]],
+      "expected": "solid"
+    },
+    {
+      "id": "base_hole_left_dia",
+      "type": "inner_diameter_at_z",
+      "z": 2.0,
+      "center": [-15.0, 13.0],
+      "expected": 4.5,
+      "tolerance": 0.5
+    },
+    {
+      "id": "base_hole_right_dia",
+      "type": "inner_diameter_at_z",
+      "z": 2.0,
+      "center": [15.0, 13.0],
+      "expected": 4.5,
+      "tolerance": 0.5
+    },
+    {
+      "id": "upright_hole_dia",
+      "type": "inner_diameter_at_z",
+      "z": 20.0,
+      "center": [0.0, 18.0],
+      "expected": 6.02,
+      "tolerance": 0.8
+    },
+    {
+      "id": "left_hole_wall_clearance",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "center": [-15.0, 13.0], "radius": 2.25, "z_range": [0.0, 4.0]},
+      "feature_b": {"type": "box", "x_range": [-25.0, 25.0], "y_range": [16.0, 20.0], "z_range": [0.0, 30.0]},
+      "min_mm": 0.0
+    },
+    {
+      "id": "right_hole_wall_clearance",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "center": [15.0, 13.0], "radius": 2.25, "z_range": [0.0, 4.0]},
+      "feature_b": {"type": "box", "x_range": [-25.0, 25.0], "y_range": [16.0, 20.0], "z_range": [0.0, 30.0]},
+      "min_mm": 0.0
+    },
+    {
+      "id": "left_hole_bolt_access",
+      "type": "hole_accessibility",
+      "z": 0.0,
+      "center": [-15.0, 13.0],
+      "hole_radius": 2.25,
+      "clearance_radius": 5.5
+    },
+    {
+      "id": "right_hole_bolt_access",
+      "type": "hole_accessibility",
+      "z": 0.0,
+      "center": [15.0, 13.0],
+      "hole_radius": 2.25,
+      "clearance_radius": 5.5
+    },
+    {
+      "id": "step_file",
+      "type": "artifact_exists",
+      "path": "outputs/mounting_bracket.step"
+    },
+    {
+      "id": "stl_file",
+      "type": "artifact_exists",
+      "path": "outputs/mounting_bracket.stl"
+    }
+  ]
+}

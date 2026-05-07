@@ -1,0 +1,194 @@
+{
+  "ok": true,
+  "stage": "review",
+  "model": "mounting_bracket",
+  "reviewedAt": "2026-05-07T05:43:10.894978+00:00",
+  "ready_to_deliver": true,
+  "checklist": [
+    {
+      "id": "design_present",
+      "ok": true,
+      "title": "design.json exists and is parseable",
+      "action": null,
+      "evidence": {
+        "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/design.json"
+      }
+    },
+    {
+      "id": "validation_passes",
+      "ok": true,
+      "title": "cad validate is green",
+      "action": null,
+      "evidence": {
+        "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/validation.json",
+        "failed_checks": []
+      }
+    },
+    {
+      "id": "feature_coverage",
+      "ok": true,
+      "title": "every feature references at least one geometry check",
+      "action": null,
+      "evidence": {
+        "features": [
+          "base_plate",
+          "upright_wall",
+          "base_holes",
+          "upright_hole"
+        ]
+      }
+    },
+    {
+      "id": "hole_clearance_declared",
+      "ok": true,
+      "title": "every hole has a min_clearance check vs surrounding solids",
+      "action": null,
+      "evidence": {
+        "ok": true,
+        "hole_feature_count": 2,
+        "min_clearance_check_count": 2
+      }
+    },
+    {
+      "id": "no_pairwise_interference",
+      "ok": true,
+      "title": "no declared shape pair interferes",
+      "action": null,
+      "evidence": {
+        "interferences": []
+      }
+    },
+    {
+      "id": "key_svgs_present",
+      "ok": true,
+      "title": "key cross-section SVGs exist for visual review",
+      "action": null,
+      "evidence": {
+        "sections": [
+          {
+            "label": "iso_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/preview.iso.svg",
+            "why": "overall shape — confirm topology matches intent"
+          },
+          {
+            "label": "section_z3_48",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z3.48.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z16_92",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z16.92.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z18_84",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z18.84.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z20_76",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z20.76.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z22_68",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z22.68.svg",
+            "why": "auto-scan section produced by validate"
+          }
+        ]
+      }
+    },
+    {
+      "id": "no_open_warnings",
+      "ok": true,
+      "title": "no open weak-check warnings",
+      "action": null,
+      "evidence": {
+        "warnings": []
+      }
+    },
+    {
+      "id": "bbox_matches_intent",
+      "ok": true,
+      "title": "measured bbox is consistent with declared intent",
+      "action": null,
+      "evidence": {
+        "ok": true,
+        "expected": [
+          50.0,
+          40.0,
+          30.0
+        ],
+        "actual": [
+          50.0,
+          40.0,
+          30.0
+        ],
+        "tolerance": 1.0
+      }
+    }
+  ],
+  "relations": [
+    {
+      "a": "cyl(-15.0,13.0,r=2.25)",
+      "b": "box(x[-25,25],y[16,20])",
+      "clearance_mm": 0.75,
+      "z_overlap_mm": 4.0,
+      "interferes": false,
+      "ok": true
+    },
+    {
+      "a": "cyl(-15.0,13.0,r=2.25)",
+      "b": "cyl(15.0,13.0,r=2.25)",
+      "clearance_mm": 25.5,
+      "z_overlap_mm": 4.0,
+      "interferes": false,
+      "ok": true
+    },
+    {
+      "a": "box(x[-25,25],y[16,20])",
+      "b": "cyl(15.0,13.0,r=2.25)",
+      "clearance_mm": 0.75,
+      "z_overlap_mm": 4.0,
+      "interferes": false,
+      "ok": true
+    }
+  ],
+  "must_view": [
+    {
+      "label": "iso_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/preview.iso.svg",
+      "why": "overall shape — confirm topology matches intent"
+    },
+    {
+      "label": "section_z3_48",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z3.48.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z16_92",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z16.92.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z18_84",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z18.84.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z20_76",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z20.76.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z22_68",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/section.z22.68.svg",
+      "why": "auto-scan section produced by validate"
+    }
+  ],
+  "deferred_followups": [],
+  "artifacts": {
+    "review": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/review.json"
+  },
+  "message": "review passed — ready to deliver"
+}

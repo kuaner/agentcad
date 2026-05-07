@@ -1,0 +1,158 @@
+{
+  "ok": true,
+  "stage": "precheck",
+  "model": "mounting_bracket",
+  "prechekedAt": "2026-05-07T05:42:38.744546+00:00",
+  "checks": [
+    {
+      "name": "feature_coverage:base_plate",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "base_plate",
+      "checks": [
+        "overall_bbox",
+        "watertight",
+        "base_plate_outer_dia"
+      ],
+      "matchedChecks": [
+        "overall_bbox",
+        "watertight",
+        "base_plate_outer_dia"
+      ]
+    },
+    {
+      "name": "feature_coverage:upright_wall",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "upright_wall",
+      "checks": [
+        "wall_solid_at_z15"
+      ],
+      "matchedChecks": [
+        "wall_solid_at_z15"
+      ]
+    },
+    {
+      "name": "feature_coverage:base_holes",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "base_holes",
+      "checks": [
+        "base_hole_left_dia",
+        "base_hole_right_dia",
+        "left_hole_wall_clearance",
+        "right_hole_wall_clearance",
+        "left_hole_bolt_access",
+        "right_hole_bolt_access"
+      ],
+      "matchedChecks": [
+        "base_hole_left_dia",
+        "base_hole_right_dia",
+        "left_hole_wall_clearance",
+        "right_hole_wall_clearance",
+        "left_hole_bolt_access",
+        "right_hole_bolt_access"
+      ]
+    },
+    {
+      "name": "feature_coverage:upright_hole",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "upright_hole",
+      "checks": [
+        "upright_hole_dia"
+      ],
+      "matchedChecks": [
+        "upright_hole_dia"
+      ]
+    },
+    {
+      "name": "left_hole_wall_clearance",
+      "type": "min_clearance",
+      "ok": true,
+      "actual_mm": 0.75,
+      "min_mm": 0.0,
+      "tolerance": 0.0,
+      "z_overlap_mm": 4.0,
+      "xy_clearance_mm": 0.75,
+      "interferes": false
+    },
+    {
+      "name": "right_hole_wall_clearance",
+      "type": "min_clearance",
+      "ok": true,
+      "actual_mm": 0.75,
+      "min_mm": 0.0,
+      "tolerance": 0.0,
+      "z_overlap_mm": 4.0,
+      "xy_clearance_mm": 0.75,
+      "interferes": false
+    }
+  ],
+  "artifacts": {
+    "precheck": "/Users/kuaner/Documents/code/agentcad/examples/e2e-test/models/mounting_bracket/outputs/precheck.json"
+  },
+  "message": "precheck passed — safe to write part.py",
+  "relations": [
+    {
+      "id": "left_hole_wall_clearance",
+      "ok": true,
+      "clearance_mm": 0.75,
+      "min_mm": 0.0,
+      "interferes": false
+    },
+    {
+      "id": "right_hole_wall_clearance",
+      "ok": true,
+      "clearance_mm": 0.75,
+      "min_mm": 0.0,
+      "interferes": false
+    }
+  ],
+  "deferred_to_validate": [
+    {
+      "id": "overall_bbox",
+      "type": "bbox_size"
+    },
+    {
+      "id": "watertight",
+      "type": "watertight"
+    },
+    {
+      "id": "base_plate_outer_dia",
+      "type": "outer_diameter_at_z"
+    },
+    {
+      "id": "wall_solid_at_z15",
+      "type": "section_bbox_at_z"
+    },
+    {
+      "id": "base_hole_left_dia",
+      "type": "inner_diameter_at_z"
+    },
+    {
+      "id": "base_hole_right_dia",
+      "type": "inner_diameter_at_z"
+    },
+    {
+      "id": "upright_hole_dia",
+      "type": "inner_diameter_at_z"
+    },
+    {
+      "id": "left_hole_bolt_access",
+      "type": "hole_accessibility"
+    },
+    {
+      "id": "right_hole_bolt_access",
+      "type": "hole_accessibility"
+    },
+    {
+      "id": "step_file",
+      "type": "artifact_exists"
+    },
+    {
+      "id": "stl_file",
+      "type": "artifact_exists"
+    }
+  ]
+}
