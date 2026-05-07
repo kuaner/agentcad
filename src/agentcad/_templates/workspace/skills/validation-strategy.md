@@ -1,5 +1,39 @@
 # Validation Strategy & Troubleshooting
 
+## Workflow: Discovering Expected Values with `cad probe`
+
+Before writing `expected` values in design.json, run `cad probe` after the
+first successful build. It returns actual measured geometry plus `suggested_checks`
+that you can paste directly into design.json.
+
+```bash
+# 1. Build the model first
+cad build my_model --json
+
+# 2. Probe a cross-section (single Z, off-axis center)
+cad probe my_model --z 5.0 "--center=cx,cy" --json
+# Output includes:
+#   section.diameter_inner_estimate  →  use as expected for inner_diameter_at_z
+#   section.diameter_outer_estimate  →  use as expected for outer_diameter_at_z
+#   suggested_checks                 →  ready-to-paste JSON for design.json
+
+# 3. Probe a rectangular region to check solid/void state
+cad probe my_model --z 0.75 --region "-15,-10,5,15" --json
+# Output includes:
+#   region_section.region_has_points → true = solid, false = void
+#   suggested_checks.section_bbox_at_z → ready-to-paste check
+
+# 4. Probe multiple heights in one call (e.g., taper profile)
+cad probe my_model --z 2.0,5.0,8.0 --json
+```
+
+**When center contains negative numbers**, use `=` syntax to avoid argparse
+treating the value as a flag:
+```bash
+cad probe my_model --z 0.75 "--center=-10.3,53.3" --json  # correct
+cad probe my_model --z 0.75 --center -10.3,53.3 --json    # WRONG: -10.3 parsed as flag
+```
+
 ## design.json Structure
 
 ```json
@@ -219,6 +253,28 @@ correctness.
 Every feature in `design.json.features` must list at least one check ID that
 exists in `design.json.checks`. Check for typos in check IDs and ensure every
 feature has a non-empty `checks` array.
+
+### design_schema check fails
+
+`validate` runs a schema check before any geometry checks. Common causes:
+
+- **Missing `id` field** — every check in `checks` must have `"id": "some_unique_id"`.
+  Fix: add a unique id to each check object.
+- **Duplicate id** — two checks share the same id. Fix: rename one.
+- **Unknown type** — check type is not in the supported list. Fix: use one of
+  `bbox_size`, `watertight`, `min_triangles`, `volume_range`, `artifact_exists`,
+  `metadata_equals`, `outer_diameter_at_z`, `inner_diameter_at_z`,
+  `diameter_decreases_along_z`, `section_bbox_at_z`.
+
+### Validation output contains `warnings` array
+
+Warnings indicate features with no geometry check — only trivial checks like
+`bbox_size` or `watertight` are linked. Validation still passes, but the geometry
+is not actually verified.
+
+Fix: run `cad probe <model> --z <z>` at the relevant cross-section to get
+actual values, then add an `inner_diameter_at_z` or `section_bbox_at_z` check
+for each affected feature.
 
 ### Section checks return unexpected diameters
 

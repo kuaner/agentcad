@@ -88,14 +88,24 @@ models/<name>/
     }
   ],
   "checks": [
-    {"id": "base_bbox", "type": "bbox_size", "expected": [60, 40, 5], "tolerance": 0.3},
-    {"id": "watertight", "type": "watertight", "expected": true},
-    {"id": "hole_count", "type": "min_triangles", "expected": 100},
-    {"type": "artifact_exists", "path": "outputs/bracket.step"},
-    {"type": "artifact_exists", "path": "outputs/bracket.stl"}
+    {"id": "base_bbox",   "type": "bbox_size",      "expected": [60, 40, 5], "tolerance": 0.3},
+    {"id": "watertight",  "type": "watertight",      "expected": true},
+    {"id": "hole_count",  "type": "min_triangles",   "expected": 100},
+    {"id": "step_file",   "type": "artifact_exists", "path": "outputs/bracket.step"},
+    {"id": "stl_file",    "type": "artifact_exists", "path": "outputs/bracket.stl"}
   ]
 }
 ```
+
+## design.json Schema Rules
+
+`cad validate` checks the schema before running any geometry checks. Violations
+cause the entire validation to fail with a `design_schema` error.
+
+- **Every check must have a unique `id` field** — even simple checks like `artifact_exists`
+- **`type` must be one of the supported check types** (see table above)
+- **Feature `checks` arrays reference check ids** — typos will cause `feature_coverage` to fail
+- **No duplicate check ids** — each `id` must appear exactly once in `checks`
 
 ## Validation Strategy
 
@@ -112,6 +122,10 @@ models/<name>/
   for non-critical parts. Section check uncertainty is ~0.1 mm.
 - ⚠️ `watertight` does NOT confirm a cutout exists — a solid back panel and one
   with a camera hole are both watertight. Always add a section check for cutouts.
+- If `validate` output includes a `warnings` array, it means some features have
+  only trivial checks (bbox/watertight). Add a section/diameter/bbox check for
+  those features. Warnings do not fail validation but should be resolved.
+  Use `cad probe` to discover the correct `expected` values.
 
 ## Critical build123d Warning
 
@@ -139,16 +153,38 @@ Use `Locations` only with 3D primitives (Box, Cylinder, Cone). Use explicit
 
 ```bash
 cad new <model>                           # Create model (auto-inits workspace)
-cad build <model> --json                  # Build and export STEP/STL
+cad build <model> --json                  # Build and export STEP/STL (cached if unchanged)
+cad build <model> --force --json          # Force rebuild even when source is unchanged
 cad measure <model> --json                # Measure STL geometry
 cad render <model> --json                 # Generate SVG preview (iso)
 cad render <model> --views iso,back --json  # Render multiple views at once
 cad validate <model> --json               # Run full validation (auto-renders iso+back)
 cad deliver <model> --json                # Write delivery manifest
+cad probe <model> --z <z> --json          # Probe STL cross-section at height Z
+cad probe <model> --z <z> "--center=cx,cy" --json  # Probe at off-axis center
+cad probe <model> --z <z> --region x0,y0,x1,y1    # Check solid/void in region
+cad report <model>                        # Generate Markdown validation report
 ```
 
 All commands accept `--project <dir>` (defaults to current directory).
 All commands accept `--json` for machine-readable output.
+
+### cad probe — Discover expected values before writing design.json
+
+Run `cad probe` AFTER `cad build` and BEFORE filling in `expected` values in
+design.json. The output includes `suggested_checks` — ready-to-paste JSON
+snippets with actual measured values:
+
+```bash
+# Find inner diameter of a camera cutout centred at (-10.3, 53.3) at z=0.75
+cad probe my_case "--center=-10.3,53.3" --z 0.75 --json
+# → suggested_checks.inner_diameter_at_z.expected = 44.49 (actual measured value)
+```
+
+For multiple Z heights in one call (e.g., to profile a taper):
+```bash
+cad probe my_part --z 2.0,5.0,8.0 --json
+```
 
 ## Key Resources
 
