@@ -667,5 +667,5 @@ Rule: **inside a builder, position objects with `Locations` during creation,
 not by `.moved()` afterwards.** `.moved()` is safe only on standalone Shape
 objects you build outside a builder context.
 
-`cad probe <model> --scan --axis y --json` is the fastest way to detect this
+`agentcad probe <model> --scan --axis y --json` is the fastest way to detect this
 bug — you will see a doubled mass distribution along the moved axis.

@@ -31,7 +31,7 @@ def inspect_model(project: Path, name: str, scan_samples: int = 20) -> dict:
             "model": name,
             "error": {
                 "type": "STLMissing",
-                "message": f"STL not found — run 'cad build {name}' first: {stl_path}",
+                "message": f"STL not found — run 'agentcad build {name}' first: {stl_path}",
             },
         }
 
@@ -78,7 +78,7 @@ def inspect_model(project: Path, name: str, scan_samples: int = 20) -> dict:
                 "axis": axis_name.upper(),
                 "pos": pos,
                 "hint": step.get("hint", ""),
-                "command": f"cad probe {name} {axis_flag} {pos} --json",
+                "command": f"agentcad probe {name} {axis_flag} {pos} --json",
             })
 
     bbox = (report.get("bbox") or {})
@@ -88,7 +88,7 @@ def inspect_model(project: Path, name: str, scan_samples: int = 20) -> dict:
         "axis": "Z",
         "pos": center[2],
         "hint": "Z midpoint — probe inner/outer diameter at model centre",
-        "command": f"cad probe {name} --z {center[2]:.2f} \"--center={center[0]:.1f},{center[1]:.1f}\" --json",
+        "command": f"agentcad probe {name} --z {center[2]:.2f} \"--center={center[0]:.1f},{center[1]:.1f}\" --json",
     })
 
     return {

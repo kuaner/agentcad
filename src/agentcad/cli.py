@@ -35,7 +35,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="cad", description="Agent-first CAD workflow runtime")
+    parser = argparse.ArgumentParser(prog="agentcad", description="Agent-first CAD workflow runtime")
     parser.add_argument("--version", action="version", version=f"agentcad {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -183,7 +183,7 @@ def dispatch(args: argparse.Namespace) -> dict:
                 if not stl_path.exists():
                     return {"ok": False, "stage": "render", "model": args.model,
                             "error": {"type": "STLMissing",
-                                      "message": f"STL not found, run 'cad build {args.model}' first"}}
+                                      "message": f"STL not found, run 'agentcad build {args.model}' first"}}
                 triangles = read_stl(stl_path)
                 out_dir = outputs_dir(project, args.model)
                 svg_path = out_dir / f"section.{axis_name}{val:.2f}.svg"
@@ -205,11 +205,13 @@ def dispatch(args: argparse.Namespace) -> dict:
         z_values = [float(v.strip()) for v in args.z.split(",") if v.strip()] if args.z else None
         x_values = [float(v.strip()) for v in args.x.split(",") if v.strip()] if args.x else None
         y_values = [float(v.strip()) for v in args.y.split(",") if v.strip()] if args.y else None
+        center_cx, center_cy = (float(v) for v in args.center.split(","))
         if args.cx is not None or args.cy is not None:
-            cx = float(args.cx if args.cx is not None else 0.0)
-            cy = float(args.cy if args.cy is not None else 0.0)
+            # Merge explicit axis overrides with --center defaults.
+            cx = float(args.cx if args.cx is not None else center_cx)
+            cy = float(args.cy if args.cy is not None else center_cy)
         else:
-            cx, cy = (float(v) for v in args.center.split(","))
+            cx, cy = center_cx, center_cy
         region = None
         if args.region:
             x0, y0, x1, y1 = (float(v) for v in args.region.split(","))

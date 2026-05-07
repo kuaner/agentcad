@@ -1,7 +1,7 @@
 # AgentCAD Workspace
 
 You are working in an AgentCAD workspace. Your job is to create and refine CAD
-models using the `cad` CLI and build123d geometry library.
+models using the `agentcad` CLI and build123d geometry library.
 
 ## Workflow (11 stages — do NOT skip stages)
 
@@ -13,21 +13,21 @@ exist precisely to catch the failure modes listed below in
 2. **Contract**: write `models/<name>/design.json` with features + checks.
    Declare shapes inline for `min_clearance` checks (see below).
 3. **Params**: put tunable dimensions in `models/<name>/params.json`.
-4. **Precheck**: `cad precheck <name> --json`. This solves the design contract
+4. **Precheck**: `agentcad precheck <name> --json`. This solves the design contract
    *statically* — without building. It catches interferences, schema errors,
    and feature-coverage gaps before you write code. **Do not write part.py
    while precheck fails.**
 5. **Implement**: write `models/<name>/part.py` using build123d.
    - Final object MUST be assigned to global variable `result`.
    - Optional `metadata` dict gets written to metadata.json.
-6. **Build**: `cad build <name>` (auto-cached unless `--force`).
-7. **Measure**: `cad measure <name> --json` for STL geometry stats.
-8. **Render**: `cad render <name> --views iso,back` (validate auto-renders).
-9. **Validate**: `cad validate <name> --json`. Must be green.
-10. **Review**: `cad review <name> --json`. Final pre-delivery checklist —
+6. **Build**: `agentcad build <name>` (auto-cached unless `--force`).
+7. **Measure**: `agentcad measure <name> --json` for STL geometry stats.
+8. **Render**: `agentcad render <name> --views iso,back` (validate auto-renders).
+9. **Validate**: `agentcad validate <name> --json`. Must be green.
+10. **Review**: `agentcad review <name> --json`. Final pre-delivery checklist —
     pairwise relations matrix, must-view SVGs, missing-check reminders.
-    **Do not run `cad deliver` while review fails.**
-11. Run `cad deliver <name> --json` ONLY after review passes.
+    **Do not run `agentcad deliver` while review fails.**
+11. Run `agentcad deliver <name> --json` ONLY after review passes.
 
 Do NOT manually export STEP/STL from part.py. The runner owns all exports.
 
@@ -39,7 +39,7 @@ Do NOT manually export STEP/STL from part.py. The runner owns all exports.
 - Treat `design.json` as the design contract — source of truth for what the
   model should be.
 - Treat CLI JSON output as the source of truth for what the model actually is.
-- Do not claim a model is complete until `cad validate` passes.
+- Do not claim a model is complete until `agentcad validate` passes.
 - Every requested feature MUST have at least one validation check.
 - bbox + watertight alone are NOT sufficient — they pass even when features
   are missing or hidden.
@@ -149,7 +149,7 @@ catches it automatically.
 |---|---|---|
 | **`Box(...).moved(Location(...))` double-adds** | The shape appears once at the original location and once at the moved location | **Always use `with Locations((x, y, z)): Box(...)`; never `.moved()` inside a builder context.** |
 | **`Locations + BuildSketch(Plane.XY)`** | The sketch stays at Z=0 and never moves to the intended Z | **BuildSketch must use `Plane(origin=(x, y, z))`; an outer `Locations` does not move the sketch plane.** |
-| **Zero-volume subtraction** | `Mode.SUBTRACT` cuts nothing | When build fails after precheck passes, run `cad probe --scan` and confirm the `step_changes` match the intended features |
+| **Zero-volume subtraction** | `Mode.SUBTRACT` cuts nothing | When build fails after precheck passes, run `agentcad probe --scan` and confirm the `step_changes` match the intended features |
 | **Tiny residual sliver** | A 0.001 mm Z-range error leaves a paper-thin shell behind | Add a +0.1 mm overshoot to subtraction radii / depths |
 
 ### E. Intent vs. implementation drift
@@ -165,7 +165,7 @@ catches it automatically.
 1. **Every hole needs a `min_clearance` check** for each surrounding wall or adjacent solid.
 2. **Reason edge-to-edge, never center-to-face**: clearance must be measured between feature edges, not between centerlines and faces.
 3. **Every feature has at least one geometry check** (not just bbox/watertight). Resolve every weak-check warning before proceeding.
-4. **Run `cad review` before every `cad deliver`** and visually inspect every entry in `must_view`.
+4. **Run `agentcad review` before every `agentcad deliver`** and visually inspect every entry in `must_view`.
 
 ## CAD TDD: mandatory workflow (checks first, geometry second)
 
@@ -193,7 +193,7 @@ After finishing `design.json`, write a minimal `part.py` that produces the
 outer envelope only (no internal features) and run:
 
 ```bash
-cad validate <model> --json
+agentcad validate <model> --json
 ```
 
 Expected outcome:
@@ -205,7 +205,7 @@ wrong — return to the table and redesign it.**
 
 ### Step 2 — Green phase (one feature at a time)
 
-Implement one feature at a time and rerun `cad validate` immediately to
+Implement one feature at a time and rerun `agentcad validate` immediately to
 watch the matching check flip from ❌ to ✅. Do not batch up multiple
 features before validating — incremental feedback is the whole point of TDD.
 
@@ -227,16 +227,16 @@ features before validating — incremental feedback is the whole point of TDD.
 **Z slice formula:** if a feature occupies `[z_bottom, z_top]` along Z, slice
 at `z = (z_bottom + z_top) / 2`.
 
-**When you do not know the expected value:** run `cad build`, then
-`cad probe <model> --z <z> --json`. The `suggested_checks` field is ready to
+**When you do not know the expected value:** run `agentcad build`, then
+`agentcad probe <model> --z <z> --json`. The `suggested_checks` field is ready to
 paste straight into `design.json`.
 
-**When you do not know which Z to probe:** run `cad probe <model> --scan --json`
+**When you do not know which Z to probe:** run `agentcad probe <model> --scan --json`
 to surface step changes (cavity start, wall transitions, etc.) automatically.
 
 ## design.json Schema Rules
 
-`cad validate` checks the schema before running any geometry checks. Violations
+`agentcad validate` checks the schema before running any geometry checks. Violations
 cause the entire validation to fail with a `design_schema` error.
 
 - **Every check must have a unique `id` field** — even simple checks like `artifact_exists`
@@ -288,7 +288,7 @@ Full `min_clearance` check example:
 The reported `actual_mm` is the **edge-to-edge distance**: negative means
 interference, zero means touching, positive means clearance.
 
-`cad precheck` evaluates every `min_clearance` check **before the build
+`agentcad precheck` evaluates every `min_clearance` check **before the build
 runs**, so the classic "hole edge buried under a wall" bug is caught the
 moment design.json is finalised — long before any geometry is generated.
 
@@ -310,7 +310,7 @@ moment design.json is finalised — long before any geometry is generated.
 - If `validate` output includes a `warnings` array, it means some features have
   only trivial checks (bbox/watertight). Add a section/diameter/bbox check for
   those features. Warnings do not fail validation but should be resolved.
-  Use `cad probe` to discover the correct `expected` values.
+  Use `agentcad probe` to discover the correct `expected` values.
 
 ## Critical build123d Warning
 
@@ -337,49 +337,49 @@ Use `Locations` only with 3D primitives (Box, Cylinder, Cone). Use explicit
 ## CLI Quick Reference
 
 ```bash
-cad new <model>                           # Create model (auto-inits workspace)
-cad precheck <model> --json               # Static design solve (run BEFORE writing part.py)
-cad build <model> --json                  # Build and export STEP/STL (cached if unchanged)
-cad build <model> --force --json          # Force rebuild even when source is unchanged
-cad measure <model> --json                # Measure STL geometry
-cad render <model> --json                 # Generate SVG preview (iso)
-cad render <model> --views iso,back --json  # Render multiple views at once
-cad validate <model> --json               # Run full validation (auto-renders iso+back)
-cad review <model> --json                 # Pre-delivery checklist + relations matrix
-cad deliver <model> --json                # Write delivery manifest (only after review passes)
-cad probe <model> --z <z> --json                   # Probe Z cross-section (XY plane)
-cad probe <model> --z <z> "--center=cx,cy" --json  # Probe Z at off-axis center
-cad probe <model> --z <z> --region x0,y0,x1,y1    # Check solid/void in region
-cad probe <model> --x <x> --json                   # Probe X cross-section (YZ plane)
-cad probe <model> --y <y> --json                   # Probe Y cross-section (XZ plane)
-cad probe <model> --scan --json                    # Auto Z-axis profile scan
-cad probe <model> --scan --axis x --json           # X-axis scan
-cad probe <model> --scan --axis y --json           # Y-axis scan
-cad render <model> --section-z <z> --json          # Section SVG at Z height
-cad render <model> --section-x <x> --json          # Section SVG at X position (YZ)
-cad render <model> --section-y <y> --json          # Section SVG at Y position (XZ)
-cad inspect <model> --json                         # Three-axis scan + section SVGs + suggested probes
-cad report <model>                                 # Generate Markdown validation report
+agentcad new <model>                           # Create model (auto-inits workspace)
+agentcad precheck <model> --json               # Static design solve (run BEFORE writing part.py)
+agentcad build <model> --json                  # Build and export STEP/STL (cached if unchanged)
+agentcad build <model> --force --json          # Force rebuild even when source is unchanged
+agentcad measure <model> --json                # Measure STL geometry
+agentcad render <model> --json                 # Generate SVG preview (iso)
+agentcad render <model> --views iso,back --json  # Render multiple views at once
+agentcad validate <model> --json               # Run full validation (auto-renders iso+back)
+agentcad review <model> --json                 # Pre-delivery checklist + relations matrix
+agentcad deliver <model> --json                # Write delivery manifest (only after review passes)
+agentcad probe <model> --z <z> --json                   # Probe Z cross-section (XY plane)
+agentcad probe <model> --z <z> "--center=cx,cy" --json  # Probe Z at off-axis center
+agentcad probe <model> --z <z> --region x0,y0,x1,y1    # Check solid/void in region
+agentcad probe <model> --x <x> --json                   # Probe X cross-section (YZ plane)
+agentcad probe <model> --y <y> --json                   # Probe Y cross-section (XZ plane)
+agentcad probe <model> --scan --json                    # Auto Z-axis profile scan
+agentcad probe <model> --scan --axis x --json           # X-axis scan
+agentcad probe <model> --scan --axis y --json           # Y-axis scan
+agentcad render <model> --section-z <z> --json          # Section SVG at Z height
+agentcad render <model> --section-x <x> --json          # Section SVG at X position (YZ)
+agentcad render <model> --section-y <y> --json          # Section SVG at Y position (XZ)
+agentcad inspect <model> --json                         # Three-axis scan + section SVGs + suggested probes
+agentcad report <model>                                 # Generate Markdown validation report
 ```
 
 All commands accept `--project <dir>` (defaults to current directory).
 All commands accept `--json` for machine-readable output.
 
-### cad probe — Discover expected values before writing design.json
+### agentcad probe — Discover expected values before writing design.json
 
-Run `cad probe` AFTER `cad build` and BEFORE filling in `expected` values in
+Run `agentcad probe` AFTER `agentcad build` and BEFORE filling in `expected` values in
 design.json. The output includes `suggested_checks` — ready-to-paste JSON
 snippets with actual measured values:
 
 ```bash
 # Find inner diameter of a camera cutout centred at (-10.3, 53.3) at z=0.75
-cad probe my_case "--center=-10.3,53.3" --z 0.75 --json
+agentcad probe my_case "--center=-10.3,53.3" --z 0.75 --json
 # → suggested_checks.inner_diameter_at_z.expected = 44.49 (actual measured value)
 ```
 
 For multiple Z heights in one call (e.g., to profile a taper):
 ```bash
-cad probe my_part --z 2.0,5.0,8.0 --json
+agentcad probe my_part --z 2.0,5.0,8.0 --json
 ```
 
 ## Key Resources

@@ -9,7 +9,7 @@ from .workspace import outputs_dir
 def report_model(project: Path, name: str) -> dict:
     """Generate a human-readable Markdown validation report.
 
-    Reads the existing ``validation.json`` produced by ``cad validate`` and
+    Reads the existing ``validation.json`` produced by ``agentcad validate`` and
     writes ``outputs/report.md``.  The Markdown is also returned in the payload
     under ``report`` so it can be streamed directly to the terminal.
     """
@@ -23,7 +23,7 @@ def report_model(project: Path, name: str) -> dict:
             "model": name,
             "error": {
                 "type": "ValidationMissing",
-                "message": f"validation.json not found — run 'cad validate {name}' first",
+                "message": f"validation.json not found — run 'agentcad validate {name}' first",
             },
         }
 

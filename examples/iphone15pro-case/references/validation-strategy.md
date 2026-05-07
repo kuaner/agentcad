@@ -1,37 +1,37 @@
 # Validation Strategy & Troubleshooting
 
-## Workflow: Discovering Expected Values with `cad probe`
+## Workflow: Discovering Expected Values with `agentcad probe`
 
-Before writing `expected` values in design.json, run `cad probe` after the
+Before writing `expected` values in design.json, run `agentcad probe` after the
 first successful build. It returns actual measured geometry plus `suggested_checks`
 that you can paste directly into design.json.
 
 ```bash
 # 1. Build the model first
-cad build my_model --json
+agentcad build my_model --json
 
 # 2. Probe a cross-section (single Z, off-axis center)
-cad probe my_model --z 5.0 "--center=cx,cy" --json
+agentcad probe my_model --z 5.0 "--center=cx,cy" --json
 # Output includes:
 #   section.diameter_inner_estimate  →  use as expected for inner_diameter_at_z
 #   section.diameter_outer_estimate  →  use as expected for outer_diameter_at_z
 #   suggested_checks                 →  ready-to-paste JSON for design.json
 
 # 3. Probe a rectangular region to check solid/void state
-cad probe my_model --z 0.75 --region "-15,-10,5,15" --json
+agentcad probe my_model --z 0.75 --region "-15,-10,5,15" --json
 # Output includes:
 #   region_section.region_has_points → true = solid, false = void
 #   suggested_checks.section_bbox_at_z → ready-to-paste check
 
 # 4. Probe multiple heights in one call (e.g., taper profile)
-cad probe my_model --z 2.0,5.0,8.0 --json
+agentcad probe my_model --z 2.0,5.0,8.0 --json
 ```
 
 **When center contains negative numbers**, use `=` syntax to avoid argparse
 treating the value as a flag:
 ```bash
-cad probe my_model --z 0.75 "--center=-10.3,53.3" --json  # correct
-cad probe my_model --z 0.75 --center -10.3,53.3 --json    # WRONG: -10.3 parsed as flag
+agentcad probe my_model --z 0.75 "--center=-10.3,53.3" --json  # correct
+agentcad probe my_model --z 0.75 --center -10.3,53.3 --json    # WRONG: -10.3 parsed as flag
 ```
 
 ## design.json Structure
@@ -87,7 +87,7 @@ enforces feature-to-check coverage automatically.
 
 ### Geometric relations between features (NEW — design-time)
 
-These checks are evaluated by `cad precheck` *before* you write any code.
+These checks are evaluated by `agentcad precheck` *before* you write any code.
 They operate on declarative shape descriptors in design.json — no STL needed.
 
 - `min_clearance` — edge-to-edge gap between two declared shapes is ≥ min_mm.
@@ -277,10 +277,10 @@ present at the expected height.
 - **Center-to-face instead of edge-to-edge**: judging "is this hole far
   enough from the wall?" by `hole_y - wall_y` is wrong. It must be
   `hole_y + hole_radius - wall_y_min`. `min_clearance` does this for you.
-- **Skipping `cad precheck`**: precheck catches design-contract bugs before
+- **Skipping `agentcad precheck`**: precheck catches design-contract bugs before
   any code is written. Skipping it pushes failure modes downstream where
   they are harder to localise.
-- **Skipping `cad review`**: review aggregates the pairwise relations
+- **Skipping `agentcad review`**: review aggregates the pairwise relations
   matrix and flags missing-check categories (e.g., "no hole_accessibility
   declared"). Skipping it lets these gaps reach delivery.
 
@@ -302,7 +302,7 @@ Usually a typo in a build123d API name or a missing import. The full traceback
 is in `outputs/build.json` under `stderr`.
 
 Fix: read the stderr field in the build report, fix the name, rerun
-`cad validate`.
+`agentcad validate`.
 
 ### build123d topology errors
 
@@ -360,7 +360,7 @@ Warnings indicate features with no geometry check — only trivial checks like
 `bbox_size` or `watertight` are linked. Validation still passes, but the geometry
 is not actually verified.
 
-Fix: run `cad probe <model> --z <z>` at the relevant cross-section to get
+Fix: run `agentcad probe <model> --z <z>` at the relevant cross-section to get
 actual values, then add an `inner_diameter_at_z` or `section_bbox_at_z` check
 for each affected feature.
 
