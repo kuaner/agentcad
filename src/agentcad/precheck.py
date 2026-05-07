@@ -1,56 +1,33 @@
-"""Static design-time prechecks: solve design.json contracts without building.
-
-This module surfaces design errors *before* the part is built, by running
-all geometry checks that are pure-computation (no STL needed).
-
-Currently supported pre-checks:
-  - design schema validation (id uniqueness, type validity)
-  - feature_coverage (every feature has at least one check)
-  - min_clearance (computed from declared shape descriptors)
-  - feature-to-check linkage health
-  - declared shapes overlap with model declared bbox (sanity)
-
-Anything that needs the actual STL (inner_diameter_at_z, watertight, etc.) is
-deferred to ``cad validate``.
-"""
+"""Static design-time prechecks: solve design.json contracts without building."""
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
 
-from .geometry import min_clearance_3d, parse_shape, shape_aabb
+from .checks import CheckContext, known_types, run_check, static_types
+from .contract import evaluate_feature_coverage, evaluate_weak_check_warnings, validate_design_schema
 from .jsonio import read_json, write_json
 from .runner import utc_now
-from .validate import (
-    _VALID_CHECK_TYPES,
-    evaluate_feature_coverage,
-    evaluate_weak_check_warnings,
-    validate_design_schema,
-)
 from .workspace import model_dir, outputs_dir
 
+
 # Check types that can be evaluated without STL (pure design-time compute).
-_STATIC_CHECK_TYPES = frozenset({
-    "min_clearance",
-})
+_STATIC_CHECK_TYPES = static_types()
+_VALID_CHECK_TYPES = known_types()
 
 
 def precheck_model(project: Path, name: str) -> dict:
-    """Run all design-time prechecks on ``models/<name>``.
-
-    Returns a JSON payload with stage/checks/warnings/artifacts mirroring the
-    shape of ``cad validate`` so agents can consume both with the same code path.
-    """
     out_dir = outputs_dir(project, name)
     out_dir.mkdir(parents=True, exist_ok=True)
     precheck_path = out_dir / "precheck.json"
 
-    design_dir = model_dir(project, name)
-    design_path = design_dir / "design.json"
+    design_path = model_dir(project, name) / "design.json"
     if not design_path.exists():
         payload = _payload(name, [{
-            "name": "design_present", "type": "design_present", "ok": False,
-            "error": f"design.json not found at {design_path}",
+            "name": "design_present",
+            "type": "design_present",
+            "ok": False,
+            "error": {"type": "DesignMissing", "message": f"design.json not found at {design_path}"},
         }], artifacts={"precheck": str(precheck_path)})
         write_json(precheck_path, payload)
         return payload
@@ -72,7 +49,8 @@ def precheck_model(project: Path, name: str) -> dict:
     deferred = _list_deferred_checks(project, name)
 
     payload = _payload(
-        name, checks,
+        name,
+        checks,
         artifacts={"precheck": str(precheck_path)},
         warnings=warnings or None,
         relations=relations or None,
@@ -84,69 +62,51 @@ def precheck_model(project: Path, name: str) -> dict:
 
 
 def _evaluate_static_checks(project: Path, name: str) -> tuple[list[dict], list[dict]]:
-    """Run any check whose evaluation needs only design.json data."""
     design_path = model_dir(project, name) / "design.json"
     design = read_json(design_path, default={}) or {}
     results: list[dict] = []
     errors: list[dict] = []
+
+    def _never_read_stl() -> list:
+        raise RuntimeError("static precheck attempted STL access")
+
+    ctx = CheckContext(
+        project=project,
+        name=name,
+        measure={},
+        get_triangles=_never_read_stl,
+        out_dir=outputs_dir(project, name),
+    )
+
     for index, raw in enumerate(design.get("checks") or []):
         if not isinstance(raw, dict):
             continue
         check_type = str(raw.get("type") or "")
         if check_type not in _STATIC_CHECK_TYPES:
             continue
-        if check_type == "min_clearance":
-            results.append(_evaluate_static_min_clearance(raw, index))
+        result = run_check(raw, ctx)
+        if not result.get("ok") and "error" in result:
+            errors.append({"index": index, "id": raw.get("id"), "type": check_type, "error": result.get("error")})
+        results.append(result)
     return results, errors
 
 
-def _evaluate_static_min_clearance(check: dict, index: int) -> dict:
-    name = check.get("id") or f"min_clearance[{index}]"
-    try:
-        shape_a = parse_shape(check.get("feature_a") or check.get("a"))
-        shape_b = parse_shape(check.get("feature_b") or check.get("b"))
-    except (ValueError, KeyError, TypeError) as exc:
-        return {"name": name, "type": "min_clearance", "ok": False,
-                "error": f"invalid shape descriptor: {exc}"}
-    min_mm = float(check.get("min_mm", 0.0))
-    tolerance = float(check.get("tolerance", 0.0))
-    result = min_clearance_3d(shape_a, shape_b)
-    actual = float(result["clearance_mm"])
-    ok = actual >= (min_mm - tolerance)
-    payload = {
-        "name": name, "type": "min_clearance", "ok": ok,
-        "actual_mm": actual,
-        "min_mm": min_mm, "tolerance": tolerance,
-        "z_overlap_mm": result["z_overlap_mm"],
-        "xy_clearance_mm": result["xy_clearance_mm"],
-        "interferes": result["interferes"],
-    }
-    if not ok:
-        payload["hint"] = (
-            f"shapes interfere by {min_mm - actual:.3f}mm — "
-            "fix params before writing part.py"
-        )
-    return payload
-
-
 def _build_relation_matrix(static_results: list[dict]) -> list[dict]:
-    """Aggregate clearance results into a relations table for review."""
     rows = []
-    for r in static_results:
-        if r.get("type") != "min_clearance":
+    for item in static_results:
+        if item.get("type") != "min_clearance":
             continue
         rows.append({
-            "id": r.get("name"),
-            "ok": r.get("ok"),
-            "clearance_mm": r.get("actual_mm"),
-            "min_mm": r.get("min_mm"),
-            "interferes": r.get("interferes"),
+            "id": item.get("name"),
+            "ok": item.get("ok"),
+            "clearance_mm": item.get("actual_mm"),
+            "min_mm": item.get("min_mm"),
+            "interferes": item.get("interferes"),
         })
     return rows
 
 
 def _list_deferred_checks(project: Path, name: str) -> list[dict]:
-    """Report STL-dependent checks that precheck cannot evaluate."""
     design_path = model_dir(project, name) / "design.json"
     design = read_json(design_path, default={}) or {}
     deferred: list[dict] = []
@@ -173,13 +133,13 @@ def _payload(
         "ok": ok,
         "stage": "precheck",
         "model": name,
-        "prechekedAt": utc_now(),
+        "precheckedAt": utc_now(),
         "checks": checks,
         "artifacts": artifacts,
         "message": (
             "precheck passed — safe to write part.py"
-            if ok else
-            "precheck failed — fix design.json or params before writing part.py"
+            if ok
+            else "precheck failed — fix design.json or params before writing part.py"
         ),
     }
     if warnings:

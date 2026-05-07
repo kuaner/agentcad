@@ -94,7 +94,8 @@ uv run cad deliver bracket --json
 ```
 
 The default generated model is a simple build123d cuboid. Agent rules and
-common-error catalog live in `AGENTS.md`, `CLAUDE.md`, and `skills/`.
+common-error catalog live in `AGENTS.md`, `CLAUDE.md`, and `references/`
+(always-on reference docs for build123d patterns and validation strategy).
 
 ## Examples
 

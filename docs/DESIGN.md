@@ -77,10 +77,9 @@ project/
   AGENTS.md
   CLAUDE.md
   cadproject.json
-  skills/
+  references/
     build123d-guide.md
     validation-strategy.md
-  references/
     images/
     notes.md
   models/

@@ -63,10 +63,9 @@ project/
   AGENTS.md
   CLAUDE.md
   cadproject.json
-  skills/
+  references/
     build123d-guide.md
     validation-strategy.md
-  references/
     images/
     notes.md
   models/
@@ -186,7 +185,7 @@ the model and incidentally surfaced two real bugs:
    `BuildPart` context double-adds the shape (once at the original
    position, once at the moved position). The fix is to use
    `with Locations((x, y, z)): Box(...)`. This is now codified in
-   `skills/build123d-guide.md`.
+   `references/build123d-guide.md`.
 2. A real **hole-wall interference**: the M4 base holes were partly buried
    under the upright wall, yet `inner_diameter_at_z` was passing because
    it only verified that the hole *exists* at that Z, not that its
@@ -218,7 +217,7 @@ the model and incidentally surfaced two real bugs:
    - `Box(...).moved(Location(...))` inside `BuildPart` double-adds; use
      `with Locations((x, y, z)): Box(...)`.
 
-Both are documented in `skills/build123d-guide.md`.
+Both are documented in `references/build123d-guide.md`.
 
 ## Tests
 

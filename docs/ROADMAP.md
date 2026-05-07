@@ -83,7 +83,7 @@ Each helper:
 5. Rewrite at least one existing example (recommended:
    `fan_duct_adapter_8025`) using helpers; show the diff in the
    pull request and document line savings + check coverage parity.
-6. `skills/build123d-guide.md` and `validation-strategy.md` updated
+6. `references/build123d-guide.md` and `references/validation-strategy.md` updated
    with helper usage patterns.
 
 ### Acceptance criteria
