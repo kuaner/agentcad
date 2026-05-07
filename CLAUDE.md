@@ -60,8 +60,7 @@ examples/
 
 ## CLI Commands
 
-All commands auto-detect the workspace by walking up from cwd. Use `--project <dir>` only when operating from outside the workspace.
-
+All commands auto-detect the workspace by walking up from cwd. 
 ```bash
 agentcad init [--model <model>]                          # Initialize workspace (optionally create first model)
 agentcad new <model>                                      # Create model inside an existing workspace

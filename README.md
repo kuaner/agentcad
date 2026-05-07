@@ -77,13 +77,6 @@ agentcad init --model demo
 Then open this directory in Claude Code / Cursor and continue from
 `models/demo/part.py`.
 
-`--project` is optional. Use it only when you run commands outside the
-workspace root, for example:
-
-```bash
-agentcad init --model demo --project /tmp/agentcad-demo
-```
-
 For local development:
 
 ```bash
@@ -94,7 +87,7 @@ uv run agentcad --help
 ## Quick example
 
 ```bash
-agentcad init --model bracket --project /tmp/my-cad-project
+agentcad init --model bracket
 cd /tmp/my-cad-project
 
 # 1. Design-time: solve the contract before writing geometry

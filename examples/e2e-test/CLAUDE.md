@@ -363,7 +363,6 @@ agentcad inspect <model>                         # Three-axis scan + section SVG
 agentcad report <model>                                 # Generate Markdown validation report
 ```
 
-All commands accept `--project <dir>` (defaults to current directory).
 All commands output machine-readable JSON by default.
 
 ### agentcad probe — Discover expected values before writing design.json

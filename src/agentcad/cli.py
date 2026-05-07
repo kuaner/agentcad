@@ -39,27 +39,23 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"agentcad {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    init = sub.add_parser("init", help="initialize a workspace (optionally create first model)")
-    add_project_arg(init)
+    init = sub.add_parser("init", help="initialize a workspace and create first model")
+    init.add_argument("name", help="workspace name")
     init.add_argument("--model", default=None, help="create an initial model after workspace initialization")
     init.add_argument("--force", action="store_true")
 
     new = sub.add_parser("new", help="create a new model (auto-initializes workspace)")
-    add_project_arg(new)
     new.add_argument("model")
     new.add_argument("--force", action="store_true")
 
     build = sub.add_parser("build", help="build a model and export STEP/STL")
-    add_project_arg(build)
     build.add_argument("model")
     build.add_argument("--force", action="store_true", help="force rebuild even if source is unchanged")
 
     measure = sub.add_parser("measure", help="measure generated STL geometry")
-    add_project_arg(measure)
     measure.add_argument("model")
 
     render = sub.add_parser("render", help="render an SVG preview from STL")
-    add_project_arg(render)
     render.add_argument("model")
     render.add_argument("--view", choices=["iso", "front", "top", "side", "back"], default="iso")
     render.add_argument(
@@ -75,7 +71,6 @@ def build_parser() -> argparse.ArgumentParser:
                         help="render a Y cross-section SVG (XZ plane) at this position (mm)")
 
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
-    add_project_arg(validate)
     validate.add_argument("model")
     validate.add_argument("--view", choices=["iso", "front", "top", "side", "back"], default="iso")
     validate.add_argument(
@@ -85,12 +80,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     deliver = sub.add_parser("deliver", help="write a delivery manifest")
-    add_project_arg(deliver)
     deliver.add_argument("model")
     deliver.add_argument("--no-validate", action="store_true")
 
     probe = sub.add_parser("probe", help="probe STL cross-section to get geometry values for design.json")
-    add_project_arg(probe)
     probe.add_argument("model")
     probe.add_argument("--z", default=None, help="Z height(s) to probe, comma-separated")
     probe.add_argument("--x", default=None, help="X position(s) to probe (YZ plane), comma-separated")
@@ -104,24 +97,19 @@ def build_parser() -> argparse.ArgumentParser:
     probe.add_argument("--samples", type=int, default=20, help="number of scan samples (default: 20)")
 
     report = sub.add_parser("report", help="generate a human-readable Markdown validation report")
-    add_project_arg(report)
     report.add_argument("model")
 
     inspect = sub.add_parser("inspect", help="three-axis scan + section SVGs + suggested probe commands")
-    add_project_arg(inspect)
     inspect.add_argument("model")
     inspect.add_argument("--samples", type=int, default=20, help="scan samples per axis (default: 20)")
 
     precheck = sub.add_parser("precheck", help="solve design.json statically (before writing part.py)")
-    add_project_arg(precheck)
     precheck.add_argument("model")
 
     review = sub.add_parser("review", help="pre-delivery checklist + pairwise relations matrix")
-    add_project_arg(review)
     review.add_argument("model")
 
     sync = sub.add_parser("sync", help="update workspace scaffold files from templates")
-    add_project_arg(sync)
     sync.add_argument("--dry-run", action="store_true", help="preview template updates without writing files")
     sync.add_argument("--only", default=None, help="sync only one template path prefix (e.g. references/)")
     sync.add_argument("--prune-deprecated", action="store_true", help="remove deprecated scaffold paths like skills/")
@@ -129,13 +117,9 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def add_project_arg(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--project", default=".", help="project directory, defaults to current directory")
-
-
 def _resolve_project(args: argparse.Namespace) -> Path:
     """Find existing project, or auto-init when creating a new model."""
-    project = Path(getattr(args, "project", "."))
+    project = Path(".")
     try:
         return find_project(project)
     except FileNotFoundError:
@@ -153,11 +137,11 @@ def _resolve_project(args: argparse.Namespace) -> Path:
 
 def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "init":
-        target = Path(getattr(args, "project", ".")).expanduser().resolve()
+        workspace_name = str(getattr(args, "name"))
+        model_name = str(getattr(args, "model", "") or workspace_name)
+        target = (Path.cwd() / workspace_name).resolve()
+
         init_payload = init_workspace(target, force=getattr(args, "force", False))
-        model_name = getattr(args, "model", None)
-        if not model_name:
-            return init_payload
         model_payload = new_model(target, model_name, force=getattr(args, "force", False))
         return {
             "ok": bool(init_payload.get("ok")) and bool(model_payload.get("ok")),
