@@ -159,6 +159,8 @@ def new_model(project: Path, name: str, force: bool = False) -> dict:
         return {"ok": False, "stage": "new", "error": {"type": "ModelExists", "message": f"model exists: {safe}"}}
 
     _copy_tree(templates.model_dir(), root, substitutions={"name": safe})
+    # Ensure outputs/ exists even when templates don't contain placeholders.
+    (root / "outputs").mkdir(parents=True, exist_ok=True)
 
     return {"ok": True, "message": "model created", "model": safe, "path": str(root)}
 
