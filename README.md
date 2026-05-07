@@ -64,6 +64,24 @@ uv tool install agentcad-cli
 agentcad --help
 ```
 
+Create a workspace and start modeling:
+
+```bash
+mkdir my-agentcad-project
+cd my-agentcad-project
+agentcad new demo
+```
+
+Then open this directory in Claude Code / Cursor and continue from
+`models/demo/part.py`.
+
+`--project` is optional. Use it only when you run commands outside the
+workspace root, for example:
+
+```bash
+agentcad new demo --project /tmp/agentcad-demo
+```
+
 For local development:
 
 ```bash
