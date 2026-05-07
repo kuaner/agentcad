@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import runpy
 import sys
@@ -9,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .jsonio import write_json
+from .jsonio import read_json, write_json
 from .workspace import model_dir, outputs_dir
 
 
@@ -17,7 +18,18 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def build_model(project: Path, name: str) -> dict:
+def _source_hash(root: Path) -> str:
+    """Compute a short hash over part.py and params.json to detect source changes."""
+    h = hashlib.sha256()
+    for fname in ("part.py", "params.json"):
+        p = root / fname
+        if p.exists():
+            h.update(fname.encode())
+            h.update(p.read_bytes())
+    return h.hexdigest()[:16]
+
+
+def build_model(project: Path, name: str, force: bool = False) -> dict:
     root = model_dir(project, name)
     source = root / "part.py"
     out_dir = outputs_dir(project, name)
@@ -28,6 +40,21 @@ def build_model(project: Path, name: str) -> dict:
         payload = _failure(name, "build", "SourceMissing", f"missing source file: {source}", source)
         write_json(build_report_path, payload)
         return payload
+
+    source_hash = _source_hash(root)
+
+    # Return cached build when source is unchanged and artifacts exist.
+    if not force and build_report_path.exists():
+        stl_path = out_dir / f"{name}.stl"
+        step_path = out_dir / f"{name}.step"
+        cached = read_json(build_report_path, default={}) or {}
+        if (
+            cached.get("ok")
+            and cached.get("sourceHash") == source_hash
+            and stl_path.exists()
+            and step_path.exists()
+        ):
+            return {**cached, "skipped": True, "message": "source unchanged, using cached build"}
 
     stdout = io.StringIO()
     stderr = io.StringIO()
@@ -97,6 +124,7 @@ def build_model(project: Path, name: str) -> dict:
         "ok": True,
         "stage": "build",
         "model": name,
+        "sourceHash": source_hash,
         "startedAt": started_at,
         "endedAt": utc_now(),
         "artifacts": {

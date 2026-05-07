@@ -7,9 +7,10 @@ from pathlib import Path
 from . import __version__
 from .jsonio import print_payload
 from .measure import measure_model
-from .render import render_model
+from .probe import probe_model
+from .render import VIEW_DIRS, render_model, render_models_multi
+from .report import report_model
 from .runner import build_model
-from .render import VIEW_DIRS, render_models_multi
 from .validate import deliver_model, validate_model
 from .workspace import find_project, init_workspace, new_model, sync_workspace
 
@@ -42,6 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
     build = sub.add_parser("build", help="build a model and export STEP/STL")
     add_project_arg(build)
     build.add_argument("model")
+    build.add_argument("--force", action="store_true", help="force rebuild even if source is unchanged")
     build.add_argument("--json", action="store_true")
 
     measure = sub.add_parser("measure", help="measure generated STL geometry")
@@ -77,6 +79,31 @@ def build_parser() -> argparse.ArgumentParser:
     deliver.add_argument("--no-validate", action="store_true")
     deliver.add_argument("--json", action="store_true")
 
+    probe = sub.add_parser("probe", help="probe STL cross-section to get geometry values for design.json")
+    add_project_arg(probe)
+    probe.add_argument("model")
+    probe.add_argument(
+        "--z",
+        required=True,
+        help="Z height(s) to probe, comma-separated (e.g. 0.75 or 0.5,1.0,2.0)",
+    )
+    probe.add_argument(
+        "--center",
+        default="0,0",
+        help="cx,cy for radial measurements (default: 0,0)",
+    )
+    probe.add_argument(
+        "--region",
+        default=None,
+        help="x_min,y_min,x_max,y_max — check solid/void in this rectangle at the given Z",
+    )
+    probe.add_argument("--json", action="store_true")
+
+    report = sub.add_parser("report", help="generate a human-readable Markdown validation report")
+    add_project_arg(report)
+    report.add_argument("model")
+    report.add_argument("--json", action="store_true")
+
     sync = sub.add_parser("sync", help="update workspace scaffold files from templates")
     add_project_arg(sync)
     sync.add_argument("--json", action="store_true")
@@ -110,7 +137,7 @@ def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "new":
         return new_model(project, args.model, force=args.force)
     if args.command == "build":
-        return build_model(project, args.model)
+        return build_model(project, args.model, force=getattr(args, "force", False))
     if args.command == "measure":
         return measure_model(project, args.model)
     if args.command == "render":
@@ -125,6 +152,16 @@ def dispatch(args: argparse.Namespace) -> dict:
         return validate_model(project, args.model, render_view=args.view, render_views=render_views)
     if args.command == "deliver":
         return deliver_model(project, args.model, run_validation=not args.no_validate)
+    if args.command == "probe":
+        z_values = [float(z.strip()) for z in args.z.split(",") if z.strip()]
+        cx, cy = (float(v) for v in args.center.split(","))
+        region = None
+        if args.region:
+            x0, y0, x1, y1 = (float(v) for v in args.region.split(","))
+            region = ((x0, y0), (x1, y1))
+        return probe_model(project, args.model, z_values=z_values, center=(cx, cy), region=region)
+    if args.command == "report":
+        return report_model(project, args.model)
 
     raise ValueError(f"unknown command: {args.command}")
 

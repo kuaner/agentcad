@@ -12,6 +12,14 @@ from .workspace import model_dir, outputs_dir
 
 _DEFAULT_VALIDATE_VIEWS = ["iso", "back"]
 
+# Check types that verify actual geometric features (section/diameter/bbox).
+_GEOMETRY_CHECK_TYPES = frozenset({
+    "outer_diameter_at_z",
+    "inner_diameter_at_z",
+    "diameter_decreases_along_z",
+    "section_bbox_at_z",
+})
+
 
 def validate_model(
     project: Path,
@@ -50,9 +58,15 @@ def validate_model(
         stage_check("measure", bool(measure.get("ok")), measure),
         stage_check("render", bool(multi_render.get("ok")), primary_render),
     ]
+    geometry_warnings: list[dict] = []
     if measure.get("ok"):
-        checks.extend(evaluate_feature_coverage(project, name))
-        checks.extend(evaluate_design_checks(project, name, measure))
+        schema_errors = validate_design_schema(project, name)
+        if schema_errors:
+            checks.extend(schema_errors)
+        else:
+            checks.extend(evaluate_feature_coverage(project, name))
+            checks.extend(evaluate_design_checks(project, name, measure))
+            geometry_warnings = evaluate_weak_check_warnings(project, name)
 
     preview_artifacts = multi_render.get("artifacts") or {}
     artifacts: dict = {
@@ -63,7 +77,7 @@ def validate_model(
         "stl": str(out_dir / f"{name}.stl"),
         **preview_artifacts,
     }
-    payload = _validation_payload(name, checks, artifacts=artifacts)
+    payload = _validation_payload(name, checks, artifacts=artifacts, warnings=geometry_warnings or None)
     write_json(validation_path, payload)
     return payload
 
@@ -104,6 +118,76 @@ def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict
     return payload
 
 
+_VALID_CHECK_TYPES = frozenset({
+    "bbox_size",
+    "watertight",
+    "min_triangles",
+    "volume_range",
+    "artifact_exists",
+    "metadata_equals",
+    "outer_diameter_at_z",
+    "inner_diameter_at_z",
+    "diameter_decreases_along_z",
+    "section_bbox_at_z",
+})
+
+
+def validate_design_schema(project: Path, name: str) -> list[dict]:
+    """Validate design.json structure before running checks.
+
+    Returns a list of schema error check-items (ok=False) for any structural
+    problems found.  An empty list means the schema is valid.
+    """
+    design_path = model_dir(project, name) / "design.json"
+    if not design_path.exists():
+        return [{"name": "design_schema", "type": "design_schema", "ok": False,
+                 "error": f"design.json not found: {design_path}"}]
+
+    design = read_json(design_path, default=None)
+    if design is None or not isinstance(design, dict):
+        return [{"name": "design_schema", "type": "design_schema", "ok": False,
+                 "error": "design.json must be a JSON object"}]
+
+    errors: list[dict] = []
+
+    def _err(msg: str) -> None:
+        errors.append({"name": "design_schema", "type": "design_schema", "ok": False, "error": msg})
+
+    features = design.get("features")
+    if features is not None and not isinstance(features, list):
+        _err("'features' must be an array")
+    elif isinstance(features, list):
+        for i, f in enumerate(features):
+            if not isinstance(f, dict):
+                _err(f"features[{i}] must be an object")
+            elif not f.get("id"):
+                _err(f"features[{i}] missing required 'id' field")
+
+    checks = design.get("checks")
+    if checks is not None and not isinstance(checks, list):
+        _err("'checks' must be an array")
+    elif isinstance(checks, list):
+        seen_ids: set[str] = set()
+        for i, c in enumerate(checks):
+            if not isinstance(c, dict):
+                _err(f"checks[{i}] must be an object")
+                continue
+            check_id = c.get("id")
+            if not check_id:
+                _err(f"checks[{i}] missing required 'id' field")
+            else:
+                if str(check_id) in seen_ids:
+                    _err(f"checks[{i}] duplicate id: {check_id!r}")
+                seen_ids.add(str(check_id))
+            check_type = c.get("type")
+            if not check_type:
+                _err(f"checks[{i}] (id={check_id!r}) missing required 'type' field")
+            elif check_type not in _VALID_CHECK_TYPES:
+                _err(f"checks[{i}] (id={check_id!r}) unknown type {check_type!r}; valid: {sorted(_VALID_CHECK_TYPES)}")
+
+    return errors
+
+
 def evaluate_design_checks(project: Path, name: str, measure_payload: dict) -> list[dict]:
     design_path = model_dir(project, name) / "design.json"
     design = read_json(design_path, default={}) or {}
@@ -123,6 +207,49 @@ def evaluate_design_checks(project: Path, name: str, measure_payload: dict) -> l
             continue
         checks.append(evaluate_check(project, name, check, measure_payload, index, get_triangles))
     return checks
+
+
+def evaluate_weak_check_warnings(project: Path, name: str) -> list[dict]:
+    """Warn when a feature has no geometry check (section/diameter/bbox).
+
+    These are non-fatal observations: validation still passes, but the agent
+    is informed that the feature's geometry is not verified by any meaningful
+    check — only by bbox size, watertightness, or similar global metrics.
+    """
+    design_path = model_dir(project, name) / "design.json"
+    design = read_json(design_path, default={}) or {}
+    features = design.get("features") or []
+    checks = design.get("checks") or []
+
+    check_type_map = {
+        str(c.get("id")): str(c.get("type", ""))
+        for c in checks
+        if isinstance(c, dict) and c.get("id")
+    }
+
+    warnings = []
+    for feature in features:
+        if not isinstance(feature, dict):
+            continue
+        feature_id = str(feature.get("id") or "unknown")
+        linked_ids = [str(cid) for cid in (feature.get("checks") or [])]
+        if not linked_ids:
+            warnings.append({
+                "feature": feature_id,
+                "message": f"feature '{feature_id}' has no checks linked — add at least one geometry check",
+                "hint": "Link outer_diameter_at_z, inner_diameter_at_z, or section_bbox_at_z using the 'checks' field",
+            })
+            continue
+        linked_types = {check_type_map.get(cid, "") for cid in linked_ids}
+        geometry_checks = linked_types & _GEOMETRY_CHECK_TYPES
+        if not geometry_checks:
+            warnings.append({
+                "feature": feature_id,
+                "linkedCheckTypes": sorted(t for t in linked_types if t),
+                "message": f"feature '{feature_id}' has no geometry checks — only trivial checks linked, geometry not verified",
+                "hint": "Use 'cad probe <model> --z <z>' to get actual values, then add outer_diameter_at_z or section_bbox_at_z",
+            })
+    return warnings
 
 
 def evaluate_feature_coverage(project: Path, name: str) -> list[dict]:
@@ -331,9 +458,14 @@ def stage_check(name: str, ok: bool, payload: dict) -> dict:
     return item
 
 
-def _validation_payload(name: str, checks: list[dict], artifacts: dict[str, str]) -> dict:
+def _validation_payload(
+    name: str,
+    checks: list[dict],
+    artifacts: dict[str, str],
+    warnings: list[dict] | None = None,
+) -> dict:
     ok = all(bool(check.get("ok")) for check in checks)
-    return {
+    payload: dict = {
         "ok": ok,
         "stage": "validate",
         "model": name,
@@ -342,6 +474,9 @@ def _validation_payload(name: str, checks: list[dict], artifacts: dict[str, str]
         "artifacts": artifacts,
         "message": "validation passed" if ok else "validation failed",
     }
+    if warnings:
+        payload["warnings"] = warnings
+    return payload
 
 
 def _vec_close(actual: Any, expected: Any, tolerance: float) -> bool:

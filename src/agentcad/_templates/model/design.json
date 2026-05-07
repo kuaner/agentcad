@@ -30,10 +30,12 @@
       "expected": true
     },
     {
+      "id": "step_artifact",
       "type": "artifact_exists",
       "path": "outputs/{name}.step"
     },
     {
+      "id": "stl_artifact",
       "type": "artifact_exists",
       "path": "outputs/{name}.stl"
     }
