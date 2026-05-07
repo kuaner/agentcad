@@ -107,11 +107,13 @@ def sync_workspace(
     if not dry_run:
         written = _copy_tree(tpl, target, overwrite=True, include_paths=include)
 
+    should_sync_agents = include is None or "CLAUDE.md" in include
     agents_link = target / "AGENTS.md"
-    if not dry_run:
+    if not dry_run and should_sync_agents:
         if agents_link.is_symlink() or agents_link.exists():
             agents_link.unlink()
         agents_link.symlink_to("CLAUDE.md")
+        written.append("AGENTS.md")
 
     result = {
         "ok": True,
@@ -124,6 +126,7 @@ def sync_workspace(
     }
     if only:
         result["only"] = only
+    result["agents_relinked"] = (not dry_run) and should_sync_agents
     return result
 
 

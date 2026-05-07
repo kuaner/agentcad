@@ -141,6 +141,8 @@ def test_sync_workspace_only_path(tmp_path):
     assert result["only"] == "references/notes.md"
     assert "references/notes.md" in result["updated"]
     assert "CLAUDE.md" not in result["updated"]
+    assert result["agents_relinked"] is False
+    assert "AGENTS.md" not in result["updated"]
     assert "DO NOT TOUCH" in claude.read_text(encoding="utf-8")
 
 

@@ -53,8 +53,19 @@ def evaluate_hole_accessibility(check: dict, ctx: CheckContext) -> dict:
         return _input_error(check, "hole_accessibility", "check requires 'z' and 'center' fields")
     try:
         cx, cy = float(raw_center[0]), float(raw_center[1])
-        hole_r = float(check.get("hole_radius", check.get("hole_diameter", 0)) or 0) or float(check["hole_diameter"]) / 2
-        clearance_r = float(check.get("clearance_radius", check.get("clearance_diameter", 0)) or 0) or float(check["clearance_diameter"]) / 2
+        if "hole_radius" in check:
+            hole_r = float(check["hole_radius"])
+        elif "hole_diameter" in check:
+            hole_r = float(check["hole_diameter"]) / 2.0
+        else:
+            raise KeyError("hole_radius or hole_diameter")
+
+        if "clearance_radius" in check:
+            clearance_r = float(check["clearance_radius"])
+        elif "clearance_diameter" in check:
+            clearance_r = float(check["clearance_diameter"]) / 2.0
+        else:
+            raise KeyError("clearance_radius or clearance_diameter")
     except (KeyError, TypeError, ValueError, IndexError) as exc:
         return _input_error(check, "hole_accessibility", f"invalid hole_accessibility parameters: {exc}")
     if clearance_r <= hole_r:
