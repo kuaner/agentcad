@@ -100,7 +100,7 @@ def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict
     out_dir.mkdir(parents=True, exist_ok=True)
     validation = validate_model(project, name) if run_validation else read_json(out_dir / "validation.json", default={"ok": False, "message": "validation report missing"})
     deliver_path = out_dir / "deliverable.json"
-    artifacts = {
+    artifact_candidates = {
         "step": str(out_dir / f"{name}.step"),
         "stl": str(out_dir / f"{name}.stl"),
         "preview": str(out_dir / "preview.iso.svg"),
@@ -111,6 +111,7 @@ def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict
         "review": str(out_dir / "review.json"),
         "deliverable": str(deliver_path),
     }
+    artifacts = {k: v for k, v in artifact_candidates.items() if k == "deliverable" or Path(v).exists()}
     payload = {
         "ok": bool(validation.get("ok")),
         "stage": "deliver",

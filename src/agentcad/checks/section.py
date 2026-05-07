@@ -46,9 +46,12 @@ def evaluate_diameter_decreases_along_z(check: dict, ctx: CheckContext) -> dict:
     sections = [section_radius_at_z(triangles, float(z), center=(float(center[0]), float(center[1]))) for z in z_values]
     diameters = [section.get("diameter_outer_estimate") for section in sections]
     epsilon = float(check.get("epsilon", 0.05))
-    ok = all(section.get("ok") for section in sections)
-    ok = ok and all(float(a) >= float(b) - epsilon for a, b in zip(diameters, diameters[1:]) if a is not None and b is not None)
-    ok = ok and float(diameters[0]) > float(diameters[-1]) + epsilon
+    section_ok = all(section.get("ok") for section in sections)
+    has_missing = any(d is None for d in diameters)
+    ok = section_ok and not has_missing
+    if ok:
+        ok = ok and all(float(a) >= float(b) - epsilon for a, b in zip(diameters, diameters[1:]))
+        ok = ok and float(diameters[0]) > float(diameters[-1]) + epsilon
     return {
         "name": check.get("id") or "diameter_decreases_along_z",
         "type": "diameter_decreases_along_z",
@@ -57,6 +60,7 @@ def evaluate_diameter_decreases_along_z(check: dict, ctx: CheckContext) -> dict:
         "diameters": diameters,
         "sections": sections,
         "epsilon": epsilon,
+        **({"error": {"type": "SectionSamplingError", "message": "failed to sample one or more z sections"}} if not section_ok or has_missing else {}),
     }
 
 

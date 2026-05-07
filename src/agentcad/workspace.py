@@ -90,6 +90,9 @@ def sync_workspace(
     planned = [p.relative_to(tpl).as_posix() for p in tpl.rglob("*") if p.is_file()]
     if include is not None:
         planned = [p for p in planned if p in include]
+    should_sync_agents = include is None or "CLAUDE.md" in include
+    if should_sync_agents:
+        planned.append("AGENTS.md")
 
     pruned: list[str] = []
     deprecated = [target / "skills"]
@@ -107,7 +110,6 @@ def sync_workspace(
     if not dry_run:
         written = _copy_tree(tpl, target, overwrite=True, include_paths=include)
 
-    should_sync_agents = include is None or "CLAUDE.md" in include
     agents_link = target / "AGENTS.md"
     if not dry_run and should_sync_agents:
         if agents_link.is_symlink() or agents_link.exists():

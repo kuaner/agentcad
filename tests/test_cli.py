@@ -102,3 +102,21 @@ def test_probe_cx_cy_alias(monkeypatch, tmp_path):
     ])
     assert result == 0
     assert captured["center"] == (-10.5, 4.25)
+
+
+def test_probe_center_and_cx_merge(monkeypatch, tmp_path):
+    project = tmp_path / "proj"
+    main(["new", "--project", str(project), "bracket"])
+    captured = {}
+
+    def fake_probe(project_path, model_name, z_values=None, x_values=None, y_values=None, center=None, region=None):
+        captured["center"] = center
+        return {"ok": True, "stage": "probe", "model": model_name}
+
+    monkeypatch.setattr(cli_mod, "probe_model", fake_probe)
+    result = main([
+        "probe", "--project", str(project), "bracket",
+        "--z", "1.0", "--center=1,2", "--cx", "3", "--json",
+    ])
+    assert result == 0
+    assert captured["center"] == (3.0, 2.0)
