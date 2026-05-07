@@ -34,7 +34,7 @@ uv run agentcad --help
 ## Implemented CLI
 
 ```bash
-agentcad init [--model <model>]                          # scaffold workspace (and optional first model)
+agentcad init <workspace> [--model <model>]                          # scaffold workspace (and optional first model)
 agentcad new <model>                                      # add model in existing workspace
 agentcad sync                                            # refresh workspace files from templates
 agentcad precheck <model>                         # design-time solve before code

@@ -17,7 +17,7 @@ design contract -> precheck -> params/source -> build
 
 | Stage | Command | Purpose |
 |---|---|---|
-| Init | `agentcad init [--model <name>]` | Initialize workspace scaffold (optionally create first model) |
+| Init | `agentcad init <workspace> [--model <name>]` | Initialize workspace scaffold (optionally create first model) |
 | Scaffold | `agentcad new <model>` | Create model folder inside an existing workspace |
 | Sync | `agentcad sync` | Refresh workspace scaffold from latest templates |
 | Precheck | `agentcad precheck <model>` | Solve `design.json` statically (schema, feature coverage, `min_clearance`) **before** part.py is written |
@@ -31,9 +31,8 @@ design contract -> precheck -> params/source -> build
 | Deliver | `agentcad deliver <model>` | Delivery manifest |
 | Report | `agentcad report <model>` | Markdown summary of validation result |
 
-Every command prints JSON by default for stable machine-readable output;
-add `--text` for human-readable output. Failures include `stage`,
-`error.type`, and `error.message`.
+Every command prints stable machine-readable JSON output. Failures include
+`stage`, `error.type`, and `error.message`.
 
 ## Validation check types
 
@@ -69,9 +68,8 @@ agentcad --help
 Create a workspace and start modeling:
 
 ```bash
-mkdir my-agentcad-project
+agentcad init my-agentcad-project --model demo
 cd my-agentcad-project
-agentcad init --model demo
 ```
 
 Then open this directory in Claude Code / Cursor and continue from
@@ -87,8 +85,8 @@ uv run agentcad --help
 ## Quick example
 
 ```bash
-agentcad init --model bracket
-cd /tmp/my-cad-project
+agentcad init my-cad-project --model bracket
+cd my-cad-project
 
 # 1. Design-time: solve the contract before writing geometry
 agentcad precheck bracket
@@ -119,8 +117,8 @@ Re-run any example:
 
 ```bash
 cd examples/fan-adapter-8025
-uv run agentcad validate fan_duct_adapter_8025
-uv run agentcad review fan_duct_adapter_8025
+agentcad validate fan_duct_adapter_8025
+agentcad review fan_duct_adapter_8025
 ```
 
 ## Tests

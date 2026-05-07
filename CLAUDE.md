@@ -62,7 +62,7 @@ examples/
 
 All commands auto-detect the workspace by walking up from cwd. 
 ```bash
-agentcad init [--model <model>]                          # Initialize workspace (optionally create first model)
+agentcad init <workspace> [--model <model>]                          # Initialize workspace (optionally create first model)
 agentcad new <model>                                      # Create model inside an existing workspace
 agentcad sync                                           # Update workspace scaffold files from templates
 agentcad precheck <model>                        # Static design solve before writing part.py
