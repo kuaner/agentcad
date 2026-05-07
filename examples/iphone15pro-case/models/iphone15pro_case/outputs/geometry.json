@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "stage": "measure",
+  "model": "iphone15pro_case",
+  "source": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/iphone15pro_case.stl",
+  "geometry": {
+    "bbox": {
+      "min": [
+        -37.599998474121094,
+        -75.5999984741211,
+        0.0
+      ],
+      "max": [
+        37.599998474121094,
+        75.5999984741211,
+        11.25
+      ],
+      "size": [
+        75.19999694824219,
+        151.1999969482422,
+        11.25
+      ],
+      "center": [
+        0.0,
+        0.0,
+        5.625
+      ]
+    },
+    "mesh": {
+      "triangles": 1788,
+      "vertices": 5364,
+      "unique_edges": 2682,
+      "boundary_or_nonmanifold_edges": 0,
+      "watertight": true
+    },
+    "mass_properties": {
+      "surface_area": 27805.7322154352,
+      "volume": 21580.23713560179
+    }
+  },
+  "artifacts": {
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/geometry.json"
+  },
+  "message": "model measured"
+}

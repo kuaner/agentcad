@@ -1,0 +1,272 @@
+{
+  "ok": true,
+  "stage": "validate",
+  "model": "iphone15pro_case",
+  "validatedAt": "2026-05-07T03:09:23.674130+00:00",
+  "checks": [
+    {
+      "name": "build",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "measure",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "render",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "feature_coverage:outer_shell",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "outer_shell",
+      "checks": [
+        "overall_bbox",
+        "watertight",
+        "mesh_detail"
+      ],
+      "matchedChecks": [
+        "overall_bbox",
+        "watertight",
+        "mesh_detail"
+      ]
+    },
+    {
+      "name": "feature_coverage:inner_cavity",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "inner_cavity",
+      "checks": [
+        "volume_check",
+        "watertight"
+      ],
+      "matchedChecks": [
+        "volume_check",
+        "watertight"
+      ]
+    },
+    {
+      "name": "feature_coverage:camera_cutout",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "camera_cutout",
+      "checks": [
+        "volume_check",
+        "watertight",
+        "camera_hole_section",
+        "back_panel_ring"
+      ],
+      "matchedChecks": [
+        "volume_check",
+        "watertight",
+        "camera_hole_section",
+        "back_panel_ring"
+      ]
+    },
+    {
+      "name": "feature_coverage:port_cutouts",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "port_cutouts",
+      "checks": [
+        "overall_bbox",
+        "watertight",
+        "usbc_slot_void"
+      ],
+      "matchedChecks": [
+        "overall_bbox",
+        "watertight",
+        "usbc_slot_void"
+      ]
+    },
+    {
+      "name": "feature_coverage:button_slots",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "button_slots",
+      "checks": [
+        "watertight",
+        "mesh_detail"
+      ],
+      "matchedChecks": [
+        "watertight",
+        "mesh_detail"
+      ]
+    },
+    {
+      "name": "feature_coverage:deliverable_artifacts",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "deliverable_artifacts",
+      "checks": [
+        "step_artifact",
+        "stl_artifact"
+      ],
+      "matchedChecks": [
+        "step_artifact",
+        "stl_artifact"
+      ]
+    },
+    {
+      "name": "overall_bbox",
+      "type": "bbox_size",
+      "ok": true,
+      "expected": [
+        75.2,
+        151.2,
+        11.25
+      ],
+      "actual": [
+        75.19999694824219,
+        151.1999969482422,
+        11.25
+      ],
+      "tolerance": 0.5
+    },
+    {
+      "name": "watertight",
+      "type": "watertight",
+      "ok": true,
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "mesh_detail",
+      "type": "min_triangles",
+      "ok": true,
+      "expected": 300,
+      "actual": 1788
+    },
+    {
+      "name": "volume_check",
+      "type": "volume_range",
+      "ok": true,
+      "actual": 21580.23713560179,
+      "min": 12000,
+      "max": 32000
+    },
+    {
+      "name": "step_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/iphone15pro_case.step"
+    },
+    {
+      "name": "stl_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/iphone15pro_case.stl"
+    },
+    {
+      "name": "camera_hole_section",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 0.75,
+      "expected": 39.5,
+      "actual": 44.48782693035825,
+      "tolerance": 5.0,
+      "section": {
+        "ok": true,
+        "z": 0.75,
+        "point_count": 1086,
+        "radius_min": 19.750000762939454,
+        "radius_max": 133.55521388854802,
+        "radius_mean": 53.67753664669555,
+        "radius_outer_estimate": 133.40465345587162,
+        "radius_inner_estimate": 22.243913465179126,
+        "diameter_outer_estimate": 266.80930691174325,
+        "diameter_inner_estimate": 44.48782693035825
+      }
+    },
+    {
+      "name": "back_panel_ring",
+      "type": "section_bbox_at_z",
+      "ok": true,
+      "z": 0.75,
+      "region": [
+        [
+          -36.0,
+          -74.0
+        ],
+        [
+          36.0,
+          30.0
+        ]
+      ],
+      "expected": "solid",
+      "actual": "solid",
+      "region_point_count": 102,
+      "section": {
+        "ok": true,
+        "z": 0.75,
+        "point_count": 1086,
+        "bbox": {
+          "x_min": -37.599998474121094,
+          "x_max": 37.599998474121094,
+          "y_min": -75.5999984741211,
+          "y_max": 75.5999984741211
+        },
+        "region": {
+          "x_min": -36.0,
+          "y_min": -74.0,
+          "x_max": 36.0,
+          "y_max": 30.0
+        },
+        "region_point_count": 102,
+        "region_has_points": true
+      }
+    },
+    {
+      "name": "usbc_slot_void",
+      "type": "section_bbox_at_z",
+      "ok": true,
+      "z": 5.8,
+      "region": [
+        [
+          -4.75,
+          -76.0
+        ],
+        [
+          4.75,
+          -73.4
+        ]
+      ],
+      "expected": "solid",
+      "actual": "solid",
+      "region_point_count": 12,
+      "section": {
+        "ok": true,
+        "z": 5.8,
+        "point_count": 1144,
+        "bbox": {
+          "x_min": -37.599998474121094,
+          "x_max": 37.599998474121094,
+          "y_min": -75.5999984741211,
+          "y_max": 75.5999984741211
+        },
+        "region": {
+          "x_min": -4.75,
+          "y_min": -76.0,
+          "x_max": 4.75,
+          "y_max": -73.4
+        },
+        "region_point_count": 12,
+        "region_has_points": true
+      }
+    }
+  ],
+  "artifacts": {
+    "validation": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/validation.json",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/build.json",
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/geometry.json",
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/iphone15pro_case.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/iphone15pro_case.stl",
+    "preview_iso": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/preview.iso.svg",
+    "preview_back": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/preview.back.svg"
+  },
+  "message": "validation passed"
+}

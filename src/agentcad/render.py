@@ -13,7 +13,39 @@ VIEW_DIRS: dict[str, Vec3] = {
     "top": (0.0, 0.0, 1.0),
     "side": (1.0, 0.0, 0.0),
     "iso": (1.0, -1.0, 0.75),
+    # dir.z < 0 → back face (Z=0) has greater depth → rendered in front.
+    # Slight +Y tilt avoids the world-up singularity and keeps the back
+    # panel facing the viewer so camera/port cutouts are clearly visible.
+    "back": (0.0, 0.5, -1.0),
 }
+
+
+def render_models_multi(project: Path, name: str, views: list[str]) -> dict:
+    """Render multiple views and return a combined result dict.
+
+    Returns ``ok=True`` only when every requested view succeeds. The ``artifacts``
+    dict maps ``preview_<view>`` → path for each successfully rendered view.
+    """
+    results = []
+    artifacts: dict[str, str] = {}
+    for v in views:
+        r = render_model(project, name, view=v)
+        results.append(r)
+        if r.get("ok"):
+            actual_view = v if v in VIEW_DIRS else "iso"
+            preview_path = (r.get("artifacts") or {}).get("preview")
+            if preview_path:
+                artifacts[f"preview_{actual_view}"] = preview_path
+    all_ok = all(r.get("ok") for r in results)
+    return {
+        "ok": all_ok,
+        "stage": "render",
+        "model": name,
+        "views": views,
+        "artifacts": artifacts,
+        "results": results,
+        "message": "all views rendered" if all_ok else "some views failed",
+    }
 
 
 def render_model(project: Path, name: str, view: str = "iso") -> dict:

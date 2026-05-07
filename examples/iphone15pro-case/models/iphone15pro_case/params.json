@@ -1,0 +1,57 @@
+{
+  "_sources": [
+    "Apple official: 146.6 x 70.6 x 8.25 mm body (https://www.apple.com/iphone-15-pro/specs/)",
+    "MFi CAD leak (9to5mac 2023-04): camera array 38 x 37.5 mm, action button semi-circle d=2.42mm ends 3.51mm apart",
+    "MFi CAD leak: volume button semi-circle d=2.65mm, 23.5mm span; camera bump +3.78mm",
+    "Community 3D case consensus: body corner radius ~13mm (superellipse fit)"
+  ],
+
+  "phone_height":        146.6,
+  "phone_width":          70.6,
+  "phone_depth":           8.25,
+  "phone_corner_radius":  13.0,
+  "camera_bump_height":    3.78,
+
+  "fit_xy":    0.3,
+  "fit_back":  0.3,
+
+  "wall_side": 2.0,
+  "wall_back": 1.5,
+  "lip_height": 1.2,
+
+  "_cam_note": "38x37.5mm footprint per MFi CAD. Center placed 20mm from left edge and 20mm from top edge of phone body.",
+  "cam_cutout_width":  40.0,
+  "cam_cutout_height": 39.5,
+  "cam_cutout_radius": 10.0,
+  "cam_center_x":     -10.3,
+  "cam_center_y":      53.3,
+
+  "_port_note": "USB-C port centered at phone bottom. Speaker slot offset left, mic slot offset right.",
+  "usbc_width":   9.5,
+  "usbc_height":  3.5,
+
+  "speaker_width":    14.0,
+  "speaker_height":    3.0,
+  "speaker_offset_x": -17.0,
+
+  "mic_width":    3.5,
+  "mic_height":   3.0,
+  "mic_offset_x": 17.0,
+
+  "_btn_note": "Action button: pill shape ~8mm x 4mm. Volume buttons: ~12mm tall each, ~5mm gap between. Power: ~22mm tall. All centred on phone mid-thickness.",
+  "action_btn_len":  8.5,
+  "action_btn_w":    4.5,
+  "action_btn_y":   55.5,
+
+  "vol_up_len":  12.0,
+  "vol_up_w":     4.5,
+  "vol_up_y":    37.0,
+
+  "vol_dn_len":  12.0,
+  "vol_dn_w":     4.5,
+  "vol_dn_y":    20.0,
+
+  "power_btn_len": 22.0,
+  "power_btn_w":    4.5,
+  "power_btn_y":   13.0
+}

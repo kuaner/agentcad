@@ -145,7 +145,7 @@ def _round_vertex(v: Vec3) -> Vec3:
     return (round(v[0], 6), round(v[1], 6), round(v[2], 6))
 
 
-def section_radius_at_z(triangles: list[Triangle], z: float, center: tuple[float, float] = (0.0, 0.0), samples: int = 720) -> dict:
+def section_radius_at_z(triangles: list[Triangle], z: float, center: tuple[float, float] = (0.0, 0.0)) -> dict:
     """Estimate radial envelope at a Z section by intersecting STL triangles.
 
     The function returns min/max/mean radii for all triangle-plane intersections.
@@ -194,6 +194,62 @@ def section_radius_at_z(triangles: list[Triangle], z: float, center: tuple[float
         "diameter_outer_estimate": exterior * 2,
         "diameter_inner_estimate": interior * 2,
     }
+
+
+def section_bbox_at_z(
+    triangles: list[Triangle],
+    z: float,
+    region: tuple[tuple[float, float], tuple[float, float]] | None = None,
+) -> dict:
+    """Compute the XY bounding box of triangle-plane intersection points at Z.
+
+    If `region` is given as ``((x_min, y_min), (x_max, y_max))``, also reports
+    whether any intersection points fall inside that rectangle, enabling solid/void
+    checks for non-circular features such as camera cutouts.
+    """
+    points: list[tuple[float, float]] = []
+    for tri in triangles:
+        pts = list(tri)
+        edges = ((pts[0], pts[1]), (pts[1], pts[2]), (pts[2], pts[0]))
+        for a, b in edges:
+            za = a[2] - z
+            zb = b[2] - z
+            if abs(za) < 1e-8 and abs(zb) < 1e-8:
+                points.append((a[0], a[1]))
+                points.append((b[0], b[1]))
+            elif za == 0:
+                points.append((a[0], a[1]))
+            elif zb == 0:
+                points.append((b[0], b[1]))
+            elif (za < 0 < zb) or (zb < 0 < za):
+                t = (z - a[2]) / (b[2] - a[2])
+                x = a[0] + t * (b[0] - a[0])
+                y = a[1] + t * (b[1] - a[1])
+                points.append((x, y))
+
+    if not points:
+        return {"ok": False, "z": z, "point_count": 0, "error": "section has no STL intersections"}
+
+    xs = [p[0] for p in points]
+    ys = [p[1] for p in points]
+    result: dict = {
+        "ok": True,
+        "z": z,
+        "point_count": len(points),
+        "bbox": {
+            "x_min": min(xs), "x_max": max(xs),
+            "y_min": min(ys), "y_max": max(ys),
+        },
+    }
+
+    if region is not None:
+        (rx0, ry0), (rx1, ry1) = region
+        region_points = [(x, y) for x, y in points if rx0 <= x <= rx1 and ry0 <= y <= ry1]
+        result["region"] = {"x_min": rx0, "y_min": ry0, "x_max": rx1, "y_max": ry1}
+        result["region_point_count"] = len(region_points)
+        result["region_has_points"] = len(region_points) > 0
+
+    return result
 
 
 def _percentile(values: list[float], q: float) -> float:

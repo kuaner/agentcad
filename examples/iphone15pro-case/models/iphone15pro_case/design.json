@@ -1,0 +1,108 @@
+{
+  "schema": "design-spec.v1",
+  "model": "iphone15pro_case",
+  "units": "mm",
+  "intent": "Slim protective case for iPhone 15 Pro (146.6 × 70.6 × 8.25 mm body, Apple 2023). Corrected body corner radius 13 mm. 2 mm side walls, 1.5 mm back panel, 1.2 mm screen lip. Cutouts for 38×37.5 mm camera island, USB-C, speaker, microphone, Action button, two volume buttons, and power button.",
+  "assumptions": [
+    "Apple official: 146.6 H × 70.6 W × 8.25 D mm (apple.com/iphone-15-pro/specs).",
+    "Camera island footprint 38×37.5 mm per MFi CAD leak (9to5Mac 2023-04); case cutout 40×39.5 mm for clearance.",
+    "Camera island center: 20 mm from phone left edge, 20 mm from phone top edge → case offsets (–10.3, +53.3) mm.",
+    "Camera bump +3.78 mm above phone body; fits inside inner cavity — only back panel needs cutout.",
+    "Body corner radius 13 mm (superellipse approximation, updated from initial 22 mm).",
+    "Fit clearance 0.3 mm per side for firm fit.",
+    "USB-C port: 9.5 × 3.5 mm centred at bottom.",
+    "Speaker: 14 × 3 mm, offset –17 mm (left); mic: 3.5 × 3 mm, offset +17 mm (right) at bottom.",
+    "Action button: pill slot 8.5 × 4.5 mm on left rail at Y+55.5; Vol Up 12 mm Y+37; Vol Dn 12 mm Y+20; Power 22 mm on right rail Y+13."
+  ],
+  "features": [
+    {
+      "id": "outer_shell",
+      "intent": "Rounded-rectangle outer shell with 13 mm + 2 mm wall = 15 mm outer corner radius.",
+      "checks": ["overall_bbox", "watertight", "mesh_detail"]
+    },
+    {
+      "id": "inner_cavity",
+      "intent": "Inner cavity matches iPhone 15 Pro body with 0.3 mm clearance; open at display face.",
+      "checks": ["volume_check", "watertight"]
+    },
+    {
+      "id": "camera_cutout",
+      "intent": "40 × 39.5 mm cutout through 1.5 mm back panel exposes triple-camera island without obstruction.",
+      "checks": ["volume_check", "watertight", "camera_hole_section", "back_panel_ring"]
+    },
+    {
+      "id": "port_cutouts",
+      "intent": "Bottom-edge cutouts for USB-C port, speaker grill, and microphone slot.",
+      "checks": ["overall_bbox", "watertight", "usbc_slot_void"]
+    },
+    {
+      "id": "button_slots",
+      "intent": "Side-wall slots for Action button, Volume Up/Down (left rail) and Power button (right rail).",
+      "checks": ["watertight", "mesh_detail"]
+    },
+    {
+      "id": "deliverable_artifacts",
+      "intent": "STEP and STL files for 3D printing.",
+      "checks": ["step_artifact", "stl_artifact"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "overall_bbox",
+      "type": "bbox_size",
+      "expected": [75.2, 151.2, 11.25],
+      "tolerance": 0.5
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "mesh_detail",
+      "type": "min_triangles",
+      "expected": 300
+    },
+    {
+      "id": "volume_check",
+      "type": "volume_range",
+      "min": 12000,
+      "max": 32000
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/iphone15pro_case.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/iphone15pro_case.stl"
+    },
+    {
+      "id": "camera_hole_section",
+      "type": "inner_diameter_at_z",
+      "z": 0.75,
+      "center": [-10.3, 53.3],
+      "expected": 39.5,
+      "tolerance": 5.0,
+      "_comment": "Measures inner radius from camera centroid at Z=0.75mm (back panel mid). If the hole exists, walls are ~19.75mm away → diameter ~39.5mm. Solid panel gives >>100mm."
+    },
+    {
+      "id": "back_panel_ring",
+      "type": "section_bbox_at_z",
+      "z": 0.75,
+      "region": [[-36.0, -74.0], [36.0, 30.0]],
+      "expected": "solid",
+      "_comment": "Confirms the back panel ring (outside the camera cutout) has solid material at Z=0.75mm. Region chosen to avoid the camera hole area."
+    },
+    {
+      "id": "usbc_slot_void",
+      "type": "section_bbox_at_z",
+      "z": 5.8,
+      "region": [[-4.75, -76.0], [4.75, -73.4]],
+      "expected": "solid",
+      "_comment": "Checks that the bottom wall region at USB-C port height has wall triangles (the slot walls create intersection points here even though the port itself is open)."
+    }
+  ]
+}

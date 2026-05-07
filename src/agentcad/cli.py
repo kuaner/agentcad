@@ -9,6 +9,7 @@ from .jsonio import print_payload
 from .measure import measure_model
 from .render import render_model
 from .runner import build_model
+from .render import VIEW_DIRS, render_models_multi
 from .validate import deliver_model, validate_model
 from .workspace import find_project, init_workspace, new_model, sync_workspace
 
@@ -51,13 +52,23 @@ def build_parser() -> argparse.ArgumentParser:
     render = sub.add_parser("render", help="render an SVG preview from STL")
     add_project_arg(render)
     render.add_argument("model")
-    render.add_argument("--view", choices=["iso", "front", "top", "side"], default="iso")
+    render.add_argument("--view", choices=["iso", "front", "top", "side", "back"], default="iso")
+    render.add_argument(
+        "--views",
+        default=None,
+        help="comma-separated list of views to render (e.g. iso,back,top); overrides --view",
+    )
     render.add_argument("--json", action="store_true")
 
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
     add_project_arg(validate)
     validate.add_argument("model")
-    validate.add_argument("--view", choices=["iso", "front", "top", "side"], default="iso")
+    validate.add_argument("--view", choices=["iso", "front", "top", "side", "back"], default="iso")
+    validate.add_argument(
+        "--views",
+        default=None,
+        help="comma-separated list of views to render during validation (default: iso,back)",
+    )
     validate.add_argument("--json", action="store_true")
 
     deliver = sub.add_parser("deliver", help="write a delivery manifest")
@@ -103,9 +114,15 @@ def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "measure":
         return measure_model(project, args.model)
     if args.command == "render":
+        views_arg = getattr(args, "views", None)
+        if views_arg:
+            views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS]
+            return render_models_multi(project, args.model, views or [args.view])
         return render_model(project, args.model, view=args.view)
     if args.command == "validate":
-        return validate_model(project, args.model, render_view=args.view)
+        views_arg = getattr(args, "views", None)
+        render_views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS] if views_arg else None
+        return validate_model(project, args.model, render_view=args.view, render_views=render_views)
     if args.command == "deliver":
         return deliver_model(project, args.model, run_validation=not args.no_validate)
 

@@ -1,0 +1,33 @@
+{
+  "schema": "agentcad.part.metadata.v1",
+  "model": "iphone15pro_case",
+  "compatible_with": "iPhone 15 Pro (A17 Pro, 2023)",
+  "sources": [
+    "Apple official dimensions: 146.6 x 70.6 x 8.25 mm",
+    "MFi CAD leak (9to5Mac 2023-04): camera 38x37.5mm, bump +3.78mm",
+    "Body corner radius ~13mm from community 3D-case data"
+  ],
+  "phone_body_mm": {
+    "w": 70.6,
+    "h": 146.6,
+    "d": 8.25
+  },
+  "phone_corner_radius_mm": 13.0,
+  "fit_clearance_mm": 0.3,
+  "case_outer_mm": {
+    "w": 75.19999999999999,
+    "h": 151.2,
+    "d": 11.25
+  },
+  "case_wall_mm": {
+    "side": 2.0,
+    "back": 1.5,
+    "lip": 1.2
+  },
+  "camera_cutout_mm": {
+    "w": 40.0,
+    "h": 39.5,
+    "cx": -10.3,
+    "cy": 53.3
+  }
+}

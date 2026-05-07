@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "stage": "render",
+  "model": "iphone15pro_case",
+  "view": "front",
+  "artifacts": {
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/preview.front.svg",
+    "render": "/Users/kuaner/Documents/code/agentcad/examples/iphone15pro-case/models/iphone15pro_case/outputs/render.front.json"
+  },
+  "message": "preview rendered"
+}
