@@ -1,22 +1,24 @@
 # AgentCAD Current Status
 
-Last updated: 2026-05-06
+Last updated: 2026-05-07
 
 ## Project Goal
 
 AgentCAD is a CLI-first workflow runtime for coding agents that create CAD
-models. The core loop is:
+models. The expanded core loop is:
 
 ```text
-feature contract -> params/source -> build -> measure -> render -> validate -> deliver
+design contract -> precheck -> params/source -> build
+                  -> measure -> render -> validate -> review -> deliver
 ```
 
-The project is intentionally agent-first. It does not currently include a
-desktop UI, web viewer, or MCP server.
+`precheck` and `review` are mandatory checkpoints that catch design-time
+interferences before any code is written and pre-delivery gaps before any
+artifact is shipped, respectively. The project remains intentionally
+agent-first: there is no desktop UI, web viewer, or MCP server in the core
+loop.
 
 ## Environment
-
-Use `uv`.
 
 ```bash
 cd /Users/kuaner/Documents/code/agentcad
@@ -24,47 +26,49 @@ uv sync
 uv run cad --help
 ```
 
-Important dependency note:
-
 - `build123d` is a required dependency.
 - `.python-version` pins Python `3.12`.
-- Python 3.13 was tested and rejected because the required `vtk==9.3.1` wheel
-  is not available for `cp313`.
+- Python 3.13 was tested and rejected because the required `vtk==9.3.1`
+  wheel is not available for `cp313`.
 
 ## Implemented CLI
 
-Entry point:
-
 ```bash
-uv run cad ...
+cad new <model>                                     # scaffold + auto-init workspace
+cad sync                                            # refresh workspace files from templates
+cad precheck <model> --json                         # design-time solve before code
+cad build <model> --json                            # build123d -> STEP + STL (hash-cached)
+cad measure <model> --json                          # mesh stats + structural facts
+cad render <model> --view iso --json                # iso/front/top/side/back SVG
+cad render <model> --section-z <z>                  # cross-section SVG (also --section-x, --section-y)
+cad probe <model> --z <z> --json                    # cross-section diameters / void at Z
+cad probe <model> --scan --axis x|y|z --json        # axis profile + step changes
+cad inspect <model> --json                          # three-axis scan + auto sections + suggested probes
+cad validate <model> --json                         # build + measure + render + design checks
+cad review <model> --json                           # pre-delivery checklist + relations matrix
+cad deliver <model> --json                          # delivery manifest
+cad report <model>                                  # Markdown validation summary
 ```
 
-Commands:
+`cad validate` is the post-build self-check. `cad precheck` and `cad review`
+flank it as design-time and pre-delivery gates.
 
-```bash
-cad init <project>
-cad new --project <project> <model>
-cad build --project <project> <model> --json
-cad measure --project <project> <model> --json
-cad render --project <project> <model> --view iso --json
-cad validate --project <project> <model> --json
-cad deliver --project <project> <model> --json
-```
+## Workspace Layout
 
-`cad validate` is the main agent self-check command. It runs build, measure,
-render, feature coverage, design checks, and artifact checks.
-
-## Current Workspace Layout
-
-V0 intentionally has no project-root `outputs/` directory. Generated artifacts
-belong to each model:
+Generated artifacts live exclusively under `models/<name>/outputs/`. There
+is intentionally no project-root `outputs/` directory.
 
 ```text
 project/
   AGENTS.md
+  CLAUDE.md
   cadproject.json
   skills/
+    build123d-guide.md
+    validation-strategy.md
   references/
+    images/
+    notes.md
   models/
     <model>/
       README.md
@@ -73,33 +77,38 @@ project/
       part.py
       metadata.json
       outputs/
+        precheck.json
         build.json
         geometry.json
         validation.json
-        preview.iso.svg
+        review.json
+        deliverable.json
+        preview.{iso,front,top,side,back}.svg
+        section.{x,y,z}{value}.svg
+        debug.<check_id>.{x,y,z}{value}.svg     # auto on failed section checks
         <model>.step
         <model>.stl
-        deliverable.json
 ```
 
-## Key Design Change
+## Design Contract
 
-The project now requires a Feature Contract before geometry implementation.
+`design.json` fields:
 
-`design.json` supports:
+- `features`: explicit user-visible / functional design intent (with `id`)
+- `checks`: measurable validation entries (each must have an `id` and one of
+  the supported `type`s)
+- coverage rule: every feature must reference at least one check, otherwise
+  validation fails with a `feature_coverage` error
 
-- `features`: explicit user-visible or functional design intent
-- `checks`: measurable validation checks
-- feature-to-check coverage: every feature must reference at least one existing
-  check or validation fails
+This contract was driven by repeated real failures: a lead-in chamfer
+hidden by an overlapping cylinder; a hole-wall interference that
+`inner_diameter_at_z` happily reported as passing. The fix is layered: a
+strong contract, design-time relational checks, and a pre-delivery review
+checklist.
 
-This change came from a real failure: a lead-in chamfer was initially written in
-code but hidden by an overlapping cylinder. BBox/watertight checks did not catch
-it. The fix was to add feature-level and section-level checks.
+## Validation check types
 
-## Validation Features
-
-Implemented check types:
+Post-build mesh checks:
 
 - `bbox_size`
 - `watertight`
@@ -108,174 +117,131 @@ Implemented check types:
 - `metadata_equals`
 - `outer_diameter_at_z`
 - `inner_diameter_at_z`
+- `section_bbox_at_z` (solid / void / explicit dimensions)
 - `diameter_decreases_along_z`
+- `volume_range`
 - automatic `feature_coverage`
 
-Section checks use STL triangle-plane intersections and are useful for ducts,
-tapers, sockets, and chamfers.
+Geometric relation checks (added in the latest milestone):
 
-## Example Project
+- `min_clearance` — declarative shape pair, edge-to-edge distance ≥ N mm.
+  Evaluated **statically** in `cad precheck` (no STL needed) and again in
+  `cad validate` for sanity.
+- `hole_accessibility` — annular tool envelope around a hole is free of
+  material at the working plane.
+- `min_wall_thickness` — minimum point-pair distance inside a region at Z.
+- `feature_position` — assert a 3D point is `solid` or `void` (used to pin
+  feature direction or guard blind-hole bottoms).
 
-Example workspace:
+`min_clearance` is the headline win: the most common interference bug
+("hole edge buried under a wall") is caught the moment `design.json` is
+finalized — long before any geometry is generated.
 
-```text
-examples/fan-adapter-8025/
-```
-
-It contains two validated models.
-
-### 1. Fan To Duct Adapter
-
-Path:
-
-```text
-examples/fan-adapter-8025/models/fan_duct_adapter_8025/
-```
-
-Purpose:
-
-- Adapter from an 8025 fan to an 80 mm inner-diameter round duct.
-- Square flange bolts to fan.
-- Round male socket slips into duct.
-
-Key dimensions:
-
-- fan frame: `80 x 80 x 25 mm`
-- mount spacing: `71.5 mm`
-- flange: `86 x 86 x 5 mm`
-- duct target inner diameter: `80 mm`
-- socket OD: `79.4 mm`
-- socket length: `28 mm`
-- bbox: `86 x 86 x 33 mm`
-
-Current validation highlights:
+## Example workspaces
 
 ```text
-validation passed
-watertight: true
-triangles: 5836
-lead-in diameter:
-  z=32.0 -> 79.4000 mm
-  z=32.5 -> 78.4000 mm
-  z=33.0 -> 77.4000 mm
+examples/
+  fan-adapter-8025/      # original V0 ducting models
+  iphone15pro-case/      # full-cutout phone case with section checks
+  e2e-test/              # sub-agent run that produced mounting_bracket
 ```
 
-Artifacts:
+### 1. Fan duct adapter (`fan-adapter-8025/fan_duct_adapter_8025`)
 
-```text
-outputs/fan_duct_adapter_8025.step
-outputs/fan_duct_adapter_8025.stl
-outputs/preview.iso.svg
-outputs/geometry.json
-outputs/validation.json
-outputs/deliverable.json
-```
+Adapter from an 8025 fan to an 80 mm round duct. Square flange bolts to
+the fan, round male socket slips into the duct, lead-in chamfer at the
+duct end.
 
-Re-run:
+- frame `80 × 80 × 25 mm`
+- mount spacing `71.5 mm`
+- flange `86 × 86 × 5 mm`
+- duct ID `80 mm`, socket OD `79.4 mm`, socket length `28 mm`
+- bbox `86 × 86 × 33 mm`
 
-```bash
-uv run cad validate --project examples/fan-adapter-8025 fan_duct_adapter_8025 --json
-uv run cad deliver --project examples/fan-adapter-8025 fan_duct_adapter_8025 --json
-```
+Section checks confirm the lead-in tapers monotonically from `79.4 → 77.4 mm`.
 
-### 2. Outlet Magnetic Screen Plate
+### 2. Outlet magnetic screen plate
 
-Path:
+Adapter plate that screws to the fan and magnetically attaches to a window
+screen. Coaxial stepped holes per corner: through-hole into the fan, head
+recess above it, magnet pocket above that. The contract pins
+`screw_install_side`, `screw_head_recess_side`, and `magnet_pocket_side`
+with metadata equality so the assembly direction is part of validation.
 
-```text
-examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/
-```
+### 3. iPhone 15 Pro case (`iphone15pro-case`)
 
-Purpose:
+Real-world TPU/PETG case with multi-cutout pockets (camera, action button,
+USB-C, mute). The `section_bbox_at_z` check is exercised heavily here; an
+early bug had `Locations + BuildSketch(Plane.XY)` silently dropping the Z
+offset, which surfaced because section checks failed even though
+`bbox_size` and `watertight` passed.
 
-- Outlet-side adapter plate for an 8025 fan.
-- Screws to fan using the normal 71.5 mm fan hole pattern.
-- Same four corner positions include coaxial stepped holes:
-  - screen/service-side magnet pocket for glued `12 mm x 5 mm` magnets
-  - screen/service-side screw head recess below the magnet pocket
-  - through screw clearance hole into the fan
-- Intended to magnetically attach the fan assembly to a window screen for
-  exhaust.
+### 4. Sub-agent end-to-end test (`e2e-test/mounting_bracket`)
 
-Important assembly correction:
+A sub-agent without prior context was asked to design an L-shaped mounting
+bracket via the documented TDD workflow. The result successfully produced
+the model and incidentally surfaced two real bugs:
 
-The screw and magnet features are on the same accessible side. Screws are
-installed first from the screen/service side into the fan, then magnets are
-glued into the larger pockets above the screw heads.
+1. A new build123d trap — `Box(...).moved(Location(...))` inside a
+   `BuildPart` context double-adds the shape (once at the original
+   position, once at the moved position). The fix is to use
+   `with Locations((x, y, z)): Box(...)`. This is now codified in
+   `skills/build123d-guide.md`.
+2. A real **hole-wall interference**: the M4 base holes were partly buried
+   under the upright wall, yet `inner_diameter_at_z` was passing because
+   it only verified that the hole *exists* at that Z, not that its
+   *footprint* is clear. The fix landed in two parts:
+   - a parameter change (`base_hole_y_offset 15 → 13 mm`) to restore the
+     0.75 mm clearance;
+   - new `min_clearance` and `hole_accessibility` checks added to the
+     contract so the same class of bug is caught at design time
+     henceforth.
 
-Key dimensions:
+## Lessons consolidated
 
-- plate: `88 x 88 x 9 mm`
-- mount spacing: `71.5 mm`
-- screw clearance: `4.5 mm`
-- screw head recess: `8.5 mm x 2.0 mm`
-- magnet pocket: `12.2 mm x 5.2 mm`
-- center exhaust opening: `74 mm`
+1. `bbox_size` + `watertight` are necessary but never sufficient.
+2. Every feature needs a geometry-specific check — diameter, section,
+   clearance, accessibility, or wall thickness — not just a bbox.
+3. **Reason in edges, not centers.** The classic human error is
+   `hole_y(15) - wall_y(16) = 1 mm`, forgetting the hole's 2.25 mm radius.
+   The mitigation is `min_clearance` working on shape descriptors, where
+   edges are computed for you.
+4. Metadata checks pin design intent (assembly direction, install side)
+   but cannot replace mesh-level checks for actual geometry.
+5. Section checks catch hidden / ineffective tapers and chamfers.
+6. `cad probe --scan` reveals step changes (cavity start, wall transitions)
+   that are otherwise invisible in iso previews; `point_count` deltas catch
+   hollow shells that have constant outer-bbox profiles.
+7. Two real build123d traps that always come back:
+   - `Locations + BuildSketch(Plane.XY)` does not move the sketch plane;
+     use `Plane(origin=(x, y, z))` instead.
+   - `Box(...).moved(Location(...))` inside `BuildPart` double-adds; use
+     `with Locations((x, y, z)): Box(...)`.
 
-Current validation highlights:
+Both are documented in `skills/build123d-guide.md`.
 
-```text
-validation passed
-bbox: 88 x 88 x 9 mm
-watertight: true
-triangles: 7096
-screw_install_side: screen
-screw_head_recess_side: screen
-magnet_pocket_side: screen
-magnet pockets coaxial with mounting holes: true
-```
+## Tests
 
-Artifacts:
+`uv run pytest -v` — currently 125 tests across:
 
-```text
-outputs/outlet_magnetic_screen_plate_8025.step
-outputs/outlet_magnetic_screen_plate_8025.stl
-outputs/preview.iso.svg
-outputs/geometry.json
-outputs/validation.json
-outputs/deliverable.json
-```
+- `test_cli.py` — CLI dispatch
+- `test_workspace.py` — init / new / sync / discovery
+- `test_runner.py`, `test_stale.py` — build runner + hash cache
+- `test_stl.py` — pure-Python STL reader and analysis
+- `test_render.py`, `test_section.py` — SVG rendering and section extraction
+- `test_validate.py`, `test_weak_check.py` — post-build validation + weak-check warnings
+- `test_probe.py` — probe + scan
+- `test_geometry.py` — pure shape primitives (AABB, clearance, accessibility, wall thickness)
+- `test_precheck_review.py` — `cad precheck` and `cad review` integration
+- `test_jsonio.py`
 
-Re-run:
+## Roadmap delivered
 
-```bash
-uv run cad validate --project examples/fan-adapter-8025 outlet_magnetic_screen_plate_8025 --json
-uv run cad deliver --project examples/fan-adapter-8025 outlet_magnetic_screen_plate_8025 --json
-```
+| Milestone | Status | Notes |
+|---|---|---|
+| V0 — minimal agent loop | ✅ delivered | new / build / measure / render / validate / deliver |
+| V1 — geometry observability | ✅ delivered | multi-view render, section SVGs, hash cache, three-axis probe + scan, `cad inspect`, debug SVG on failure |
+| V2 — design spec standardization | ✅ delivered | check IDs, schema validation, weak-check warnings, Markdown report (`cad report`) |
+| V2.5 — design-time observability | ✅ delivered (new) | `cad precheck`, `cad review`, four geometric relation checks, common-error catalog, mandatory TDD prompt |
 
-## Important Lessons From The Two Runs
-
-1. BBox and watertight are necessary but insufficient.
-2. Every requested feature needs a validation check.
-3. Metadata checks are useful for design intent but should not be the only
-   evidence for actual geometry.
-4. Section checks are useful for catching hidden or ineffective chamfers/tapers.
-5. The spec must explicitly define assembly direction, not just dimensions.
-6. Model outputs should live under `models/<name>/outputs/` only.
-
-## Next Recommended Work
-
-Short-term:
-
-- Add real geometry checks for hole/pocket diameters at specific XY positions.
-- Add section checks for stepped bores, not just centered cylindrical sections.
-- Add `cad validate all`.
-- Add a human-readable Markdown report command.
-- Add a cleaner preview renderer or PNG export.
-
-Medium-term:
-
-- Add JSON schema validation for `design.json`.
-- Introduce feature trace output from model code or helper library.
-- Add reusable helper functions for common CAD features:
-  - fan mounting pattern
-  - stepped bore
-  - magnet pocket
-  - duct socket
-  - plate with rounded corners
-
-Open design question:
-
-- Whether to keep models as raw build123d source plus Feature Contract, or
-  introduce a small helper library first. Avoid a full CAD DSL until repeated
-  patterns justify it.
+Next milestones (V3+) are tracked in [`DESIGN.md`](DESIGN.md).
