@@ -48,12 +48,11 @@ def validate_model(
     if render_view != "iso" and render_view not in views:
         views = [render_view] + [v for v in views if v != render_view]
     multi_render = render_models_multi(project, name, views)
-    primary_render = next((r for r in multi_render.get("results", []) if r.get("ok")), multi_render)
 
     checks = [
         stage_check("build", bool(build.get("ok")), build),
         stage_check("measure", bool(measure.get("ok")), measure),
-        stage_check("render", bool(multi_render.get("ok")), primary_render),
+        stage_check("render", bool(multi_render.get("ok")), multi_render),
     ]
     warnings: list[dict] = []
     auto_scan: dict = {}
