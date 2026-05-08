@@ -197,6 +197,21 @@ def test_review_must_view_includes_iso_when_present(model_with_clean_clearance):
     assert "iso_preview" in labels
 
 
+def test_review_must_view_requires_all_orthographic_previews(model_with_clean_clearance):
+    project, name = model_with_clean_clearance
+    result = review_model(project, name)
+    labels = [v["label"] for v in result["must_view"]]
+    assert labels[:5] == [
+        "iso_preview",
+        "front_preview",
+        "top_preview",
+        "side_preview",
+        "back_preview",
+    ]
+    svg_check = next(item for item in result["checklist"] if item["id"] == "key_svgs_present")
+    assert svg_check["ok"] is False
+
+
 def test_review_writes_artifact(model_with_clean_clearance):
     project, name = model_with_clean_clearance
     result = review_model(project, name)
@@ -211,9 +226,23 @@ def test_review_missing_design(workspace: Path):
                for item in result["checklist"])
 
 
-def test_review_suggests_hole_accessibility(model_with_interference):
+def test_review_blocks_missing_hole_accessibility(model_with_interference):
     project, name = model_with_interference
     result = review_model(project, name)
-    followups = result.get("deferred_followups", [])
-    types = [f["type"] for f in followups]
-    assert "missing_check_type" in types
+    access_check = next(
+        item for item in result["checklist"]
+        if item["id"] == "hole_accessibility_declared"
+    )
+    assert access_check["ok"] is False
+    assert result["ok"] is False
+
+
+def test_review_does_not_treat_every_cylinder_as_hole(model_with_clean_clearance):
+    project, name = model_with_clean_clearance
+    result = review_model(project, name)
+    access_check = next(
+        item for item in result["checklist"]
+        if item["id"] == "hole_accessibility_declared"
+    )
+    assert access_check["ok"] is True
+    assert access_check["evidence"]["declared_hole_count"] == 0

@@ -1,0 +1,257 @@
+{
+  "ok": true,
+  "stage": "review",
+  "model": "wall_cable_hook",
+  "reviewedAt": "2026-05-08T06:45:32.011389+00:00",
+  "ready_to_deliver": true,
+  "checklist": [
+    {
+      "id": "design_present",
+      "ok": true,
+      "title": "design.json exists and is parseable",
+      "action": null,
+      "evidence": {
+        "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/design.json"
+      }
+    },
+    {
+      "id": "validation_passes",
+      "ok": true,
+      "title": "agentcad validate is green",
+      "action": null,
+      "evidence": {
+        "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/validation.json",
+        "failed_checks": []
+      }
+    },
+    {
+      "id": "feature_coverage",
+      "ok": true,
+      "title": "every feature references at least one geometry check",
+      "action": null,
+      "evidence": {
+        "features": [
+          "back_plate",
+          "mounting_holes",
+          "screw_head_recesses",
+          "hook_arm",
+          "front_lip",
+          "support_ribs"
+        ]
+      }
+    },
+    {
+      "id": "hole_clearance_declared",
+      "ok": true,
+      "title": "every hole has a min_clearance check vs surrounding solids",
+      "action": null,
+      "evidence": {
+        "ok": true,
+        "hole_feature_count": 2,
+        "min_clearance_check_count": 2
+      }
+    },
+    {
+      "id": "hole_accessibility_declared",
+      "ok": true,
+      "title": "every declared hole has a tool/access envelope check",
+      "action": null,
+      "evidence": {
+        "ok": true,
+        "declared_hole_count": 2,
+        "hole_accessibility_check_count": 2
+      }
+    },
+    {
+      "id": "no_pairwise_interference",
+      "ok": true,
+      "title": "no declared shape pair interferes",
+      "action": null,
+      "evidence": {
+        "interferences": []
+      }
+    },
+    {
+      "id": "key_svgs_present",
+      "ok": true,
+      "title": "key cross-section SVGs exist for visual review",
+      "action": null,
+      "evidence": {
+        "sections": [
+          {
+            "label": "iso_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.iso.svg",
+            "why": "overall shape — confirm topology matches intent"
+          },
+          {
+            "label": "front_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.front.svg",
+            "why": "front view — confirm visible features and tool access are not hidden"
+          },
+          {
+            "label": "top_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.top.svg",
+            "why": "top view — confirm projection direction, spacing, and symmetry"
+          },
+          {
+            "label": "side_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.side.svg",
+            "why": "side view — catch floating or edge-only connected features"
+          },
+          {
+            "label": "back_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.back.svg",
+            "why": "back/mounting view — confirm wall/contact face and mounting holes"
+          },
+          {
+            "label": "section_z12_25",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z12.25.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z18_68",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z18.68.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z31_53",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z31.53.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z34_74",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z34.74.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z37_95",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z37.95.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z41_16",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z41.16.svg",
+            "why": "auto-scan section produced by validate"
+          }
+        ]
+      }
+    },
+    {
+      "id": "no_open_warnings",
+      "ok": true,
+      "title": "no open weak-check warnings",
+      "action": null,
+      "evidence": {
+        "warnings": []
+      }
+    },
+    {
+      "id": "bbox_matches_intent",
+      "ok": true,
+      "title": "measured bbox is consistent with declared intent",
+      "action": null,
+      "evidence": {
+        "ok": true,
+        "expected": [
+          60.0,
+          46.0,
+          50.0
+        ],
+        "actual": [
+          60.0,
+          46.0,
+          50.20000076293945
+        ],
+        "tolerance": 1.0
+      }
+    }
+  ],
+  "relations": [
+    {
+      "a": "cyl(-20.0,38.0,r=2.25)",
+      "b": "box(x[-30,30],y[-2,5])",
+      "clearance_mm": 4.75,
+      "z_overlap_mm": -4.75,
+      "interferes": false,
+      "ok": true
+    },
+    {
+      "a": "cyl(-20.0,38.0,r=2.25)",
+      "b": "cyl(20.0,38.0,r=2.25)",
+      "clearance_mm": 35.5,
+      "z_overlap_mm": 4.5,
+      "interferes": false,
+      "ok": true
+    },
+    {
+      "a": "box(x[-30,30],y[-2,5])",
+      "b": "cyl(20.0,38.0,r=2.25)",
+      "clearance_mm": 4.75,
+      "z_overlap_mm": -4.75,
+      "interferes": false,
+      "ok": true
+    }
+  ],
+  "must_view": [
+    {
+      "label": "iso_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.iso.svg",
+      "why": "overall shape — confirm topology matches intent"
+    },
+    {
+      "label": "front_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.front.svg",
+      "why": "front view — confirm visible features and tool access are not hidden"
+    },
+    {
+      "label": "top_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.top.svg",
+      "why": "top view — confirm projection direction, spacing, and symmetry"
+    },
+    {
+      "label": "side_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.side.svg",
+      "why": "side view — catch floating or edge-only connected features"
+    },
+    {
+      "label": "back_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.back.svg",
+      "why": "back/mounting view — confirm wall/contact face and mounting holes"
+    },
+    {
+      "label": "section_z12_25",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z12.25.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z18_68",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z18.68.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z31_53",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z31.53.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z34_74",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z34.74.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z37_95",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z37.95.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z41_16",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z41.16.svg",
+      "why": "auto-scan section produced by validate"
+    }
+  ],
+  "deferred_followups": [],
+  "artifacts": {
+    "review": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/review.json"
+  },
+  "message": "review passed — ready to deliver"
+}

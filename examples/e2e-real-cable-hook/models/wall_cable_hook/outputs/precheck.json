@@ -1,0 +1,220 @@
+{
+  "ok": true,
+  "stage": "precheck",
+  "model": "wall_cable_hook",
+  "precheckedAt": "2026-05-08T06:42:03.764410+00:00",
+  "checks": [
+    {
+      "name": "feature_coverage:back_plate",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "back_plate",
+      "checks": [
+        "overall_bbox",
+        "watertight",
+        "back_plate_solid"
+      ],
+      "matchedChecks": [
+        "overall_bbox",
+        "watertight",
+        "back_plate_solid"
+      ]
+    },
+    {
+      "name": "feature_coverage:mounting_holes",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "mounting_holes",
+      "checks": [
+        "left_hole_void",
+        "right_hole_void",
+        "left_hole_tool_access",
+        "right_hole_tool_access",
+        "left_screw_access_void",
+        "right_screw_access_void",
+        "hole_top_clearance",
+        "hole_to_hole_clearance"
+      ],
+      "matchedChecks": [
+        "left_hole_void",
+        "right_hole_void",
+        "left_hole_tool_access",
+        "right_hole_tool_access",
+        "left_screw_access_void",
+        "right_screw_access_void",
+        "hole_top_clearance",
+        "hole_to_hole_clearance"
+      ]
+    },
+    {
+      "name": "feature_coverage:screw_head_recesses",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "screw_head_recesses",
+      "checks": [
+        "left_recess_void",
+        "right_recess_void"
+      ],
+      "matchedChecks": [
+        "left_recess_void",
+        "right_recess_void"
+      ]
+    },
+    {
+      "name": "feature_coverage:hook_arm",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "hook_arm",
+      "checks": [
+        "hook_arm_solid"
+      ],
+      "matchedChecks": [
+        "hook_arm_solid"
+      ]
+    },
+    {
+      "name": "feature_coverage:front_lip",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "front_lip",
+      "checks": [
+        "front_lip_solid",
+        "front_lip_base_connected"
+      ],
+      "matchedChecks": [
+        "front_lip_solid",
+        "front_lip_base_connected"
+      ]
+    },
+    {
+      "name": "feature_coverage:support_ribs",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "support_ribs",
+      "checks": [
+        "left_rib_solid",
+        "right_rib_solid"
+      ],
+      "matchedChecks": [
+        "left_rib_solid",
+        "right_rib_solid"
+      ]
+    },
+    {
+      "name": "hole_top_clearance",
+      "type": "min_clearance",
+      "ok": true,
+      "min_mm": 4.0,
+      "tolerance": 0.0,
+      "actual_mm": 4.75,
+      "z_overlap_mm": -4.75,
+      "xy_clearance_mm": -4.5,
+      "interferes": false
+    },
+    {
+      "name": "hole_to_hole_clearance",
+      "type": "min_clearance",
+      "ok": true,
+      "min_mm": 12.0,
+      "tolerance": 0.0,
+      "actual_mm": 35.5,
+      "z_overlap_mm": 4.5,
+      "xy_clearance_mm": 35.5,
+      "interferes": false
+    }
+  ],
+  "artifacts": {
+    "precheck": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/precheck.json"
+  },
+  "message": "precheck passed — safe to write part.py",
+  "relations": [
+    {
+      "id": "hole_top_clearance",
+      "ok": true,
+      "clearance_mm": 4.75,
+      "min_mm": 4.0,
+      "interferes": false
+    },
+    {
+      "id": "hole_to_hole_clearance",
+      "ok": true,
+      "clearance_mm": 35.5,
+      "min_mm": 12.0,
+      "interferes": false
+    }
+  ],
+  "deferred_to_validate": [
+    {
+      "id": "overall_bbox",
+      "type": "bbox_size"
+    },
+    {
+      "id": "watertight",
+      "type": "watertight"
+    },
+    {
+      "id": "back_plate_solid",
+      "type": "section_bbox_at_z"
+    },
+    {
+      "id": "left_hole_void",
+      "type": "feature_position"
+    },
+    {
+      "id": "right_hole_void",
+      "type": "feature_position"
+    },
+    {
+      "id": "left_recess_void",
+      "type": "feature_position"
+    },
+    {
+      "id": "right_recess_void",
+      "type": "feature_position"
+    },
+    {
+      "id": "left_screw_access_void",
+      "type": "feature_position"
+    },
+    {
+      "id": "right_screw_access_void",
+      "type": "feature_position"
+    },
+    {
+      "id": "left_hole_tool_access",
+      "type": "hole_accessibility"
+    },
+    {
+      "id": "right_hole_tool_access",
+      "type": "hole_accessibility"
+    },
+    {
+      "id": "hook_arm_solid",
+      "type": "section_bbox_at_z"
+    },
+    {
+      "id": "front_lip_solid",
+      "type": "section_bbox_at_z"
+    },
+    {
+      "id": "front_lip_base_connected",
+      "type": "section_bbox_at_z"
+    },
+    {
+      "id": "left_rib_solid",
+      "type": "section_bbox_at_z"
+    },
+    {
+      "id": "right_rib_solid",
+      "type": "section_bbox_at_z"
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists"
+    }
+  ]
+}

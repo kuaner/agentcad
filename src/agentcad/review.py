@@ -90,6 +90,18 @@ def review_model(project: Path, name: str) -> dict:
         evidence=has_clearance,
     ))
 
+    has_hole_access = _has_hole_accessibility_for_holes(design)
+    checklist.append(_item(
+        "hole_accessibility_declared",
+        has_hole_access["ok"],
+        title="every declared hole has a tool/access envelope check",
+        action=(
+            "add one hole_accessibility check per hole. For non-Z holes, set "
+            "axis and position on the approach plane, e.g. axis='y', y=-10, center=[x,z]."
+        ),
+        evidence=has_hole_access,
+    ))
+
     relations = _compute_all_pair_clearances(design)
     interferences = [r for r in relations if r.get("interferes")]
     checklist.append(_item(
@@ -171,19 +183,52 @@ def _all_features_covered(design: dict) -> bool:
 def _holes_in_design(design: dict) -> list[dict]:
     """Identify hole-shape descriptors declared inline on min_clearance checks.
 
-    We treat every cylinder shape that appears as feature_a/feature_b in any
-    min_clearance check as a "hole" candidate.  This is heuristic but enough
-    to detect missing clearance declarations.
+    Cylinders are not always holes (posts, bosses, pins), so only treat a
+    cylinder as a hole when the check or shape names it that way.
     """
     holes: list[dict] = []
     for c in design.get("checks") or []:
         if not isinstance(c, dict):
             continue
+        check_hint = str(c.get("id") or "").lower()
         for key in ("feature_a", "feature_b", "a", "b"):
             shape = c.get(key)
-            if isinstance(shape, dict) and shape.get("type") == "cylinder":
+            if (
+                isinstance(shape, dict)
+                and shape.get("type") == "cylinder"
+                and _shape_declares_hole(shape, check_hint)
+            ):
                 holes.append(shape)
     return holes
+
+
+def _shape_declares_hole(shape: dict, check_hint: str = "") -> bool:
+    terms = [check_hint]
+    for key in ("id", "name", "role", "feature", "intent"):
+        if shape.get(key):
+            terms.append(str(shape.get(key)).lower())
+    text = " ".join(terms)
+    return any(word in text for word in ("hole", "screw", "bolt", "fastener"))
+
+
+def _distinct_holes_in_design(design: dict) -> list[dict]:
+    distinct: dict[str, dict] = {}
+    for hole in _holes_in_design(design):
+        try:
+            parsed = parse_shape(hole)
+        except ValueError:
+            continue
+        distinct[_hole_key(parsed)] = parsed
+    return list(distinct.values())
+
+
+def _hole_key(shape: dict) -> str:
+    return "|".join([
+        str(shape.get("axis", "")),
+        ",".join(f"{float(v):.3f}" for v in shape.get("center", [])),
+        f"{float(shape.get('radius', 0.0)):.3f}",
+        ",".join(f"{float(v):.3f}" for v in shape.get(f"{shape.get('axis')}_range", [])),
+    ])
 
 
 def _has_min_clearance_for_each_hole(design: dict) -> dict:
@@ -204,6 +249,19 @@ def _has_min_clearance_for_each_hole(design: dict) -> dict:
         "ok": (not hole_features) or has_clearance,
         "hole_feature_count": len(hole_features),
         "min_clearance_check_count": len(clearance_checks),
+    }
+
+
+def _has_hole_accessibility_for_holes(design: dict) -> dict:
+    holes = _distinct_holes_in_design(design)
+    accessibility_checks = [
+        c for c in design.get("checks") or []
+        if isinstance(c, dict) and c.get("type") == "hole_accessibility"
+    ]
+    return {
+        "ok": (not holes) or len(accessibility_checks) >= len(holes),
+        "declared_hole_count": len(holes),
+        "hole_accessibility_check_count": len(accessibility_checks),
     }
 
 
@@ -269,12 +327,18 @@ def _build_must_view_list(out_dir: Path, design: dict, validation: dict | None) 
     """
     items: list[dict] = []
 
-    iso = out_dir / "preview.iso.svg"
-    if iso.exists():
+    required_views = [
+        ("iso", "overall shape — confirm topology matches intent"),
+        ("front", "front view — confirm visible features and tool access are not hidden"),
+        ("top", "top view — confirm projection direction, spacing, and symmetry"),
+        ("side", "side view — catch floating or edge-only connected features"),
+        ("back", "back/mounting view — confirm wall/contact face and mounting holes"),
+    ]
+    for view, why in required_views:
         items.append({
-            "label": "iso_preview",
-            "path": str(iso),
-            "why": "overall shape — confirm topology matches intent",
+            "label": f"{view}_preview",
+            "path": str(out_dir / f"preview.{view}.svg"),
+            "why": why,
         })
 
     z_layers = _interface_z_values(design)
@@ -351,18 +415,6 @@ def _deferred_followups(design: dict, validation: dict | None) -> list[dict]:
             "type": "weak_check",
             "feature": w.get("feature"),
             "hint": w.get("hint"),
-        })
-
-    holes = _holes_in_design(design)
-    if holes and not any(c.get("type") == "hole_accessibility"
-                         for c in design.get("checks") or []
-                         if isinstance(c, dict)):
-        items.append({
-            "type": "missing_check_type",
-            "hint": (
-                "no hole_accessibility checks declared — consider adding one "
-                "per hole to verify tool/bolt clearance"
-            ),
         })
 
     return items

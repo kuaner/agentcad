@@ -1,0 +1,186 @@
+{
+  "schema": "design-spec.v1",
+  "model": "wall_cable_hook",
+  "units": "mm",
+  "intent": "FDM-printable wall-mounted cable hook with a vertical screw-on back plate, two accessible upper-wing screw holes, front screw-head reliefs, a forward hook arm, twin support ribs, and a front retaining lip.",
+  "features": [
+    {
+      "id": "back_plate",
+      "intent": "Vertical mounting plate 60 mm wide x 50 mm tall x 5 mm thick.",
+      "checks": ["overall_bbox", "watertight", "back_plate_solid"]
+    },
+    {
+      "id": "mounting_holes",
+      "intent": "Two Y-axis screw clearance holes through the vertical back plate, placed outside the hook width so a screwdriver path remains open.",
+      "checks": [
+        "left_hole_void",
+        "right_hole_void",
+        "left_hole_tool_access",
+        "right_hole_tool_access",
+        "left_screw_access_void",
+        "right_screw_access_void",
+        "hole_top_clearance",
+        "hole_to_hole_clearance"
+      ]
+    },
+    {
+      "id": "screw_head_recesses",
+      "intent": "Front-side screw-head reliefs around both screw holes.",
+      "checks": ["left_recess_void", "right_recess_void"]
+    },
+    {
+      "id": "hook_arm",
+      "intent": "Forward boxed hook arm projecting from the lower back plate.",
+      "checks": ["hook_arm_solid"]
+    },
+    {
+      "id": "front_lip",
+      "intent": "Upturned retaining lip at the front end of the hook arm.",
+      "checks": ["front_lip_solid", "front_lip_base_connected"]
+    },
+    {
+      "id": "support_ribs",
+      "intent": "Two web ribs tying the hook arm back into the vertical plate.",
+      "checks": ["left_rib_solid", "right_rib_solid"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "overall_bbox",
+      "type": "bbox_size",
+      "expected": [60.0, 46.0, 50.0],
+      "tolerance": 0.8
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "back_plate_solid",
+      "type": "section_bbox_at_z",
+      "z": 25.0,
+      "region": [[-30.0, 0.0], [30.0, 5.0]],
+      "expected": "solid"
+    },
+    {
+      "id": "left_hole_void",
+      "type": "feature_position",
+      "point": [-20.0, 2.5, 38.0],
+      "expected": "void",
+      "tolerance_mm": 1.0
+    },
+    {
+      "id": "right_hole_void",
+      "type": "feature_position",
+      "point": [20.0, 2.5, 38.0],
+      "expected": "void",
+      "tolerance_mm": 1.0
+    },
+    {
+      "id": "left_recess_void",
+      "type": "feature_position",
+      "point": [-16.0, 0.8, 38.0],
+      "expected": "void",
+      "tolerance_mm": 0.3
+    },
+    {
+      "id": "right_recess_void",
+      "type": "feature_position",
+      "point": [16.0, 0.8, 38.0],
+      "expected": "void",
+      "tolerance_mm": 0.3
+    },
+    {
+      "id": "left_screw_access_void",
+      "type": "feature_position",
+      "point": [-20.0, -10.0, 38.0],
+      "expected": "void",
+      "tolerance_mm": 1.0
+    },
+    {
+      "id": "right_screw_access_void",
+      "type": "feature_position",
+      "point": [20.0, -10.0, 38.0],
+      "expected": "void",
+      "tolerance_mm": 1.0
+    },
+    {
+      "id": "left_hole_tool_access",
+      "type": "hole_accessibility",
+      "axis": "y",
+      "y": -10.0,
+      "center": [-20.0, 38.0],
+      "hole_diameter": 4.5,
+      "clearance_diameter": 12.0
+    },
+    {
+      "id": "right_hole_tool_access",
+      "type": "hole_accessibility",
+      "axis": "y",
+      "y": -10.0,
+      "center": [20.0, 38.0],
+      "hole_diameter": 4.5,
+      "clearance_diameter": 12.0
+    },
+    {
+      "id": "hole_top_clearance",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "y", "center": [-20.0, 38.0], "radius": 2.25, "y_range": [-0.5, 5.5]},
+      "feature_b": {"type": "box", "x_range": [-30.0, 30.0], "y_range": [-2.0, 5.2], "z_range": [45.0, 50.0]},
+      "min_mm": 4.0
+    },
+    {
+      "id": "hole_to_hole_clearance",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "y", "center": [-20.0, 38.0], "radius": 2.25, "y_range": [-0.5, 5.5]},
+      "feature_b": {"type": "cylinder", "axis": "y", "center": [20.0, 38.0], "radius": 2.25, "y_range": [-0.5, 5.5]},
+      "min_mm": 12.0
+    },
+    {
+      "id": "hook_arm_solid",
+      "type": "section_bbox_at_z",
+      "z": 16.0,
+      "region": [[-11.0, -34.0], [11.0, -4.0]],
+      "expected": "solid"
+    },
+    {
+      "id": "front_lip_solid",
+      "type": "section_bbox_at_z",
+      "z": 28.0,
+      "region": [[-11.0, -40.5], [11.0, -35.0]],
+      "expected": "solid"
+    },
+    {
+      "id": "front_lip_base_connected",
+      "type": "section_bbox_at_z",
+      "z": 16.0,
+      "region": [[-11.0, -40.5], [11.0, -35.0]],
+      "expected": "solid"
+    },
+    {
+      "id": "left_rib_solid",
+      "type": "section_bbox_at_z",
+      "z": 30.0,
+      "region": [[-9.0, -28.0], [-5.0, 0.0]],
+      "expected": "solid"
+    },
+    {
+      "id": "right_rib_solid",
+      "type": "section_bbox_at_z",
+      "z": 30.0,
+      "region": [[5.0, -28.0], [9.0, 0.0]],
+      "expected": "solid"
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/wall_cable_hook.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/wall_cable_hook.stl"
+    }
+  ]
+}

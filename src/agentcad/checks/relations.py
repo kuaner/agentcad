@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from ..geometry import (
+    hole_accessibility_at_axis,
     hole_accessibility_at_z,
     min_clearance_3d,
     min_wall_thickness_at_z,
     parse_shape,
 )
-from ..section import AXIS_Z, write_section_svg
+from ..section import AXIS_X, AXIS_Y, AXIS_Z, write_section_svg
 from . import CheckContext, DESIGN_TIME, POST_BUILD, register_check
 
 
@@ -47,10 +48,22 @@ def evaluate_min_clearance(check: dict, ctx: CheckContext) -> dict:
 @register_check("hole_accessibility", layer=POST_BUILD)
 def evaluate_hole_accessibility(check: dict, ctx: CheckContext) -> dict:
     check_id = check.get("id") or "hole_accessibility"
-    raw_z = check.get("z")
+    axis_name = str(check.get("axis", "z")).lower()
+    axis_map = {"x": AXIS_X, "y": AXIS_Y, "z": AXIS_Z}
+    if axis_name not in axis_map:
+        return _input_error(check, "hole_accessibility", "axis must be 'x', 'y', or 'z'")
+    raw_pos = check.get("position")
+    if raw_pos is None:
+        raw_pos = check.get(axis_name)
+    if raw_pos is None and axis_name == "z":
+        raw_pos = check.get("z")
     raw_center = check.get("center")
-    if raw_z is None or raw_center is None:
-        return _input_error(check, "hole_accessibility", "check requires 'z' and 'center' fields")
+    if raw_pos is None or raw_center is None:
+        return _input_error(
+            check,
+            "hole_accessibility",
+            "check requires 'axis', axis position ('x'/'y'/'z' or 'position'), and 'center' fields",
+        )
     try:
         cx, cy = float(raw_center[0]), float(raw_center[1])
         if "hole_radius" in check:
@@ -71,22 +84,30 @@ def evaluate_hole_accessibility(check: dict, ctx: CheckContext) -> dict:
     if clearance_r <= hole_r:
         return _input_error(check, "hole_accessibility", "clearance_radius must exceed hole_radius")
     triangles = ctx.get_triangles()
-    z = float(raw_z)
-    result = hole_accessibility_at_z(triangles, z, (cx, cy), hole_r, clearance_r)
+    pos = float(raw_pos)
+    if axis_name == "z" and "axis" not in check and "position" not in check:
+        result = hole_accessibility_at_z(triangles, pos, (cx, cy), hole_r, clearance_r)
+    else:
+        result = hole_accessibility_at_axis(
+            triangles, axis_map[axis_name], pos, (cx, cy), hole_r, clearance_r
+        )
     payload = {
         "name": check_id,
         "type": "hole_accessibility",
         "ok": result["ok"],
-        "z": z,
+        "axis": axis_name,
+        "position": pos,
         "center": [cx, cy],
         "hole_radius": hole_r,
         "clearance_radius": clearance_r,
         "blocking_point_count": result["blocking_point_count"],
         "min_blocking_radius": result["min_blocking_radius"],
     }
+    if axis_name == "z":
+        payload["z"] = pos
     if not result["ok"]:
-        svg_path = ctx.out_dir / f"debug.{check_id}.z{z:.2f}.svg"
-        info = write_section_svg(triangles, AXIS_Z, z, svg_path)
+        svg_path = ctx.out_dir / f"debug.{check_id}.{axis_name}{pos:.2f}.svg"
+        info = write_section_svg(triangles, axis_map[axis_name], pos, svg_path)
         payload["debug_svg"] = info.get("svg")
         payload["hint"] = (
             f"material at radius={result['min_blocking_radius']:.2f}mm blocks "

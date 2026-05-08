@@ -1,6 +1,6 @@
 # AgentCAD Current Status
 
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 ## Project Goal
 
@@ -8,15 +8,17 @@ AgentCAD is a CLI-first workflow runtime for coding agents that create CAD
 models. The expanded core loop is:
 
 ```text
-design contract -> precheck -> params/source -> build
-                  -> measure -> render -> validate -> review -> deliver
+discovery -> concept -> design contract -> precheck -> params/source -> build
+          -> measure -> render -> validate -> review -> quality review -> deliver
 ```
 
 `precheck` and `review` are mandatory checkpoints that catch design-time
 interferences before any code is written and pre-delivery gaps before any
-artifact is shipped, respectively. The project remains intentionally
-agent-first: there is no desktop UI, web viewer, or MCP server in the core
-loop.
+artifact is shipped, respectively. The prompt templates now also include a
+Concept Gate before `design.json` and a Design Quality Review before delivery,
+so agents have to reason about topology and design quality, not only geometric
+validity. The project remains intentionally agent-first: there is no desktop
+UI, web viewer, or MCP server in the core loop.
 
 ## Environment
 
@@ -51,8 +53,8 @@ agentcad deliver <model>                          # delivery manifest
 agentcad report <model>                                  # Markdown validation summary
 ```
 
-`agentcad validate` is the post-build self-check. `agentcad precheck` and `agentcad review`
-flank it as design-time and pre-delivery gates.
+`agentcad validate` is the post-build self-check. `agentcad precheck` and
+`agentcad review` flank it as design-time and pre-delivery gates.
 
 ## Workspace Layout
 
@@ -128,7 +130,8 @@ Geometric relation checks (added in the latest milestone):
   Evaluated **statically** in `agentcad precheck` (no STL needed) and again in
   `agentcad validate` for sanity.
 - `hole_accessibility` — annular tool envelope around a hole is free of
-  material at the working plane.
+  material at the working plane. It now supports X/Y/Z approach axes so
+  vertical-wall screws can be checked on an XZ approach plane.
 - `min_wall_thickness` — minimum point-pair distance inside a region at Z.
 - `feature_position` — assert a 3D point is `solid` or `void` (used to pin
   feature direction or guard blind-hole bottoms).
@@ -144,6 +147,7 @@ examples/
   fan-adapter-8025/      # original V0 ducting models
   iphone15pro-case/      # full-cutout phone case with section checks
   e2e-test/              # sub-agent run that produced mounting_bracket
+  e2e-real-cable-hook/   # real e2e wall hook with concept + quality review
 ```
 
 ### 1. Fan duct adapter (`fan-adapter-8025/fan_duct_adapter_8025`)
@@ -197,6 +201,24 @@ the model and incidentally surfaced two real bugs:
      contract so the same class of bug is caught at design time
      henceforth.
 
+### 5. Real cable-hook e2e (`e2e-real-cable-hook/wall_cable_hook`)
+
+This run exposed a different class of failure: a model can satisfy local checks
+and still look structurally wrong in side view.
+
+Findings folded back into the project:
+
+- A horizontal/top-plate topology was rejected and replaced with a true
+  vertical back plate plus forward hook arm.
+- Screw holes moved to left/right upper wings so the screwdriver path is not
+  hidden behind the hook body.
+- The front retaining lip initially existed but was effectively hanging from a
+  thin top-edge overlap in `preview.side.svg`. The contract now includes a
+  `front_lip_base_connected` check at the hook-arm height.
+- `agentcad validate` now renders all five core views by default.
+- `agentcad review` treats iso/front/top/side/back previews as required
+  `must_view` artifacts and blocks declared holes that lack access checks.
+
 ## Lessons consolidated
 
 1. `bbox_size` + `watertight` are necessary but never sufficient.
@@ -212,7 +234,11 @@ the model and incidentally surfaced two real bugs:
 6. `agentcad probe --scan` reveals step changes (cavity start, wall transitions)
    that are otherwise invisible in iso previews; `point_count` deltas catch
    hollow shells that have constant outer-bbox profiles.
-7. Two real build123d traps that always come back:
+7. A feature body check is not a connection check. For lips, ribs, tabs, bosses,
+   arms, and other load-bearing attachments, require a root/interface check.
+8. Side/top/front/back views are not optional; side view caught a floating lip
+   that iso and bbox validation did not make obvious.
+9. Two real build123d traps that always come back:
    - `Locations + BuildSketch(Plane.XY)` does not move the sketch plane;
      use `Plane(origin=(x, y, z))` instead.
    - `Box(...).moved(Location(...))` inside `BuildPart` double-adds; use
@@ -222,7 +248,7 @@ Both are documented in `references/build123d-guide.md`.
 
 ## Tests
 
-`uv run pytest -v` — currently 125 tests across:
+`uv run pytest -v` — currently 144 tests across:
 
 - `test_cli.py` — CLI dispatch
 - `test_workspace.py` — init / new / sync / discovery
@@ -243,5 +269,6 @@ Both are documented in `references/build123d-guide.md`.
 | V1 — geometry observability | ✅ delivered | multi-view render, section SVGs, hash cache, three-axis probe + scan, `agentcad inspect`, debug SVG on failure |
 | V2 — design spec standardization | ✅ delivered | check IDs, schema validation, weak-check warnings, Markdown report (`agentcad report`) |
 | V2.5 — design-time observability | ✅ delivered (new) | `agentcad precheck`, `agentcad review`, four geometric relation checks, common-error catalog, mandatory TDD prompt |
+| V2.6 — design-thinking prompts | ✅ delivered (new) | split references, Discovery Gate, Concept Gate, Design Quality Review, real cable-hook e2e |
 
 Next milestones (V3+) are tracked in [`DESIGN.md`](DESIGN.md).

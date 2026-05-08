@@ -7,8 +7,8 @@ traditional CAD UI and not a desktop viewer. Its job is to give coding
 agents a repeatable local environment for:
 
 ```text
-design contract -> precheck -> params/source -> build
-                  -> measure -> render -> validate -> review -> deliver
+discovery -> concept -> design contract -> precheck -> params/source -> build
+          -> measure -> render -> validate -> review -> quality review -> deliver
 ```
 
 The user describes a part or assembly; a coding agent creates and refines
@@ -108,23 +108,27 @@ owns one unambiguous artifact location.
 
 ## 4. Agent Workflow
 
-The mandatory ten-stage flow (drilled into `CLAUDE.md` and the workspace
+The mandatory thirteen-stage flow (drilled into `CLAUDE.md` and the workspace
 templates):
 
 ```text
-1.  Read user requirements; capture them as features in design.json.
-2.  Plan checks per feature (the four-question table for TDD).
-3.  Run `agentcad precheck` to confirm schema + feature coverage + clearance.
-4.  Implement params.json (tunable dimensions only).
-5.  Implement part.py (incrementally: red -> green per feature).
-6.  Run `agentcad validate` after each feature; expect the matching check to
+1.  Read user requirements; run the Discovery Gate when inputs are ambiguous.
+2.  For non-trivial parts, compare topology concepts and choose one.
+3.  Capture the chosen concept as features and checks in design.json.
+4.  Plan checks per feature (the CAD TDD table).
+5.  Run `agentcad precheck` to confirm schema + feature coverage + clearance.
+6.  Implement params.json (tunable dimensions only).
+7.  Implement part.py (incrementally: red -> green per feature).
+8.  Run `agentcad validate` after each feature; expect the matching check to
     flip from red to green.
-7.  Run `agentcad probe --scan` and `agentcad inspect` to discover step changes
+9.  Run `agentcad probe --scan` and `agentcad inspect` to discover step changes
     and confirm internal structure matches intent.
-8.  Run `agentcad render` for must-view sections and the iso preview.
-9.  Run `agentcad review` to inspect the pairwise relations matrix and the
+10. Run `agentcad render` for must-view sections plus
+    iso/front/top/side/back previews.
+11. Run `agentcad review` to inspect the pairwise relations matrix and the
     must-view SVG list.
-10. Run `agentcad deliver` only after `review` passes.
+12. Run the Design Quality Review; revise if the model is valid but not good.
+13. Run `agentcad deliver` only after review and quality review pass.
 ```
 
 Agents must not manually export STEP / STL from `part.py`; the runner
@@ -214,6 +218,25 @@ and relevant artifact paths.
 - Pure shape primitives (`agentcad/geometry.py`) for design-time
   relational checks (no STL needed).
 - JSON reports for every stage.
+
+## 7.1 E2E Lessons Folded Back Into The Runtime
+
+The real cable-hook e2e exposed two workflow failures that ordinary validation
+could miss:
+
+1. A model can be valid and still use the wrong topology. The fix is the
+   concept gate plus mandatory orthographic preview review.
+2. A feature can exist and still be functionally detached. The fix is to
+   require root/interface checks for load-bearing attached features, not just
+   body-exists checks.
+
+Runtime consequences:
+
+- `agentcad validate` renders all five core previews by default.
+- `agentcad review` lists iso/front/top/side/back as required `must_view`
+  artifacts, so a side-view floating feature cannot be ignored.
+- `hole_accessibility` supports X/Y/Z approach axes and review blocks declared
+  holes that lack access-envelope checks.
 
 The SVG renderer is intentionally modest. It gives agents and humans a
 preview artifact without requiring Blender, Three.js, Playwright, or a
@@ -320,4 +343,3 @@ loss of validation strength.
    If `metadata_equals` checks proliferate, a schema may be warranted.
 4. **PNG export for review?** Not required for V3. Reconsider once
    helpers and assemblies make section SVGs inadequate.
-
