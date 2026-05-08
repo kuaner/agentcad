@@ -20,7 +20,7 @@ from .section import AXIS_Z, scan_profile, write_section_svg
 from .stl import read_stl
 from .workspace import model_dir, outputs_dir
 
-_DEFAULT_VALIDATE_VIEWS = ["iso", "back"]
+_DEFAULT_VALIDATE_VIEWS = ["iso", "front", "top", "side", "back"]
 
 # Backward-compatible aliases for modules/tests importing these constants.
 _VALID_CHECK_TYPES = known_types()

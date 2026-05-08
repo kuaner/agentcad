@@ -25,6 +25,12 @@ def test_init_workspace_creates_structure(tmp_path):
     assert os.readlink(p / "AGENTS.md") == "CLAUDE.md"
     assert (p / "references" / "build123d-guide.md").exists()
     assert (p / "references" / "validation-strategy.md").exists()
+    assert (p / "references" / "discovery.md").exists()
+    assert (p / "references" / "concept-design.md").exists()
+    assert (p / "references" / "contract-design.md").exists()
+    assert (p / "references" / "cad-tdd.md").exists()
+    assert (p / "references" / "debugging.md").exists()
+    assert (p / "references" / "design-quality-review.md").exists()
     assert (p / "models").is_dir()
     assert (p / "references" / "images").is_dir()
     assert not (p / "skills").exists()

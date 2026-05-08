@@ -1,0 +1,20 @@
+{
+  "back_plate_width": 60.0,
+  "back_plate_height": 50.0,
+  "back_plate_thickness": 5.0,
+  "screw_clearance_diameter": 4.5,
+  "screw_head_clearance_diameter": 9.0,
+  "screw_head_recess_depth": 2.0,
+  "screw_x_offset": 20.0,
+  "screw_z": 38.0,
+  "hook_width": 22.0,
+  "hook_projection": 35.0,
+  "hook_plate_overlap": 1.0,
+  "hook_thickness": 8.0,
+  "hook_center_z": 16.0,
+  "lip_depth": 6.0,
+  "lip_height": 18.0,
+  "rib_width": 4.0,
+  "rib_spacing": 14.0,
+  "rib_length": 29.0
+}

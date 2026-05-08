@@ -1,4 +1,4 @@
-# {name}
+# wall_cable_hook
 
 AgentCAD model folder.
 
@@ -11,13 +11,13 @@ AgentCAD model folder.
 ## Recommended workflow
 
 ```bash
-agentcad precheck {name}     # 1. solve design.json statically
+agentcad precheck wall_cable_hook     # 1. solve design.json statically
 # write part.py once precheck is green
-agentcad build {name}        # 2. generate STEP/STL
-agentcad measure {name}      # 3. measure geometry stats
-agentcad validate {name}     # 4. run all checks (auto-renders SVGs)
-agentcad review {name}       # 5. pre-delivery checklist + relations matrix
-agentcad deliver {name}      # 6. write delivery manifest
+agentcad build wall_cable_hook        # 2. generate STEP/STL
+agentcad measure wall_cable_hook      # 3. measure geometry stats
+agentcad validate wall_cable_hook     # 4. run all checks (auto-renders SVGs)
+agentcad review wall_cable_hook       # 5. pre-delivery checklist + relations matrix
+agentcad deliver wall_cable_hook      # 6. write delivery manifest
 ```
 
 Before writing `design.json`, run the Discovery Gate in

@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "stage": "render",
+  "model": "wall_cable_hook",
+  "view": "front",
+  "artifacts": {
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/preview.front.svg",
+    "render": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/render.front.json"
+  },
+  "message": "preview rendered"
+}

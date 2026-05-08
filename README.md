@@ -9,8 +9,8 @@ so the agent can iterate on CAD models with measurable feedback instead of
 visual intuition.
 
 ```text
-design contract -> precheck -> params/source -> build
-                  -> measure -> render -> validate -> review -> deliver
+discovery -> concept -> design contract -> precheck -> params/source -> build
+          -> measure -> render -> validate -> review -> quality review -> deliver
 ```
 
 ## What's in the box
@@ -26,8 +26,8 @@ design contract -> precheck -> params/source -> build
 | Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews + Z/X/Y cross-section SVGs |
 | Probe | `agentcad probe <model>` | Cross-section diameter / bbox / void at specified Z, X, Y; `--scan` to discover step changes |
 | Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + suggested probes |
-| Validate | `agentcad validate <model>` | Build + measure + render + design checks + feature coverage; auto-emits debug SVGs on failure |
-| Review | `agentcad review <model>` | Pre-delivery checklist with pairwise relations matrix and must-view SVG list |
+| Validate | `agentcad validate <model>` | Build + measure + render all orthographic previews + design checks + feature coverage; auto-emits debug SVGs on failure |
+| Review | `agentcad review <model>` | Pre-delivery checklist with pairwise relations matrix, hole-access enforcement, and must-view SVG list |
 | Deliver | `agentcad deliver <model>` | Delivery manifest |
 | Report | `agentcad report <model>` | Markdown summary of validation result |
 
@@ -49,7 +49,7 @@ Every command prints stable machine-readable JSON output. Failures include
 | `diameter_decreases_along_z` | post-build | Monotonicity for tapers / lead-ins |
 | `volume_range` | post-build | Volume sanity bounds |
 | `min_clearance` | **design-time + post-build** | Pure-shape edge-to-edge clearance between two declared shapes (no STL required) |
-| `hole_accessibility` | post-build | Annular clearance around a hole at the working plane |
+| `hole_accessibility` | post-build | Annular clearance around a hole at the working plane; supports X/Y/Z access axes |
 | `min_wall_thickness` | post-build | Minimum point-pair distance inside a defined region |
 | `feature_position` | post-build | Assert a 3D point is `solid` or `void` |
 | `feature_coverage` | automatic | Every declared feature must reference at least one check |
@@ -57,6 +57,11 @@ Every command prints stable machine-readable JSON output. Failures include
 The four "geometric relation" checks (last block) close the historical gap
 where `inner_diameter_at_z` would happily report a 4.5 mm hole that was
 half-covered by an adjacent wall.
+
+`agentcad review` now treats missing hole-access checks as blocking when holes
+are declared, and always requires iso/front/top/side/back previews. The side
+view requirement came from a real e2e failure where a retaining lip existed in
+the contract but was effectively floating in side projection.
 
 ## Quick start
 
@@ -88,13 +93,13 @@ uv run agentcad --help
 agentcad init my-cad-project --model bracket
 cd my-cad-project
 
-# 1. Design-time: solve the contract before writing geometry
+# 1. Design-time: choose the concept, then solve the contract before geometry
 agentcad precheck bracket
 
 # 2. Implement part.py, then run the post-build pipeline
 agentcad validate bracket
 
-# 3. Pre-delivery review (relations matrix + must-view SVGs)
+# 3. Pre-delivery review (relations matrix + must-view SVGs), then quality review
 agentcad review bracket
 
 # 4. Deliver
@@ -112,6 +117,7 @@ common-error catalog live in `AGENTS.md`, `CLAUDE.md`, and `references/`
 | `examples/fan-adapter-8025/` | Two validated models: a fan-to-duct adapter and a magnetic outlet plate |
 | `examples/iphone15pro-case/` | Real-world phone case with multi-cutouts + section validation |
 | `examples/e2e-test/` | Sub-agent end-to-end test: design → precheck → build → validate → review on a mounting bracket |
+| `examples/e2e-real-cable-hook/` | Real e2e surface-mounted cable hook with concept + quality review artifacts |
 
 Re-run any example:
 
@@ -127,7 +133,7 @@ agentcad review fan_duct_adapter_8025
 uv run pytest -v
 ```
 
-125 tests at last count, covering CLI dispatch, workspace scaffolding, STL
+144 tests at last count, covering CLI dispatch, workspace scaffolding, STL
 reading and measurement, section extraction and SVG rendering, JSON IO,
 post-build validation checks, weak-check warnings, stale build detection,
 geometric primitives, and `precheck` / `review` integration.

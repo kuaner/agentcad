@@ -277,19 +277,24 @@ def slab_section_points(
     return points
 
 
-def hole_accessibility_at_z(
+def hole_accessibility_at_axis(
     triangles: list,
-    z: float,
+    axis: int,
+    pos: float,
     center: tuple[float, float],
     hole_radius: float,
     clearance_radius: float,
 ) -> dict:
-    """Check whether a tool can reach a hole at height z without obstruction.
+    """Check whether a tool can reach a hole on an axis-aligned access plane.
 
     Imagines a tool envelope of radius ``clearance_radius`` centered at
-    (cx, cy) at height z. Points on the mesh at this z that fall within the
-    annulus (hole_radius < r < clearance_radius) indicate that material is
-    blocking tool access.
+    ``center`` on the section plane. Points on the mesh at this plane that fall
+    within the annulus (hole_radius < r < clearance_radius) indicate that
+    material is blocking tool access.
+
+    For axis=Z, ``center`` is (x, y). For axis=Y, ``center`` is (x, z). For
+    axis=X, ``center`` is (y, z). Use a plane in the approach corridor, not a
+    plane buried inside the surrounding plate material.
 
     Returns {
       "ok": bool,                 # True = no obstruction within annulus
@@ -298,7 +303,7 @@ def hole_accessibility_at_z(
     }
     """
     cx, cy = center
-    points = slab_section_points(triangles, axis=2, pos=z)
+    points = slab_section_points(triangles, axis=axis, pos=pos)
     blocking = []
     for x, y in points:
         r = math.hypot(x - cx, y - cy)
@@ -309,6 +314,19 @@ def hole_accessibility_at_z(
         "blocking_point_count": len(blocking),
         "min_blocking_radius": min(blocking) if blocking else None,
     }
+
+
+def hole_accessibility_at_z(
+    triangles: list,
+    z: float,
+    center: tuple[float, float],
+    hole_radius: float,
+    clearance_radius: float,
+) -> dict:
+    """Backward-compatible Z-axis wrapper for hole access checks."""
+    return hole_accessibility_at_axis(
+        triangles, 2, z, center, hole_radius, clearance_radius
+    )
 
 
 def min_wall_thickness_at_z(

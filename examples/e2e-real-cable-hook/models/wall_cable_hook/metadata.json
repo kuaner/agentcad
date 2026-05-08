@@ -1,0 +1,35 @@
+{
+  "schema": "agentcad.part.metadata.v1",
+  "units": "mm",
+  "model": "wall_cable_hook",
+  "concept": "vertical back plate with forward hook arm, front lip, and twin support ribs",
+  "mounting": {
+    "hole_count": 2,
+    "clearance_diameter_mm": 4.5,
+    "hole_axis": "Y",
+    "positions_mm": [
+      [
+        -20.0,
+        2.5,
+        38.0
+      ],
+      [
+        20.0,
+        2.5,
+        38.0
+      ]
+    ]
+  },
+  "hook": {
+    "arm_width_mm": 22.0,
+    "projection_mm": 35.0,
+    "arm_thickness_mm": 8.0,
+    "lip_height_mm": 18.0,
+    "rib_count": 2
+  },
+  "bbox_expected_mm": [
+    60.0,
+    46.0,
+    50.0
+  ]
+}

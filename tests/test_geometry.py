@@ -5,6 +5,7 @@ import pytest
 
 from agentcad.geometry import (
     aabb_axis_overlap,
+    hole_accessibility_at_axis,
     hole_accessibility_at_z,
     min_clearance_3d,
     min_wall_thickness_at_z,
@@ -178,6 +179,35 @@ def test_hole_accessibility_blocked_by_wall():
     result = hole_accessibility_at_z(cube, z=5.0,
                                      center=(0, 0), hole_radius=1.0,
                                      clearance_radius=6.0)
+    assert result["ok"] is False
+    assert result["blocking_point_count"] > 0
+
+
+def test_hole_accessibility_y_axis_clear_corridor():
+    """Y-axis access checks use an XZ plane and center=(x,z)."""
+    cube = _solid_cube(size=10.0, ox=20.0, oy=0.0, oz=20.0)
+    result = hole_accessibility_at_axis(
+        cube,
+        axis=1,
+        pos=5.0,
+        center=(0.0, 0.0),
+        hole_radius=1.0,
+        clearance_radius=6.0,
+    )
+    assert result["ok"] is True
+
+
+def test_hole_accessibility_y_axis_blocked_corridor():
+    """Material in the XZ annulus around a Y-axis hole blocks access."""
+    cube = _solid_cube(size=2.0, ox=3.0, oy=0.0, oz=-1.0)
+    result = hole_accessibility_at_axis(
+        cube,
+        axis=1,
+        pos=1.0,
+        center=(0.0, 0.0),
+        hole_radius=1.0,
+        clearance_radius=6.0,
+    )
     assert result["ok"] is False
     assert result["blocking_point_count"] > 0
 
