@@ -1,0 +1,150 @@
+{
+  "schema": "design-spec.v1",
+  "model": "bit_holder_body",
+  "units": "mm",
+  "intent": "Cylindrical storage body for at least 20 driver bits, each bit 6.5 mm diameter and 75 mm tall. The body has 20 evenly distributed blind cylindrical slots and a reduced top neck for a stepped lid.",
+  "features": [
+    {
+      "id": "outer_body",
+      "intent": "Round 66 mm diameter body with 84 mm overall height and closed 8 mm base.",
+      "checks": ["body_bbox", "watertight", "body_outer_diameter", "body_neck_diameter"]
+    },
+    {
+      "id": "bit_slot_array",
+      "intent": "Twenty vertical cylindrical bit slots in a 1 + 7 + 12 circular layout, sized for 6.5 mm diameter x 75 mm driver bits.",
+      "checks": [
+        "slot_count_metadata",
+        "slot_depth_metadata",
+        "slot_component_count_mid",
+        "slot_component_count_neck",
+        "center_slot_diameter",
+        "inner_ring_slot_diameter",
+        "outer_ring_slot_diameter",
+        "slot_to_slot_clearance_center_inner",
+        "slot_to_slot_clearance_outer_adjacent"
+      ]
+    },
+    {
+      "id": "lid_interface_neck",
+      "intent": "Reduced top neck provides a stepped locating land for the lid.",
+      "checks": ["neck_height_metadata", "lid_fit_diameter_metadata", "body_neck_diameter"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "body_bbox",
+      "type": "bbox_size",
+      "expected": [66.0, 66.0, 84.0],
+      "tolerance": 0.8
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "body_outer_diameter",
+      "type": "outer_diameter_at_z",
+      "z": 45.0,
+      "center": [0.0, 0.0],
+      "expected": 66.0,
+      "tolerance": 0.8
+    },
+    {
+      "id": "body_neck_diameter",
+      "type": "outer_diameter_at_z",
+      "z": 82.0,
+      "center": [0.0, 0.0],
+      "expected": 62.0,
+      "tolerance": 0.8
+    },
+    {
+      "id": "slot_component_count_mid",
+      "type": "section_component_count",
+      "axis": "z",
+      "z": 45.0,
+      "expected": 21,
+      "tolerance": 0
+    },
+    {
+      "id": "slot_component_count_neck",
+      "type": "section_component_count",
+      "axis": "z",
+      "z": 82.0,
+      "expected": 21,
+      "tolerance": 0
+    },
+    {
+      "id": "center_slot_diameter",
+      "type": "inner_diameter_at_z",
+      "z": 45.0,
+      "center": [0.0, 0.0],
+      "expected": 7.2,
+      "tolerance": 0.8
+    },
+    {
+      "id": "inner_ring_slot_diameter",
+      "type": "inner_diameter_at_z",
+      "z": 45.0,
+      "center": [11.0, 0.0],
+      "expected": 7.2,
+      "tolerance": 0.8
+    },
+    {
+      "id": "outer_ring_slot_diameter",
+      "type": "inner_diameter_at_z",
+      "z": 45.0,
+      "center": [22.216, 5.953],
+      "expected": 7.2,
+      "tolerance": 0.8
+    },
+    {
+      "id": "slot_count_metadata",
+      "type": "metadata_equals",
+      "path": "slots.count",
+      "expected": 20
+    },
+    {
+      "id": "slot_depth_metadata",
+      "type": "metadata_equals",
+      "path": "slots.depth_mm",
+      "expected": 76.0
+    },
+    {
+      "id": "neck_height_metadata",
+      "type": "metadata_equals",
+      "path": "lid_interface.neck_height_mm",
+      "expected": 5.0
+    },
+    {
+      "id": "lid_fit_diameter_metadata",
+      "type": "metadata_equals",
+      "path": "lid_interface.recommended_lid_inner_diameter_mm",
+      "expected": 62.7
+    },
+    {
+      "id": "slot_to_slot_clearance_center_inner",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "role": "bit_slot", "center": [0.0, 0.0], "radius": 3.6, "z_range": [8.0, 84.0]},
+      "feature_b": {"type": "cylinder", "axis": "z", "role": "bit_slot", "center": [11.0, 0.0], "radius": 3.6, "z_range": [8.0, 84.0]},
+      "min_mm": 3.0
+    },
+    {
+      "id": "slot_to_slot_clearance_outer_adjacent",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "role": "bit_slot", "center": [22.216, 5.953], "radius": 3.6, "z_range": [8.0, 84.0]},
+      "feature_b": {"type": "cylinder", "axis": "z", "role": "bit_slot", "center": [16.263, 16.263], "radius": 3.6, "z_range": [8.0, 84.0]},
+      "min_mm": 3.0
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/bit_holder_body.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/bit_holder_body.stl"
+    }
+  ]
+}

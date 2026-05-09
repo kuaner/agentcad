@@ -1,0 +1,334 @@
+{
+  "ok": true,
+  "stage": "observe",
+  "model": "bit_holder_lid",
+  "observedAt": "2026-05-09T02:29:05.605957+00:00",
+  "geometry": {
+    "ok": true,
+    "stage": "measure",
+    "model": "bit_holder_lid",
+    "source": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.stl",
+    "geometry": {
+      "bbox": {
+        "min": [
+          -35.0,
+          -34.98912048339844,
+          0.0
+        ],
+        "max": [
+          35.0,
+          34.98912048339844,
+          13.0
+        ],
+        "size": [
+          70.0,
+          69.97824096679688,
+          13.0
+        ],
+        "center": [
+          0.0,
+          0.0,
+          6.5
+        ]
+      },
+      "mesh": {
+        "triangles": 1256,
+        "vertices": 3768,
+        "unique_edges": 1884,
+        "boundary_or_nonmanifold_edges": 0,
+        "watertight": true
+      },
+      "mass_properties": {
+        "surface_area": 11752.380222971786,
+        "volume": 30552.490834862092
+      }
+    },
+    "structure": {
+      "has_internal_void": false,
+      "void_start_z": null,
+      "step_changes": [
+        {
+          "pos": 6.5,
+          "delta_u": 0.0,
+          "delta_v": 0.0,
+          "delta_point_count": -504,
+          "hint": "fewer interior surfaces — inner cavity or features end here"
+        }
+      ]
+    },
+    "artifacts": {
+      "geometry": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/geometry.json"
+    },
+    "message": "model measured"
+  },
+  "previews": {
+    "preview_iso": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.iso.svg",
+    "preview_front": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.front.svg",
+    "preview_top": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.top.svg",
+    "preview_side": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.side.svg",
+    "preview_back": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.back.svg"
+  },
+  "scan": {
+    "ok": true,
+    "axis": "Z",
+    "plane_label": "XY plane",
+    "u_label": "X (mm)",
+    "v_label": "Y (mm)",
+    "pos_range": [
+      0.0,
+      13.0
+    ],
+    "profile": [
+      {
+        "pos": 0.26,
+        "point_count": 1008,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 1.092,
+        "point_count": 1008,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 1.924,
+        "point_count": 1008,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 2.756,
+        "point_count": 1008,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 3.588,
+        "point_count": 1008,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 4.42,
+        "point_count": 1008,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 5.252,
+        "point_count": 1008,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 6.084,
+        "point_count": 1008,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 6.916,
+        "point_count": 504,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 7.748,
+        "point_count": 504,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 8.58,
+        "point_count": 504,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 9.412,
+        "point_count": 504,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 10.244,
+        "point_count": 504,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 11.076,
+        "point_count": 504,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 11.908,
+        "point_count": 504,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      },
+      {
+        "pos": 12.74,
+        "point_count": 504,
+        "u_size": 70.0,
+        "v_size": 69.978,
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.989,
+        "v_max": 34.989
+      }
+    ],
+    "step_changes": [
+      {
+        "pos": 6.5,
+        "delta_u": 0.0,
+        "delta_v": 0.0,
+        "delta_point_count": -504,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      }
+    ],
+    "section_svgs": {
+      "section_z6_50": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z6.50.svg"
+    },
+    "section_analysis_json": {
+      "section_z6_50_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z6.50.json"
+    },
+    "section_analyses": {
+      "section_z6_50": {
+        "stage": "section_analysis",
+        "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z6.50.svg",
+        "ok": true,
+        "axis": "Z",
+        "value": 6.5,
+        "plane_label": "XY plane",
+        "u_label": "X (mm)",
+        "v_label": "Y (mm)",
+        "segment_count": 252,
+        "point_count": 504,
+        "bbox": {
+          "u_min": -35.0,
+          "u_max": 35.0,
+          "v_min": -34.9891,
+          "v_max": 34.9891,
+          "u_size": 70.0,
+          "v_size": 69.9782
+        },
+        "total_segment_length_mm": 219.8887,
+        "component_count": 1,
+        "components": [
+          {
+            "index": 0,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -35.0,
+              "u_max": 35.0,
+              "v_min": -34.9891,
+              "v_max": 34.9891,
+              "u_size": 70.0,
+              "v_size": 69.9782
+            },
+            "centroid": [
+              0.0,
+              0.0
+            ],
+            "total_segment_length_mm": 219.8887,
+            "hull_area_estimate_mm2": 3846.8577,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          }
+        ],
+        "warnings": []
+      }
+    }
+  },
+  "section_summaries": [
+    {
+      "key": "section_z6_50",
+      "axis": "Z",
+      "value": 6.5,
+      "bbox": {
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.9891,
+        "v_max": 34.9891,
+        "u_size": 70.0,
+        "v_size": 69.9782
+      },
+      "segment_count": 252,
+      "component_count": 1,
+      "total_segment_length_mm": 219.8887,
+      "warnings": []
+    }
+  ],
+  "summary": {
+    "section_count": 1,
+    "max_component_count": 1,
+    "multi_component_sections": [],
+    "warning_count": 0
+  },
+  "warnings": []
+}

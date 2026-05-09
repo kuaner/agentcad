@@ -132,3 +132,30 @@ def test_build_idempotent(project):
     r2 = build_model(project, "repeat")
     assert r1["ok"] is True
     assert r2["ok"] is True
+
+
+def test_bit_holder_lid_rejects_recess_depth_at_or_above_lid_height(project):
+    p, model_root = _scaffold(project, "bit_holder_lid_guard")
+    example_root = Path(__file__).resolve().parents[1] / "examples" / "e2e-bit-holder" / "models" / "bit_holder_lid"
+    (model_root / "part.py").write_text((example_root / "part.py").read_text(encoding="utf-8"), encoding="utf-8")
+    (model_root / "params.json").write_text(
+        json.dumps(
+            {
+                "body_outer_diameter": 48.0,
+                "body_neck_diameter": 40.0,
+                "body_neck_height": 6.0,
+                "fit_clearance_diameter": 0.4,
+                "lid_outer_diameter": 50.0,
+                "lid_height": 12.0,
+                "recess_depth": 12.0,
+                "bottom_chamfer": 0.8,
+            },
+            indent=2,
+        ) + "\n",
+        encoding="utf-8",
+    )
+
+    result = build_model(p, "bit_holder_lid_guard", force=True)
+    assert result["ok"] is False
+    assert result["error"]["type"] == "ValueError"
+    assert "recess depth must stay below lid height" in result["error"]["message"]

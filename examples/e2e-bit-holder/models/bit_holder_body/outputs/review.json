@@ -1,0 +1,258 @@
+{
+  "ok": true,
+  "stage": "review",
+  "model": "bit_holder_body",
+  "reviewedAt": "2026-05-09T02:28:50.471575+00:00",
+  "ready_to_deliver": true,
+  "checklist": [
+    {
+      "id": "design_present",
+      "ok": true,
+      "title": "design.json exists and is parseable",
+      "action": null,
+      "evidence": {
+        "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/design.json"
+      }
+    },
+    {
+      "id": "validation_passes",
+      "ok": true,
+      "title": "agentcad validate is green",
+      "action": null,
+      "evidence": {
+        "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/validation.json",
+        "failed_checks": []
+      }
+    },
+    {
+      "id": "feature_coverage",
+      "ok": true,
+      "title": "every feature references at least one geometry check",
+      "action": null,
+      "evidence": {
+        "features": [
+          "outer_body",
+          "bit_slot_array",
+          "lid_interface_neck"
+        ]
+      }
+    },
+    {
+      "id": "hole_clearance_declared",
+      "ok": true,
+      "title": "every hole has a min_clearance check vs surrounding solids",
+      "action": null,
+      "evidence": {
+        "ok": true,
+        "hole_feature_count": 0,
+        "min_clearance_check_count": 2
+      }
+    },
+    {
+      "id": "hole_accessibility_declared",
+      "ok": true,
+      "title": "every declared hole has a tool/access envelope check",
+      "action": null,
+      "evidence": {
+        "ok": true,
+        "declared_hole_count": 0,
+        "hole_accessibility_check_count": 0
+      }
+    },
+    {
+      "id": "no_pairwise_interference",
+      "ok": true,
+      "title": "no declared shape pair interferes",
+      "action": null,
+      "evidence": {
+        "interferences": []
+      }
+    },
+    {
+      "id": "key_svgs_present",
+      "ok": true,
+      "title": "key cross-section SVGs exist for visual review",
+      "action": null,
+      "evidence": {
+        "sections": [
+          {
+            "label": "iso_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.iso.svg",
+            "why": "overall shape — confirm topology matches intent"
+          },
+          {
+            "label": "front_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.front.svg",
+            "why": "front view — confirm visible features and tool access are not hidden"
+          },
+          {
+            "label": "top_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.top.svg",
+            "why": "top view — confirm projection direction, spacing, and symmetry"
+          },
+          {
+            "label": "side_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.side.svg",
+            "why": "side view — catch floating or edge-only connected features"
+          },
+          {
+            "label": "back_preview",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.back.svg",
+            "why": "back/mounting view — confirm wall/contact face and mounting holes"
+          },
+          {
+            "label": "section_z9_74",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.74.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z79_63",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z79.63.svg",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z9_74_analysis",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.74.json",
+            "why": "auto-scan section produced by validate"
+          },
+          {
+            "label": "section_z79_63_analysis",
+            "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z79.63.json",
+            "why": "auto-scan section produced by validate"
+          }
+        ]
+      }
+    },
+    {
+      "id": "no_open_warnings",
+      "ok": true,
+      "title": "no open weak-check warnings",
+      "action": null,
+      "evidence": {
+        "warnings": []
+      }
+    },
+    {
+      "id": "bbox_matches_intent",
+      "ok": true,
+      "title": "measured bbox is consistent with declared intent",
+      "action": null,
+      "evidence": {
+        "ok": true,
+        "expected": [
+          66.0,
+          66.0,
+          84.0
+        ],
+        "actual": [
+          66.0,
+          65.97948455810547,
+          84.0
+        ],
+        "tolerance": 1.0
+      }
+    }
+  ],
+  "relations": [
+    {
+      "a": "cyl(0.0,0.0,r=3.60)",
+      "b": "cyl(11.0,0.0,r=3.60)",
+      "clearance_mm": 3.8000000000000003,
+      "z_overlap_mm": 76.0,
+      "interferes": false,
+      "ok": true
+    },
+    {
+      "a": "cyl(0.0,0.0,r=3.60)",
+      "b": "cyl(22.2,6.0,r=3.60)",
+      "clearance_mm": 15.799757933508777,
+      "z_overlap_mm": 76.0,
+      "interferes": false,
+      "ok": true
+    },
+    {
+      "a": "cyl(0.0,0.0,r=3.60)",
+      "b": "cyl(16.3,16.3,r=3.60)",
+      "clearance_mm": 15.799355164873647,
+      "z_overlap_mm": 76.0,
+      "interferes": false,
+      "ok": true
+    },
+    {
+      "a": "cyl(11.0,0.0,r=3.60)",
+      "b": "cyl(22.2,6.0,r=3.60)",
+      "clearance_mm": 5.4979078985477,
+      "z_overlap_mm": 76.0,
+      "interferes": false,
+      "ok": true
+    },
+    {
+      "a": "cyl(11.0,0.0,r=3.60)",
+      "b": "cyl(16.3,16.3,r=3.60)",
+      "clearance_mm": 9.893400422385245,
+      "z_overlap_mm": 76.0,
+      "interferes": false,
+      "ok": true
+    },
+    {
+      "a": "cyl(22.2,6.0,r=3.60)",
+      "b": "cyl(16.3,16.3,r=3.60)",
+      "clearance_mm": 4.7052219214931075,
+      "z_overlap_mm": 76.0,
+      "interferes": false,
+      "ok": true
+    }
+  ],
+  "must_view": [
+    {
+      "label": "iso_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.iso.svg",
+      "why": "overall shape — confirm topology matches intent"
+    },
+    {
+      "label": "front_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.front.svg",
+      "why": "front view — confirm visible features and tool access are not hidden"
+    },
+    {
+      "label": "top_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.top.svg",
+      "why": "top view — confirm projection direction, spacing, and symmetry"
+    },
+    {
+      "label": "side_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.side.svg",
+      "why": "side view — catch floating or edge-only connected features"
+    },
+    {
+      "label": "back_preview",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.back.svg",
+      "why": "back/mounting view — confirm wall/contact face and mounting holes"
+    },
+    {
+      "label": "section_z9_74",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.74.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z79_63",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z79.63.svg",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z9_74_analysis",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.74.json",
+      "why": "auto-scan section produced by validate"
+    },
+    {
+      "label": "section_z79_63_analysis",
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z79.63.json",
+      "why": "auto-scan section produced by validate"
+    }
+  ],
+  "deferred_followups": [],
+  "artifacts": {
+    "review": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/review.json"
+  },
+  "message": "review passed — ready to deliver"
+}

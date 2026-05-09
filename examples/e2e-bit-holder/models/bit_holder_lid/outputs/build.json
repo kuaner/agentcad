@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "stage": "build",
+  "model": "bit_holder_lid",
+  "sourceHash": "a8d1c25c47f578a9",
+  "startedAt": "2026-05-09T02:28:40.328391+00:00",
+  "endedAt": "2026-05-09T02:28:41.575636+00:00",
+  "artifacts": {
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.stl",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/build.json",
+    "metadata": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/metadata.json"
+  },
+  "stdout": "",
+  "stderr": "",
+  "message": "model built"
+}

@@ -42,10 +42,12 @@ evidence:
 - `build.json`
 - `geometry.json`
 - `validation.json`
+- `observability.json`
 - `review.json`
 - `deliverable.json`
 - preview SVGs (iso, front, top, side, back)
 - section SVGs at meaningful Z / X / Y planes
+- section measurement sidecars next to every section SVG
 - STEP / STL artifacts
 
 ### 2.3 Catch errors at the earliest layer that can see them
@@ -197,8 +199,10 @@ agentcad precheck <model>                         # design-time solve
 agentcad build <model>                            # part.py -> STEP + STL
 agentcad measure <model>                          # mesh stats + structural facts
 agentcad render <model> --view iso                # iso/front/top/side/back
-agentcad render <model> --section-z|x|y <v>              # cross-section SVG
-agentcad probe <model> --z|--x|--y <v>            # cross-section diameters
+agentcad render <model> --section-z|x|y <v>              # cross-section SVG + measurement JSON
+agentcad probe <model> --z|--x|--y <v>            # cross-section diameters + section analysis
+agentcad probe <model> --z <v> --line-u <u>       # active line measurement in section axes
+agentcad probe <model> --z <v> --point u,v        # nearest contour distance in section axes
 agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
 agentcad inspect <model>                          # three-axis scan + sections + suggested probes
 agentcad validate <model>                         # full pipeline

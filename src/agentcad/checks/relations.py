@@ -109,6 +109,7 @@ def evaluate_hole_accessibility(check: dict, ctx: CheckContext) -> dict:
         svg_path = ctx.out_dir / f"debug.{check_id}.{axis_name}{pos:.2f}.svg"
         info = write_section_svg(triangles, axis_map[axis_name], pos, svg_path)
         payload["debug_svg"] = info.get("svg")
+        payload["debug_analysis_json"] = info.get("analysis_json")
         payload["hint"] = (
             f"material at radius={result['min_blocking_radius']:.2f}mm blocks "
             f"tool envelope of {clearance_r}mm"
@@ -163,6 +164,7 @@ def evaluate_min_wall_thickness(check: dict, ctx: CheckContext) -> dict:
         svg_path = ctx.out_dir / f"debug.{check_id}.z{z:.2f}.svg"
         info = write_section_svg(triangles, AXIS_Z, z, svg_path)
         payload["debug_svg"] = info.get("svg")
+        payload["debug_analysis_json"] = info.get("analysis_json")
         payload["hint"] = f"thickness {actual:.3f}mm < min {min_mm}mm (tol ±{tolerance})"
     return payload
 

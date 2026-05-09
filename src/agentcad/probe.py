@@ -2,7 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .section import AXIS_X, AXIS_Y, AXIS_Z, scan_profile, section_segments, write_section_svg
+from .section import (
+    AXIS_X,
+    AXIS_Y,
+    AXIS_Z,
+    analyze_section_segments,
+    query_section_measurements,
+    scan_profile,
+    section_segments,
+)
 from .stl import read_stl, section_bbox_at_z, section_radius_at_z
 from .workspace import outputs_dir
 
@@ -18,6 +26,10 @@ def probe_model(
     y_values: list[float] | None = None,
     center: tuple[float, float] = (0.0, 0.0),
     region: tuple[tuple[float, float], tuple[float, float]] | None = None,
+    section_region: tuple[tuple[float, float], tuple[float, float]] | None = None,
+    line_u: float | None = None,
+    line_v: float | None = None,
+    point: tuple[float, float] | None = None,
 ) -> dict:
     """Probe STL geometry at one or more cross-sections along any axis.
 
@@ -32,6 +44,10 @@ def probe_model(
         y_values: Y positions to probe (XZ plane bbox).
         center: (cx, cy) for radial Z measurements.
         region: Optional ((x_min, y_min), (x_max, y_max)) for bbox region check.
+        section_region: Optional region in the active section plane.
+        line_u: Optional fixed U coordinate for line-intersection measurement.
+        line_v: Optional fixed V coordinate for line-intersection measurement.
+        point: Optional point in section coordinates for nearest-contour distance.
     """
     stl_path = outputs_dir(project, name) / f"{name}.stl"
     if not stl_path.exists():
@@ -50,15 +66,33 @@ def probe_model(
 
     # Z probes — radial measurements
     for z in (z_values or []):
-        all_results.append(_probe_z(triangles, z, center, region))
+        all_results.append(_probe_z(
+            triangles, z, center, region,
+            section_region=section_region,
+            line_u=line_u,
+            line_v=line_v,
+            point=point,
+        ))
 
     # X probes — YZ plane bbox
     for x in (x_values or []):
-        all_results.append(_probe_axis(triangles, AXIS_X, x))
+        all_results.append(_probe_axis(
+            triangles, AXIS_X, x,
+            section_region=section_region,
+            line_u=line_u,
+            line_v=line_v,
+            point=point,
+        ))
 
     # Y probes — XZ plane bbox
     for y in (y_values or []):
-        all_results.append(_probe_axis(triangles, AXIS_Y, y))
+        all_results.append(_probe_axis(
+            triangles, AXIS_Y, y,
+            section_region=section_region,
+            line_u=line_u,
+            line_v=line_v,
+            point=point,
+        ))
 
     total = len(all_results)
     if total == 0:
@@ -149,10 +183,27 @@ def _probe_z(
     z: float,
     center: tuple[float, float],
     region: tuple[tuple[float, float], tuple[float, float]] | None,
+    section_region: tuple[tuple[float, float], tuple[float, float]] | None,
+    line_u: float | None,
+    line_v: float | None,
+    point: tuple[float, float] | None,
 ) -> dict:
     cx, cy = center
     section = section_radius_at_z(triangles, z, center=center)
     entry: dict = {"axis": "Z", "pos": z, "z": z, "section": section}
+    segs = section_segments(triangles, AXIS_Z, z)
+    entry["section_analysis"] = analyze_section_segments(segs, AXIS_Z, z)
+    measurements = query_section_measurements(
+        segs,
+        AXIS_Z,
+        z,
+        region=section_region,
+        line_u=line_u,
+        line_v=line_v,
+        point=point,
+    )
+    if measurements:
+        entry["measurements"] = measurements
 
     if section.get("ok"):
         outer_d = section.get("diameter_outer_estimate")
@@ -188,28 +239,46 @@ def _probe_z(
     return entry
 
 
-def _probe_axis(triangles: list, axis: int, value: float) -> dict:
+def _probe_axis(
+    triangles: list,
+    axis: int,
+    value: float,
+    section_region: tuple[tuple[float, float], tuple[float, float]] | None,
+    line_u: float | None,
+    line_v: float | None,
+    point: tuple[float, float] | None,
+) -> dict:
     """Probe a non-Z axis: report the YZ or XZ bounding box."""
     segs = section_segments(triangles, axis, value)
     axis_name = _AXIS_NAME[axis]
     entry: dict = {"axis": axis_name, "pos": value}
+    analysis = analyze_section_segments(segs, axis, value)
+    entry["section_analysis"] = analysis
+    measurements = query_section_measurements(
+        segs,
+        axis,
+        value,
+        region=section_region,
+        line_u=line_u,
+        line_v=line_v,
+        point=point,
+    )
+    if measurements:
+        entry["measurements"] = measurements
 
     if not segs:
         entry["error"] = f"no intersections at {axis_name}={value}"
         return entry
 
-    us = [p[0] for seg in segs for p in seg]
-    vs = [p[1] for seg in segs for p in seg]
-    u_size = max(us) - min(us)
-    v_size = max(vs) - min(vs)
+    bbox = analysis["bbox"]
     entry["section"] = {
         "ok": True,
-        "u_size": round(u_size, 3),
-        "v_size": round(v_size, 3),
-        "u_min": round(min(us), 3),
-        "u_max": round(max(us), 3),
-        "v_min": round(min(vs), 3),
-        "v_max": round(max(vs), 3),
+        "u_size": round(bbox["u_size"], 3),
+        "v_size": round(bbox["v_size"], 3),
+        "u_min": round(bbox["u_min"], 3),
+        "u_max": round(bbox["u_max"], 3),
+        "v_min": round(bbox["v_min"], 3),
+        "v_max": round(bbox["v_max"], 3),
         "segment_count": len(segs),
     }
     return entry

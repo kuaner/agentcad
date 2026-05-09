@@ -23,10 +23,10 @@ discovery -> concept -> design contract -> precheck -> params/source -> build
 | Precheck | `agentcad precheck <model>` | Solve `design.json` statically (schema, feature coverage, `min_clearance`) **before** part.py is written |
 | Build | `agentcad build <model>` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
 | Measure | `agentcad measure <model>` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
-| Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews + Z/X/Y cross-section SVGs |
-| Probe | `agentcad probe <model>` | Cross-section diameter / bbox / void at specified Z, X, Y; `--scan` to discover step changes |
-| Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + suggested probes |
-| Validate | `agentcad validate <model>` | Build + measure + render all orthographic previews + design checks + feature coverage; auto-emits debug SVGs on failure |
+| Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews + Z/X/Y cross-section SVGs with measurement sidecars |
+| Probe | `agentcad probe <model>` | Cross-section diameter / bbox / component analysis plus ad-hoc line, point, and region measurements; `--scan` to discover step changes |
+| Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + measurement JSON + suggested probes |
+| Validate | `agentcad validate <model>` | Build + measure + render all orthographic previews + design checks + feature coverage; emits observability and debug artifacts |
 | Review | `agentcad review <model>` | Pre-delivery checklist with pairwise relations matrix, hole-access enforcement, and must-view SVG list |
 | Deliver | `agentcad deliver <model>` | Delivery manifest |
 | Report | `agentcad report <model>` | Markdown summary of validation result |
@@ -46,6 +46,7 @@ Every command prints stable machine-readable JSON output. Failures include
 | `outer_diameter_at_z` | post-build | Cross-section radial size at Z |
 | `inner_diameter_at_z` | post-build | Inner cavity diameter at Z |
 | `section_bbox_at_z` | post-build | Cross-section AABB / void detection at Z |
+| `section_component_count` | post-build | Count disconnected section contours for repeated slots/cavities |
 | `diameter_decreases_along_z` | post-build | Monotonicity for tapers / lead-ins |
 | `volume_range` | post-build | Volume sanity bounds |
 | `min_clearance` | **design-time + post-build** | Pure-shape edge-to-edge clearance between two declared shapes (no STL required) |

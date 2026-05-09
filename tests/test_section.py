@@ -3,12 +3,17 @@ from __future__ import annotations
 
 import struct
 from pathlib import Path
+import json
 
 import pytest
 
 from agentcad.section import (
     AXIS_X, AXIS_Y, AXIS_Z,
     _empty_svg,
+    analyze_section_segments,
+    measure_section_line,
+    measure_section_point,
+    measure_section_region,
     render_section_svg,
     scan_profile,
     section_segments,
@@ -159,6 +164,62 @@ def test_render_section_svg_x_labels():
     assert "Y (mm)" in svg
 
 
+def test_analyze_section_segments_cube_measurements():
+    tris = _cube_triangles(10.0)
+    segs = section_segments(tris, AXIS_Z, 5.0)
+    result = analyze_section_segments(segs, AXIS_Z, 5.0)
+
+    assert result["ok"] is True
+    assert result["axis"] == "Z"
+    assert result["segment_count"] == len(segs)
+    assert result["bbox"]["u_size"] == pytest.approx(10.0, abs=0.01)
+    assert result["bbox"]["v_size"] == pytest.approx(10.0, abs=0.01)
+    assert result["component_count"] == 1
+    assert result["components"][0]["hull_area_estimate_mm2"] == pytest.approx(100.0, abs=0.01)
+    assert result["components"][0]["closed_vertex_ratio"] == pytest.approx(1.0)
+
+
+def test_measure_section_line_cube_midline():
+    tris = _cube_triangles(10.0)
+    segs = section_segments(tris, AXIS_Z, 5.0)
+    result = measure_section_line(segs, AXIS_Z, 5.0, "u", 5.0)
+
+    assert result["ok"] is True
+    assert result["intersection_count"] == 2
+    assert result["intersections"] == [0.0, 10.0]
+    assert result["span"]["size"] == pytest.approx(10.0, abs=0.01)
+    assert result["filled_intervals_estimate"] == [[0.0, 10.0]]
+
+
+def test_measure_section_point_cube_center_distance():
+    tris = _cube_triangles(10.0)
+    segs = section_segments(tris, AXIS_Z, 5.0)
+    result = measure_section_point(segs, AXIS_Z, 5.0, (5.0, 5.0))
+
+    assert result["ok"] is True
+    assert result["nearest_distance_mm"] == pytest.approx(5.0, abs=0.01)
+    assert result["inside_section_bbox"] is True
+
+
+def test_measure_section_point_empty_returns_structured_error():
+    result = measure_section_point([], AXIS_Z, 5.0, (1.0, 2.0))
+
+    assert result["ok"] is False
+    assert result["error"]["type"] == "SectionEmpty"
+    assert "no segments" in result["error"]["message"]
+
+
+def test_measure_section_region_intersects_contour():
+    tris = _cube_triangles(10.0)
+    segs = section_segments(tris, AXIS_Z, 5.0)
+    result = measure_section_region(segs, AXIS_Z, 5.0, ((-1.0, 4.0), (1.0, 6.0)))
+
+    assert result["ok"] is True
+    assert result["has_contour_intersection"] is True
+    assert result["intersecting_segment_count"] > 0
+    assert result["intersecting_analysis"]["bbox"]["u_min"] == pytest.approx(0.0, abs=0.01)
+
+
 def test_write_section_svg(tmp_path):
     tris = _cube_triangles(10.0)
     out = tmp_path / "test_section.svg"
@@ -168,3 +229,10 @@ def test_write_section_svg(tmp_path):
     content = out.read_text()
     assert "<svg" in content
     assert result["segment_count"] > 0
+    sidecar = out.with_suffix(".json")
+    assert sidecar.exists()
+    analysis = json.loads(sidecar.read_text())
+    assert analysis["stage"] == "section_analysis"
+    assert analysis["svg"] == str(out)
+    assert analysis["bbox"]["u_size"] == pytest.approx(10.0, abs=0.01)
+    assert result["analysis_json"] == str(sidecar)

@@ -123,6 +123,9 @@ V3 makes single parts cheap to author. The next ceiling is multi-part
 assemblies: most real CAD work is "this part bolts to that part with X
 clearance and Y mate". Today an agent has to reason about two STL files
 in two different model directories with no shared coordinate system.
+The `examples/e2e-bit-holder/` body/lid test makes this concrete: each
+model validates independently, but the fit is still expressed indirectly
+through matching metadata values instead of an assembly-level mate contract.
 
 ### Scope
 

@@ -1,0 +1,58 @@
+{
+  "ok": true,
+  "stage": "measure",
+  "model": "bit_holder_lid",
+  "source": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.stl",
+  "geometry": {
+    "bbox": {
+      "min": [
+        -35.0,
+        -34.98912048339844,
+        0.0
+      ],
+      "max": [
+        35.0,
+        34.98912048339844,
+        13.0
+      ],
+      "size": [
+        70.0,
+        69.97824096679688,
+        13.0
+      ],
+      "center": [
+        0.0,
+        0.0,
+        6.5
+      ]
+    },
+    "mesh": {
+      "triangles": 1256,
+      "vertices": 3768,
+      "unique_edges": 1884,
+      "boundary_or_nonmanifold_edges": 0,
+      "watertight": true
+    },
+    "mass_properties": {
+      "surface_area": 11752.380222971786,
+      "volume": 30552.490834862092
+    }
+  },
+  "structure": {
+    "has_internal_void": false,
+    "void_start_z": null,
+    "step_changes": [
+      {
+        "pos": 6.5,
+        "delta_u": 0.0,
+        "delta_v": 0.0,
+        "delta_point_count": -504,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      }
+    ]
+  },
+  "artifacts": {
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/geometry.json"
+  },
+  "message": "model measured"
+}

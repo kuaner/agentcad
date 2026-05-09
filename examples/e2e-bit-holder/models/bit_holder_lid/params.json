@@ -1,0 +1,10 @@
+{
+  "body_outer_diameter": 66.0,
+  "body_neck_diameter": 62.0,
+  "body_neck_height": 5.0,
+  "fit_clearance_diameter": 0.7,
+  "lid_outer_diameter": 70.0,
+  "lid_height": 13.0,
+  "recess_depth": 6.3,
+  "bottom_chamfer": 0.4
+}

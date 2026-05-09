@@ -6,8 +6,10 @@ with LLM vision tools).  Supports X, Y, and Z cutting planes.
 """
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
+from .jsonio import write_json
 from .stl import Triangle
 
 # Axis constants — match array index in 3D vertex tuples.
@@ -211,6 +213,432 @@ def _step_hint(du: float, dv: float, dpts: int = 0) -> str:
     return "geometry transition"
 
 
+# ── Section measurement ──────────────────────────────────────────────────────
+
+def analyze_section_segments(
+    segments: list[Segment2D],
+    axis: int,
+    value: float,
+    precision: int = 4,
+) -> dict:
+    """Measure a 2D section numerically.
+
+    SVGs are useful for visual review, but agents need structured geometry to
+    decide whether a section is plausible without relying on image perception.
+    This reports global bbox facts plus connected loop/component facts.
+    """
+    u_lbl, v_lbl, plane_lbl = _PLANE_LABELS[axis]
+    base = {
+        "ok": True,
+        "axis": _AXIS_NAME[axis],
+        "value": round(value, precision),
+        "plane_label": plane_lbl,
+        "u_label": u_lbl,
+        "v_label": v_lbl,
+        "segment_count": len(segments),
+        "point_count": len(segments) * 2,
+    }
+    if not segments:
+        return {
+            **base,
+            "bbox": None,
+            "total_segment_length_mm": 0.0,
+            "component_count": 0,
+            "components": [],
+            "warnings": ["empty_section"],
+        }
+
+    all_points = [p for seg in segments for p in seg]
+    graph: dict[tuple[float, float], set[tuple[float, float]]] = {}
+    edges: list[tuple[tuple[float, float], tuple[float, float], float]] = []
+
+    for p1, p2 in segments:
+        k1 = _point_key(p1, precision)
+        k2 = _point_key(p2, precision)
+        graph.setdefault(k1, set())
+        graph.setdefault(k2, set())
+        length = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+        edges.append((k1, k2, length))
+        if k1 != k2:
+            graph[k1].add(k2)
+            graph[k2].add(k1)
+
+    components = _section_components(graph, edges, precision)
+    warnings: list[str] = []
+    if len(components) > 1:
+        warnings.append("multiple_section_components")
+    if any(c["segment_count"] < 3 for c in components):
+        warnings.append("sparse_section_component")
+    if any(c["closed_vertex_ratio"] < 0.75 and c["segment_count"] >= 3 for c in components):
+        warnings.append("open_section_component")
+
+    return {
+        **base,
+        "bbox": _bbox_payload(all_points, precision),
+        "total_segment_length_mm": round(sum(edge[2] for edge in edges), precision),
+        "component_count": len(components),
+        "components": components,
+        "warnings": warnings,
+    }
+
+
+def _section_components(
+    graph: dict[tuple[float, float], set[tuple[float, float]]],
+    edges: list[tuple[tuple[float, float], tuple[float, float], float]],
+    precision: int,
+) -> list[dict]:
+    remaining = set(graph)
+    components = []
+    while remaining:
+        start = remaining.pop()
+        stack = [start]
+        vertices = {start}
+        while stack:
+            node = stack.pop()
+            for neighbor in graph.get(node, set()):
+                if neighbor in vertices:
+                    continue
+                vertices.add(neighbor)
+                remaining.discard(neighbor)
+                stack.append(neighbor)
+
+        comp_edges = [edge for edge in edges if edge[0] in vertices and edge[1] in vertices]
+        points = sorted(vertices)
+        bbox = _bbox_payload(points, precision)
+        degrees = [len(graph.get(point, set())) for point in points]
+        closed_count = sum(1 for degree in degrees if degree == 2)
+        component = {
+            "index": len(components),
+            "segment_count": len(comp_edges),
+            "point_count": len(points),
+            "bbox": bbox,
+            "centroid": [
+                round(sum(p[0] for p in points) / len(points), precision),
+                round(sum(p[1] for p in points) / len(points), precision),
+            ],
+            "total_segment_length_mm": round(sum(edge[2] for edge in comp_edges), precision),
+            "hull_area_estimate_mm2": round(_convex_hull_area(points), precision),
+            "closed_vertex_ratio": round(closed_count / max(len(points), 1), precision),
+            "endpoint_count": sum(1 for degree in degrees if degree == 1),
+            "branch_vertex_count": sum(1 for degree in degrees if degree > 2),
+        }
+        components.append(component)
+
+    components.sort(key=lambda c: c["hull_area_estimate_mm2"], reverse=True)
+    for index, component in enumerate(components):
+        component["index"] = index
+    return components
+
+
+def _point_key(point: tuple[float, float], precision: int) -> tuple[float, float]:
+    return (round(point[0], precision), round(point[1], precision))
+
+
+def _bbox_payload(points: list[tuple[float, float]], precision: int) -> dict:
+    us = [p[0] for p in points]
+    vs = [p[1] for p in points]
+    u_min, u_max = min(us), max(us)
+    v_min, v_max = min(vs), max(vs)
+    return {
+        "u_min": round(u_min, precision),
+        "u_max": round(u_max, precision),
+        "v_min": round(v_min, precision),
+        "v_max": round(v_max, precision),
+        "u_size": round(u_max - u_min, precision),
+        "v_size": round(v_max - v_min, precision),
+    }
+
+
+def _convex_hull_area(points: list[tuple[float, float]]) -> float:
+    unique = sorted(set(points))
+    if len(unique) < 3:
+        return 0.0
+
+    def cross(o: tuple[float, float], a: tuple[float, float], b: tuple[float, float]) -> float:
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+    lower: list[tuple[float, float]] = []
+    for point in unique:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], point) <= 0:
+            lower.pop()
+        lower.append(point)
+
+    upper: list[tuple[float, float]] = []
+    for point in reversed(unique):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], point) <= 0:
+            upper.pop()
+        upper.append(point)
+
+    hull = lower[:-1] + upper[:-1]
+    return abs(sum(
+        hull[i][0] * hull[(i + 1) % len(hull)][1]
+        - hull[(i + 1) % len(hull)][0] * hull[i][1]
+        for i in range(len(hull))
+    )) / 2.0
+
+
+def query_section_measurements(
+    segments: list[Segment2D],
+    axis: int,
+    value: float,
+    *,
+    region: tuple[tuple[float, float], tuple[float, float]] | None = None,
+    line_u: float | None = None,
+    line_v: float | None = None,
+    point: tuple[float, float] | None = None,
+    precision: int = 4,
+) -> dict:
+    """Run optional ad-hoc measurements against an extracted section."""
+    measurements: dict = {}
+    if region is not None:
+        measurements["region"] = measure_section_region(segments, axis, value, region, precision=precision)
+    if line_u is not None:
+        measurements["line_u"] = measure_section_line(segments, axis, value, "u", line_u, precision=precision)
+    if line_v is not None:
+        measurements["line_v"] = measure_section_line(segments, axis, value, "v", line_v, precision=precision)
+    if point is not None:
+        measurements["point"] = measure_section_point(segments, axis, value, point, precision=precision)
+    return measurements
+
+
+def measure_section_region(
+    segments: list[Segment2D],
+    axis: int,
+    value: float,
+    region: tuple[tuple[float, float], tuple[float, float]],
+    precision: int = 4,
+) -> dict:
+    """Measure section contour interaction with a 2D region in section axes."""
+    (u0, v0), (u1, v1) = region
+    u_min, u_max = sorted((float(u0), float(u1)))
+    v_min, v_max = sorted((float(v0), float(v1)))
+    rect = (u_min, v_min, u_max, v_max)
+    inside_points = [
+        p for seg in segments for p in seg
+        if _point_in_rect(p, rect)
+    ]
+    intersecting_segments = [
+        seg for seg in segments
+        if _segment_intersects_rect(seg, rect)
+    ]
+    result = {
+        "ok": True,
+        "axis": _AXIS_NAME[axis],
+        "value": round(value, precision),
+        "region": [[round(u_min, precision), round(v_min, precision)],
+                   [round(u_max, precision), round(v_max, precision)]],
+        "u_label": _PLANE_LABELS[axis][0],
+        "v_label": _PLANE_LABELS[axis][1],
+        "endpoint_count": len(inside_points),
+        "intersecting_segment_count": len(intersecting_segments),
+        "has_contour_intersection": bool(inside_points or intersecting_segments),
+        "inside_point_bbox": _bbox_payload(inside_points, precision) if inside_points else None,
+        "intersecting_analysis": analyze_section_segments(intersecting_segments, axis, value, precision),
+        "note": "region measures section contours, not filled-volume containment",
+    }
+    warnings = []
+    if not result["has_contour_intersection"]:
+        warnings.append("region_has_no_section_contour")
+    result["warnings"] = warnings
+    return result
+
+
+def measure_section_line(
+    segments: list[Segment2D],
+    axis: int,
+    value: float,
+    line_axis: str,
+    line_value: float,
+    precision: int = 4,
+) -> dict:
+    """Intersect a section contour with a fixed-U or fixed-V line."""
+    if line_axis not in ("u", "v"):
+        raise ValueError("line_axis must be 'u' or 'v'")
+
+    crossings: list[float] = []
+    overlapping: list[list[float]] = []
+    line_value = float(line_value)
+    for p1, p2 in segments:
+        fixed1 = p1[0] if line_axis == "u" else p1[1]
+        fixed2 = p2[0] if line_axis == "u" else p2[1]
+        measure1 = p1[1] if line_axis == "u" else p1[0]
+        measure2 = p2[1] if line_axis == "u" else p2[0]
+        d1 = fixed1 - line_value
+        d2 = fixed2 - line_value
+
+        if abs(d1) < 1e-8 and abs(d2) < 1e-8:
+            lo, hi = sorted((measure1, measure2))
+            overlapping.append([round(lo, precision), round(hi, precision)])
+            crossings.extend([measure1, measure2])
+        elif abs(d1) < 1e-8:
+            crossings.append(measure1)
+        elif abs(d2) < 1e-8:
+            crossings.append(measure2)
+        elif (d1 < 0) != (d2 < 0):
+            t = d1 / (d1 - d2)
+            crossings.append(measure1 + t * (measure2 - measure1))
+
+    intersections = _unique_sorted(crossings, precision)
+    intervals = [
+        [intersections[i], intersections[i + 1]]
+        for i in range(0, len(intersections) - 1, 2)
+    ]
+    gaps = [
+        [intervals[i][1], intervals[i + 1][0]]
+        for i in range(len(intervals) - 1)
+        if intervals[i + 1][0] > intervals[i][1]
+    ]
+    fixed_label = _PLANE_LABELS[axis][0 if line_axis == "u" else 1]
+    measure_label = _PLANE_LABELS[axis][1 if line_axis == "u" else 0]
+    result = {
+        "ok": True,
+        "axis": _AXIS_NAME[axis],
+        "section_value": round(value, precision),
+        "line_axis": line_axis,
+        "line_value": round(line_value, precision),
+        "fixed_label": fixed_label,
+        "measured_label": measure_label,
+        "intersection_count": len(intersections),
+        "intersections": intersections,
+        "overlapping_segments": overlapping,
+        "span": {
+            "min": intersections[0] if intersections else None,
+            "max": intersections[-1] if intersections else None,
+            "size": round(intersections[-1] - intersections[0], precision) if len(intersections) >= 2 else 0.0,
+        },
+        "filled_intervals_estimate": intervals,
+        "gaps_between_intervals": gaps,
+        "note": "intervals are paired contour intersections; verify component warnings for complex sections",
+        "warnings": [],
+    }
+    if len(intersections) % 2 == 1:
+        result["warnings"].append("odd_intersection_count")
+    if not intersections:
+        result["warnings"].append("line_has_no_section_intersections")
+    return result
+
+
+def measure_section_point(
+    segments: list[Segment2D],
+    axis: int,
+    value: float,
+    point: tuple[float, float],
+    precision: int = 4,
+) -> dict:
+    """Measure nearest contour distance from a point in section coordinates."""
+    u, v = float(point[0]), float(point[1])
+    if not segments:
+        return {
+            "ok": False,
+            "axis": _AXIS_NAME[axis],
+            "section_value": round(value, precision),
+            "point": [round(u, precision), round(v, precision)],
+            "error": {
+                "type": "SectionEmpty",
+                "message": "section has no segments",
+            },
+        }
+
+    best: tuple[float, tuple[float, float], int] | None = None
+    for index, segment in enumerate(segments):
+        nearest = _nearest_point_on_segment((u, v), segment)
+        dist = math.hypot(nearest[0] - u, nearest[1] - v)
+        if best is None or dist < best[0]:
+            best = (dist, nearest, index)
+
+    assert best is not None
+    bbox = _bbox_payload([p for seg in segments for p in seg], precision)
+    return {
+        "ok": True,
+        "axis": _AXIS_NAME[axis],
+        "section_value": round(value, precision),
+        "point": [round(u, precision), round(v, precision)],
+        "u_label": _PLANE_LABELS[axis][0],
+        "v_label": _PLANE_LABELS[axis][1],
+        "nearest_distance_mm": round(best[0], precision),
+        "nearest_point": [round(best[1][0], precision), round(best[1][1], precision)],
+        "nearest_segment_index": best[2],
+        "inside_section_bbox": bbox["u_min"] <= u <= bbox["u_max"] and bbox["v_min"] <= v <= bbox["v_max"],
+        "note": "distance is to the section contour, not a filled-volume inside/outside test",
+    }
+
+
+def _unique_sorted(values: list[float], precision: int) -> list[float]:
+    rounded = sorted(round(v, precision) for v in values)
+    unique: list[float] = []
+    for value in rounded:
+        if not unique or abs(value - unique[-1]) > 10 ** (-precision):
+            unique.append(value)
+    return unique
+
+
+def _point_in_rect(point: tuple[float, float], rect: tuple[float, float, float, float]) -> bool:
+    u_min, v_min, u_max, v_max = rect
+    return u_min <= point[0] <= u_max and v_min <= point[1] <= v_max
+
+
+def _segment_intersects_rect(segment: Segment2D, rect: tuple[float, float, float, float]) -> bool:
+    p1, p2 = segment
+    u_min, v_min, u_max, v_max = rect
+    if _point_in_rect(p1, rect) or _point_in_rect(p2, rect):
+        return True
+    if max(p1[0], p2[0]) < u_min or min(p1[0], p2[0]) > u_max:
+        return False
+    if max(p1[1], p2[1]) < v_min or min(p1[1], p2[1]) > v_max:
+        return False
+    corners = ((u_min, v_min), (u_max, v_min), (u_max, v_max), (u_min, v_max))
+    edges = tuple(zip(corners, corners[1:] + corners[:1]))
+    return any(_segments_intersect(p1, p2, edge[0], edge[1]) for edge in edges)
+
+
+def _segments_intersect(
+    a: tuple[float, float],
+    b: tuple[float, float],
+    c: tuple[float, float],
+    d: tuple[float, float],
+) -> bool:
+    def orient(p: tuple[float, float], q: tuple[float, float], r: tuple[float, float]) -> float:
+        return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+
+    o1 = orient(a, b, c)
+    o2 = orient(a, b, d)
+    o3 = orient(c, d, a)
+    o4 = orient(c, d, b)
+    if (o1 > 0) != (o2 > 0) and (o3 > 0) != (o4 > 0):
+        return True
+    eps = 1e-8
+    return (
+        abs(o1) < eps and _point_on_segment(c, a, b)
+        or abs(o2) < eps and _point_on_segment(d, a, b)
+        or abs(o3) < eps and _point_on_segment(a, c, d)
+        or abs(o4) < eps and _point_on_segment(b, c, d)
+    )
+
+
+def _point_on_segment(
+    point: tuple[float, float],
+    a: tuple[float, float],
+    b: tuple[float, float],
+) -> bool:
+    eps = 1e-8
+    return (
+        min(a[0], b[0]) - eps <= point[0] <= max(a[0], b[0]) + eps
+        and min(a[1], b[1]) - eps <= point[1] <= max(a[1], b[1]) + eps
+    )
+
+
+def _nearest_point_on_segment(point: tuple[float, float], segment: Segment2D) -> tuple[float, float]:
+    (u, v), (u2, v2) = segment
+    du = u2 - u
+    dv = v2 - v
+    length_sq = du * du + dv * dv
+    if length_sq < 1e-12:
+        return (u, v)
+    t = ((point[0] - u) * du + (point[1] - v) * dv) / length_sq
+    t = max(0.0, min(1.0, t))
+    return (u + t * du, v + t * dv)
+
+
 # ── SVG rendering ─────────────────────────────────────────────────────────────
 
 def render_section_svg(
@@ -309,18 +737,33 @@ def write_section_svg(
     value: float,
     out_path: Path,
     canvas: int = 500,
+    analysis_path: Path | None = None,
+    write_analysis: bool = True,
 ) -> dict:
-    """Extract section, render SVG, and write to disk.  Returns a result dict."""
+    """Extract section, render SVG, and write measured sidecar JSON."""
     segs = section_segments(triangles, axis, value)
     svg = render_section_svg(segs, axis, value, canvas=canvas)
+    analysis = analyze_section_segments(segs, axis, value)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(svg, encoding="utf-8")
+    analysis_payload = {
+        "stage": "section_analysis",
+        "svg": str(out_path),
+        **analysis,
+    }
+    analysis_json = None
+    if write_analysis:
+        analysis_path = analysis_path or out_path.with_suffix(".json")
+        write_json(analysis_path, analysis_payload)
+        analysis_json = str(analysis_path)
     return {
         "ok": True,
         "axis": _AXIS_NAME[axis],
         "value": value,
         "segment_count": len(segs),
         "svg": str(out_path),
+        "analysis": analysis_payload,
+        "analysis_json": analysis_json,
     }
 
 

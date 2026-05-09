@@ -78,6 +78,10 @@ def test_validate_default_model(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path / "test_block")
     result = main(["validate", "test_block"])
     assert result == 0
+    out_dir = tmp_path / "test_block" / "models" / "test_block" / "outputs"
+    assert (out_dir / "observability.json").exists()
+    validation = json.loads((out_dir / "validation.json").read_text())
+    assert validation["artifacts"]["observability"].endswith("observability.json")
 
 
 def test_version():
@@ -132,7 +136,7 @@ def test_probe_cx_cy_alias(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path / "bracket")
     captured = {}
 
-    def fake_probe(project_path, model_name, z_values=None, x_values=None, y_values=None, center=None, region=None):
+    def fake_probe(project_path, model_name, z_values=None, x_values=None, y_values=None, center=None, region=None, **kwargs):
         captured["center"] = center
         return {"ok": True, "stage": "probe", "model": model_name}
 
@@ -151,7 +155,7 @@ def test_probe_center_and_cx_merge(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path / "bracket")
     captured = {}
 
-    def fake_probe(project_path, model_name, z_values=None, x_values=None, y_values=None, center=None, region=None):
+    def fake_probe(project_path, model_name, z_values=None, x_values=None, y_values=None, center=None, region=None, **kwargs):
         captured["center"] = center
         return {"ok": True, "stage": "probe", "model": model_name}
 
