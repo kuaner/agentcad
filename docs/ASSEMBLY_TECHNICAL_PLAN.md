@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-10
 
-Status: V4 assembly validation is implemented beyond the original MVP. The
+Status: V4 assembly validation is implemented as a complete CLI workflow. The
 validator has AABB broad phase, mesh narrow-phase contact/penetration evidence,
 descriptor-based inter-model clearance, assembly section checks, combined
 assembly STL export, mandatory MJCF export, and a top-level interactive preview
@@ -21,13 +21,13 @@ agentcad assembly review <assembly>
 
 ## 1. Goal
 
-AgentCAD needs first-class assembly support without giving up its core principle:
-CAD correctness should be decided by structured geometry evidence before visual
+AgentCAD has first-class assembly support without giving up its core principle:
+CAD correctness is decided by structured geometry evidence before visual
 inspection.
 
-The first assembly milestone should let an agent create, validate, and review
-multi-model products such as a body/lid container, fan adapter plus screen
-plate, or simple bolted interfaces. The system must answer questions like:
+The V4 assembly workflow lets an agent create, validate, and review multi-model
+products such as a body/lid container, fan adapter plus screen plate, or simple
+bolted interfaces. The system answers questions like:
 
 - Are the referenced parts present and freshly built?
 - Do component anchors coincide after transforms?
@@ -381,7 +381,7 @@ mechanical clearance tolerance on behalf of the user.
 
 ## 9. CLI Surface
 
-Minimum V4 commands:
+Implemented V4 commands:
 
 ```bash
 agentcad assembly init <assembly>
@@ -391,22 +391,23 @@ agentcad preview <assembly>
 agentcad assembly review <assembly>
 ```
 
-`validate` is the primary command. It owns measurement, rendering, MJCF export,
-and consistency checks. The implementation may expose debug commands such as
-`assembly measure`, `assembly render`, or `assembly export-mjcf`, but the MVP
-should not require users or agents to call them separately.
+`validate` is the primary command. It owns measurement, rendering, combined STL
+export, MJCF export, observability output, and consistency checks. No user or
+agent workflow relies on separate debug subcommands for measurement, rendering,
+or MJCF generation.
 
 Preview is deliberately not an assembly subcommand. It is a cross-cutting
 review affordance for any generated CAD artifact. A model preview and an
 assembly preview differ by source directory and payload shape, not by workflow
-stage. `agentcad preview <name>` should auto-detect `models/<name>` versus
+stage. `agentcad preview <name>` auto-detects `models/<name>` versus
 `assemblies/<name>`, with an explicit kind flag only for name collisions.
 
-`assembly validate` should run measure first, then all assembly checks, then
-render combined and exploded previews, then generate the MJCF verification
-artifact and interactive `preview.html`. The command should fail if MJCF or
-interactive preview generation fails, because the human review path must always
-be available.
+`assembly validate` runs measurement first, then all assembly checks, then
+renders combined and exploded previews, writes combined STL, generates the MJCF
+verification artifact, round-trips the generated MJCF, writes observability
+JSON, and emits interactive `preview.html`. The command fails if MJCF,
+observability, STL, or interactive preview generation fails, because the human
+review path and machine-review path must both be available.
 
 `assembly review` should block delivery when:
 
@@ -535,9 +536,9 @@ Acceptance:
 - Breaking the lid inner diameter or transform causes a deterministic failing
   check before visual review.
 
-## 14. Implementation Phases
+## 14. Implementation Status
 
-### Phase 1: Schema And Resolution
+### Delivered: Schema And Resolution
 
 - Add `assemblies/` workspace discovery.
 - Add parser and schema checks for `assembly.json`.
@@ -546,7 +547,7 @@ Acceptance:
   triangles.
 - Reject assembly-level scale and ambiguous transform fields.
 
-### Phase 2: Measurement
+### Delivered: Measurement
 
 - Build stale components.
 - Load component STLs and metadata.
@@ -554,7 +555,7 @@ Acceptance:
 - Measure metadata-to-STL consistency for referenced interfaces.
 - Write `assembly_geometry.json`.
 
-### Phase 3: Validation Checks
+### Delivered: Validation Checks
 
 - Add check registry for assembly checks.
 - Implement mate and fit checks.
@@ -562,7 +563,7 @@ Acceptance:
 - Implement mesh narrow-phase interference detection.
 - Write `assembly_validation.json`.
 
-### Phase 4: Rendering And Review
+### Delivered: Rendering And Review
 
 - Render combined/exploded SVGs.
 - Generate mandatory MJCF verification artifact.
@@ -570,19 +571,19 @@ Acceptance:
 - Generate assembly observability JSON.
 - Add assembly review gate.
 
-### Phase 5: Example And Regression Tests
+### Delivered: Example And Regression Tests
 
 - Add bit-holder assembly fixture.
 - Add tests for transform math, metadata resolution, mate residuals, clearance,
   and interference.
-- Add one negative fixture for each critical failure:
+- Add targeted negative coverage for critical failures:
   - missing anchor
   - axis offset
   - insufficient radial clearance
   - insufficient axial engagement
   - component interference
 
-### Phase 6: Additional Export Adapters
+### Delivered: Additional Export Adapters
 
 - Add combined STL export.
 - Add OBJ/glTF only if downstream human review needs those formats.
@@ -590,15 +591,15 @@ Acceptance:
   AgentCAD validation remains CLI-first and numeric without requiring a browser
   runtime.
 
-## 15. Open Questions
+## 15. Resolved Decisions And Deferred Enhancements
 
-- Should assembly artifacts live under `assemblies/<name>/outputs/` or under a
-  synthetic `models/<name>/outputs/` directory? This plan prefers
-  `assemblies/` because assemblies are not single build123d parts.
-- Should exact STEP assembly export be supported early? Initial scope should
-  defer it; STL plus mandatory MJCF are enough for assembly review.
-- How strict should metadata schema validation be for existing models? Likely
-  warn first, then enforce for assembly-referenced models.
-- Which narrow-phase interference method is accurate enough without pulling in a
-  heavy geometry kernel? Start conservative and add acceleration only after
-  fixtures show the need.
+- Assembly artifacts live under `assemblies/<name>/outputs/` because assemblies
+  are not single build123d parts.
+- Exact STEP assembly export remains deferred. Combined STL plus mandatory MJCF
+  are enough for current assembly review and external viewer handoff.
+- Metadata schema validation is strict for assembly-referenced descriptors and
+  permissive elsewhere so existing single-part projects are not broken.
+- Narrow-phase interference uses deterministic STL triangle evidence with BVH
+  pruning, surface-contact classification, inside-sample penetration depth, and
+  sampled point-to-mesh clearance. Heavier BREP or signed-distance kernels are
+  optional future accelerators, not required for the current validation gate.

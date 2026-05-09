@@ -170,8 +170,7 @@ geometric primitives, interactive previews, assembly validation, and
 - [`docs/DESIGN.md`](docs/DESIGN.md) — architecture, first principles, and
   V0–V5 iteration roadmap (with delivered milestones marked).
 - [`docs/STATUS.md`](docs/STATUS.md) — current implementation state, recent
-  lessons (build123d traps, hole-wall interference), and the planned next
-  research and engineering work.
+  lessons, delivered validation gates, and remaining roadmap direction.
 - `AGENTS.md` / `CLAUDE.md` (workspace) — operating rules for the coding
   agent, including the mandatory TDD red/green workflow and the common
   design-error catalog.

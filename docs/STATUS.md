@@ -244,10 +244,11 @@ Findings folded back into the project:
 8. Treat section measurement JSON as the first-pass truth. SVGs are still
    useful, but bbox, component count, closed-loop ratio, and warnings make
    geometry failures easier for agents to detect deterministically.
-9. Multi-model products still need assembly-level fit validation. The
-   bit-holder body/lid example passes by matching metadata and per-model
-   geometry, but a first-class mate/clearance contract is the right long-term
-   check.
+9. Multi-model products need assembly-level fit validation. V4 now provides
+   first-class mate/clearance contracts, pair coverage, mesh narrow-phase
+   interference evidence, combined STL, mandatory MJCF, and interactive
+   previews so the bit-holder body/lid workflow no longer depends on matching
+   per-model metadata by convention alone.
 10. Assembly validation must make MJCF a required verification artifact, not
     an optional viewer export. The source of truth remains `assembly.json` plus
     measured `assembly_geometry.json`; MJCF is generated and round-tripped

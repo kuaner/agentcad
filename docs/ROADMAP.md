@@ -20,7 +20,7 @@ For background on what is already shipped, see
 | V2 | Design spec standardization | ✅ delivered | check IDs, schema, weak-check warnings, Markdown report |
 | V2.5 | Design-time observability | ✅ delivered | `precheck`, `review`, four relational checks, common-error catalog |
 | **V3** | **Feature library** | **next** | **declarative helpers that emit matching checks** |
-| V4 | Assembly + relations | MVP delivered | assembly contracts, mate residuals, fit checks, interactive preview, mandatory MJCF |
+| V4 | Assembly + relations | ✅ delivered | assembly contracts, mate residuals, fit checks, mesh narrow phase, interactive preview, mandatory MJCF |
 | V5 | CAD CI | planned | `validate all`, regression snapshots, GitHub Actions |
 | V6 | Optional integrations | deferred | MCP server, live viewer, PNG / glTF previews |
 
@@ -119,23 +119,22 @@ showcase example and the fan-adapter rewrite.
 
 Detailed design proposal: [`ASSEMBLY_TECHNICAL_PLAN.md`](ASSEMBLY_TECHNICAL_PLAN.md).
 
-Status: V4 validation delivered in the CLI as
+Status: V4 validation is delivered in the CLI as
 `agentcad assembly init/list/validate/review` plus the cross-cutting
-`agentcad preview <name>` command for both models and assemblies. The original
-MVP has been extended with mesh narrow-phase interference evidence,
-descriptor-based inter-model clearance, assembly section component counts,
-combined STL export, MJCF round-trip validation, and a `fan_with_screen`
-acceptance fixture.
+`agentcad preview <name>` command for both models and assemblies. The delivered
+workflow includes mesh narrow-phase interference evidence, descriptor-based
+inter-model clearance, assembly section component counts, combined STL export,
+MJCF round-trip validation, and a `fan_with_screen` acceptance fixture.
 
 ### Why
 
-V3 makes single parts cheap to author. The next ceiling is multi-part
+V3 makes single parts cheap to author. The next ceiling was multi-part
 assemblies: most real CAD work is "this part bolts to that part with X
-clearance and Y mate". Today an agent has to reason about two STL files
-in two different model directories with no shared coordinate system.
-The `examples/e2e-bit-holder/` body/lid test makes this concrete: each
-model validates independently, but the fit is still expressed indirectly
-through matching metadata values instead of an assembly-level mate contract.
+clearance and Y mate". V4 gives the agent a shared assembly coordinate system,
+explicit mate/clearance contracts, and generated evidence instead of forcing it
+to compare unrelated model outputs manually. The
+`examples/e2e-bit-holder/` body/lid test remains the regression fixture for
+that workflow.
 
 ### Scope
 

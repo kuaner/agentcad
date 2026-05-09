@@ -315,7 +315,7 @@ loss of validation strength.
 
 ### V4 — Assembly + relations
 
-- MVP delivered: `agentcad assembly init/list/validate/review`
+- Delivered: `agentcad assembly init/list/validate/review`
 - assembly workspace convention (`assemblies/<name>/assembly.json`)
 - rigid component transforms with assembly-level scale rejected
 - metadata anchors/interfaces resolved from component `metadata.json`
