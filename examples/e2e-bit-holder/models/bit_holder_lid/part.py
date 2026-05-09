@@ -90,5 +90,19 @@ metadata = {
         "top_thickness_mm": top_thickness,
         "skirt_wall_mm": outer_radius - inner_radius,
     },
+    "interfaces": {
+        "recess": {
+            "axis": {"point": [0, 0, 0], "direction": [0, 0, 1]},
+            "inner_cylinder": {
+                "type": "cylinder",
+                "axis": "z",
+                "center": [0, 0],
+                "radius_mm": round(inner_radius, 3),
+                "z_range": [0, round(recess_depth, 3)],
+                "surface": "inner",
+                "tolerance_mm": 0.35,
+            },
+        }
+    },
     "bbox_expected_mm": [lid_outer_diameter, lid_outer_diameter, lid_height],
 }

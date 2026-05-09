@@ -1,6 +1,6 @@
 # AgentCAD Roadmap
 
-Last updated: 2026-05-07
+Last updated: 2026-05-09
 
 This document is the actionable companion to [`DESIGN.md`](DESIGN.md). It
 takes the high-level milestones (V0 – V6) and breaks them into concrete,
@@ -20,7 +20,7 @@ For background on what is already shipped, see
 | V2 | Design spec standardization | ✅ delivered | check IDs, schema, weak-check warnings, Markdown report |
 | V2.5 | Design-time observability | ✅ delivered | `precheck`, `review`, four relational checks, common-error catalog |
 | **V3** | **Feature library** | **next** | **declarative helpers that emit matching checks** |
-| V4 | Assembly + relations | planned | multi-model workspace, mate points, inter-model clearance |
+| V4 | Assembly + relations | MVP delivered | assembly contracts, mate residuals, fit checks, SVG previews, mandatory MJCF |
 | V5 | CAD CI | planned | `validate all`, regression snapshots, GitHub Actions |
 | V6 | Optional integrations | deferred | MCP server, live viewer, PNG / glTF previews |
 
@@ -118,6 +118,11 @@ showcase example and the fan-adapter rewrite.
 ## V4 — Assembly + relations
 
 Detailed design proposal: [`ASSEMBLY_TECHNICAL_PLAN.md`](ASSEMBLY_TECHNICAL_PLAN.md).
+
+Status: MVP delivered in the CLI as `agentcad assembly init/list/validate/review`.
+Remaining work is exact narrow-phase collision and richer inter-model relation
+checks; the current interference gate is conservative and fails on AABB overlap
+unless the pair is explicitly ignored with a reason.
 
 ### Why
 

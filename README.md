@@ -28,6 +28,7 @@ discovery -> concept -> design contract -> precheck -> params/source -> build
 | Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + measurement JSON + suggested probes |
 | Validate | `agentcad validate <model>` | Build + measure + render all orthographic previews + design checks + feature coverage; emits observability and debug artifacts |
 | Review | `agentcad review <model>` | Pre-delivery checklist with pairwise relations matrix, hole-access enforcement, and must-view SVG list |
+| Assembly | `agentcad assembly init/list/validate/review` | Multi-model assembly contracts with component transforms, mate residuals, fit checks, combined/exploded SVGs, and mandatory MJCF export |
 | Deliver | `agentcad deliver <model>` | Delivery manifest |
 | Report | `agentcad report <model>` | Markdown summary of validation result |
 
@@ -63,6 +64,21 @@ half-covered by an adjacent wall.
 are declared, and always requires iso/front/top/side/back previews. The side
 view requirement came from a real e2e failure where a retaining lip existed in
 the contract but was effectively floating in side projection.
+
+## Assembly validation
+
+Assemblies live in `assemblies/<name>/assembly.json` and reference existing
+models by component id, model name, and rigid transform. `agentcad assembly
+validate <name>` rebuilds stale components, resolves metadata anchors and
+interfaces, measures declared cylindrical interfaces against STL sections,
+emits mate residuals, checks pair coverage, writes combined/exploded SVG
+previews, exports `<name>.mjcf.xml`, and round-trips the MJCF body/site data
+against `assembly_geometry.json`.
+
+The initial interference gate is intentionally conservative: non-overlapping
+AABBs can pass, but overlapping component AABBs fail unless the pair is covered
+by more specific fit checks and an explicit `ignore_pairs` reason. This avoids
+false passes while exact narrow-phase collision work remains future scope.
 
 ## Quick start
 
@@ -119,6 +135,7 @@ common-error catalog live in `AGENTS.md`, `CLAUDE.md`, and `references/`
 | `examples/iphone15pro-case/` | Real-world phone case with multi-cutouts + section validation |
 | `examples/e2e-test/` | Sub-agent end-to-end test: design → precheck → build → validate → review on a mounting bracket |
 | `examples/e2e-real-cable-hook/` | Real e2e surface-mounted cable hook with concept + quality review artifacts |
+| `examples/e2e-bit-holder/` | Two-part body/lid design that motivated first-class assembly validation |
 
 Re-run any example:
 
@@ -134,10 +151,11 @@ agentcad review fan_duct_adapter_8025
 uv run pytest -v
 ```
 
-144 tests at last count, covering CLI dispatch, workspace scaffolding, STL
+159 tests at last count, covering CLI dispatch, workspace scaffolding, STL
 reading and measurement, section extraction and SVG rendering, JSON IO,
 post-build validation checks, weak-check warnings, stale build detection,
-geometric primitives, and `precheck` / `review` integration.
+geometric primitives, assembly validation, and `precheck` / `review`
+integration.
 
 ## Documentation
 

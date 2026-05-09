@@ -2,7 +2,19 @@
 
 Last updated: 2026-05-09
 
-Status: draft design proposal for V4.
+Status: V4 MVP implemented. The remaining gap is exact narrow-phase collision
+for overlapping component meshes; the current implementation is conservative
+and blocks AABB-overlap pairs unless they are covered by explicit fit checks and
+an `ignore_pairs` reason.
+
+Implemented CLI:
+
+```bash
+agentcad assembly init <assembly>
+agentcad assembly list
+agentcad assembly validate <assembly>
+agentcad assembly review <assembly>
+```
 
 ## 1. Goal
 

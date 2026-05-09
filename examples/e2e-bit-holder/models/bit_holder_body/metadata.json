@@ -127,6 +127,37 @@
     "neck_height_mm": 5.0,
     "recommended_lid_inner_diameter_mm": 62.7
   },
+  "interfaces": {
+    "lid_neck": {
+      "axis": {
+        "point": [
+          0,
+          0,
+          79.0
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ]
+      },
+      "outer_cylinder": {
+        "type": "cylinder",
+        "axis": "z",
+        "center": [
+          0,
+          0
+        ],
+        "radius_mm": 31.0,
+        "z_range": [
+          79.0,
+          84.0
+        ],
+        "surface": "outer",
+        "tolerance_mm": 0.35
+      }
+    }
+  },
   "bbox_expected_mm": [
     66.0,
     66.0,

@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from . import __version__
+from .assembly import init_assembly, list_assemblies, review_assembly, validate_assembly
 from .inspect import inspect_model
 from .jsonio import print_payload
 from .measure import measure_model
@@ -118,6 +119,17 @@ def build_parser() -> argparse.ArgumentParser:
     sync.add_argument("--only", default=None, help="sync only one template path prefix (e.g. references/)")
     sync.add_argument("--prune-deprecated", action="store_true", help="remove deprecated scaffold paths like skills/")
 
+    assembly = sub.add_parser("assembly", help="create, validate, and review multi-model assemblies")
+    assembly_sub = assembly.add_subparsers(dest="assembly_command", required=True)
+    assembly_init = assembly_sub.add_parser("init", help="create an assembly contract")
+    assembly_init.add_argument("assembly")
+    assembly_init.add_argument("--force", action="store_true")
+    assembly_sub.add_parser("list", help="list assemblies in this workspace")
+    assembly_validate = assembly_sub.add_parser("validate", help="measure, check, render, and export MJCF for an assembly")
+    assembly_validate.add_argument("assembly")
+    assembly_review = assembly_sub.add_parser("review", help="run assembly delivery gates")
+    assembly_review.add_argument("assembly")
+
     return parser
 
 
@@ -165,6 +177,15 @@ def dispatch(args: argparse.Namespace) -> dict:
         )
 
     project = _resolve_project(args)
+    if args.command == "assembly":
+        if args.assembly_command == "init":
+            return init_assembly(project, args.assembly, force=getattr(args, "force", False))
+        if args.assembly_command == "list":
+            return list_assemblies(project)
+        if args.assembly_command == "validate":
+            return validate_assembly(project, args.assembly)
+        if args.assembly_command == "review":
+            return review_assembly(project, args.assembly)
     if args.command == "new":
         return new_model(project, args.model, force=args.force)
     if args.command == "build":

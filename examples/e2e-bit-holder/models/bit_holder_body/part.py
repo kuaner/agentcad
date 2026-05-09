@@ -116,5 +116,19 @@ metadata = {
         "neck_height_mm": neck_height,
         "recommended_lid_inner_diameter_mm": neck_radius * 2 + lid_fit_clearance_diameter,
     },
+    "interfaces": {
+        "lid_neck": {
+            "axis": {"point": [0, 0, main_height], "direction": [0, 0, 1]},
+            "outer_cylinder": {
+                "type": "cylinder",
+                "axis": "z",
+                "center": [0, 0],
+                "radius_mm": neck_radius,
+                "z_range": [round(main_height, 3), round(body_height, 3)],
+                "surface": "outer",
+                "tolerance_mm": 0.35,
+            },
+        }
+    },
     "bbox_expected_mm": [body_radius * 2, body_radius * 2, body_height],
 }
