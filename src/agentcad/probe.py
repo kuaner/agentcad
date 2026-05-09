@@ -197,7 +197,7 @@ def _probe_z(
         segs,
         AXIS_Z,
         z,
-        region=section_region or region,
+        region=section_region,
         line_u=line_u,
         line_v=line_v,
         point=point,

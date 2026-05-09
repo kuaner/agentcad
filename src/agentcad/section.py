@@ -533,7 +533,10 @@ def measure_section_point(
             "axis": _AXIS_NAME[axis],
             "section_value": round(value, precision),
             "point": [round(u, precision), round(v, precision)],
-            "error": "section has no segments",
+            "error": {
+                "type": "SectionEmpty",
+                "message": "section has no segments",
+            },
         }
 
     best: tuple[float, tuple[float, float], int] | None = None

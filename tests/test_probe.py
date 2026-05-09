@@ -107,6 +107,20 @@ def test_probe_with_region_solid(cube_project):
     assert "section_bbox_at_z" in result["suggested_checks"]
 
 
+def test_probe_legacy_region_does_not_add_section_measurements(cube_project):
+    result = probe_model(
+        cube_project,
+        "cube",
+        z_values=[5.0],
+        center=(5.0, 5.0),
+        region=((3.0, 3.0), (7.0, 7.0)),
+    )
+
+    assert result["ok"] is True
+    assert "region_section" in result
+    assert "measurements" not in result
+
+
 def test_probe_suggested_checks_format(cube_project):
     result = probe_model(cube_project, "cube", z_values=[5.0], center=(5.0, 5.0))
     assert result["ok"] is True
@@ -143,3 +157,16 @@ def test_probe_z_line_and_point_measurements(cube_project):
     assert result["measurements"]["line_u"]["intersection_count"] == 2
     assert result["measurements"]["line_u"]["span"]["size"] == pytest.approx(10.0, abs=0.01)
     assert result["measurements"]["point"]["nearest_distance_mm"] == pytest.approx(5.0, abs=0.01)
+
+
+def test_probe_section_region_adds_region_measurement(cube_project):
+    result = probe_model(
+        cube_project,
+        "cube",
+        z_values=[5.0],
+        section_region=((3.0, 3.0), (7.0, 7.0)),
+    )
+
+    assert result["ok"] is True
+    assert result["measurements"]["region"]["ok"] is True
+    assert "intersecting_segment_count" in result["measurements"]["region"]

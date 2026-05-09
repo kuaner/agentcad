@@ -35,6 +35,8 @@ def build():
         raise ValueError("lid inner diameter must clear body neck")
     if recess_depth <= body_neck_height:
         raise ValueError("recess depth must exceed body neck height")
+    if recess_depth >= lid_height:
+        raise ValueError("recess depth must stay below lid height")
     if outer_radius - inner_radius < 2.0:
         raise ValueError("lid skirt is too thin")
 

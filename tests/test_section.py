@@ -201,6 +201,14 @@ def test_measure_section_point_cube_center_distance():
     assert result["inside_section_bbox"] is True
 
 
+def test_measure_section_point_empty_returns_structured_error():
+    result = measure_section_point([], AXIS_Z, 5.0, (1.0, 2.0))
+
+    assert result["ok"] is False
+    assert result["error"]["type"] == "SectionEmpty"
+    assert "no segments" in result["error"]["message"]
+
+
 def test_measure_section_region_intersects_contour():
     tris = _cube_triangles(10.0)
     segs = section_segments(tris, AXIS_Z, 5.0)
