@@ -117,8 +117,6 @@ showcase example and the fan-adapter rewrite.
 
 ## V4 — Assembly + relations
 
-Detailed design proposal: [`ASSEMBLY_TECHNICAL_PLAN.md`](ASSEMBLY_TECHNICAL_PLAN.md).
-
 ### Why
 
 V3 makes single parts cheap to author. The next ceiling is multi-part
@@ -136,18 +134,14 @@ through matching metadata values instead of an assembly-level mate contract.
   and a list of mate points.
 - New CLI:
   - `agentcad assembly init <name>` — scaffold an assembly directory.
-  - `agentcad assembly list` — list discovered assemblies.
   - `agentcad assembly validate <name>` — run inter-model
-    checks, emit combined/exploded SVG previews, and generate MJCF.
-  - `agentcad assembly review <name>` — block delivery on uncovered mates,
-    missing MJCF, stale artifacts, or unresolved component-pair risks.
+    `min_clearance` / `hole_accessibility` / `feature_position` checks.
+  - `agentcad assembly render <name> --view iso|exploded` — render combined
+    SVG / glTF preview.
 - Inter-model relational checks: the existing four geometric-relation
   checks gain a `feature_a_model` / `feature_b_model` syntax so they can
   reference shapes declared in two different models.
-- Metadata-to-geometry consistency checks ensure assembly interfaces declared in
-  `metadata.json` match the built STL instead of being trusted blindly.
-- Mandatory MJCF export as a human-verifiable assembly artifact; optional
-  MuJoCo-derived metrics can later augment the numeric validation report.
+- Optional MJCF / URDF export for kinematic experimentation.
 
 ### Acceptance
 
