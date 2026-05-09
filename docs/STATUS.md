@@ -269,7 +269,7 @@ Both are documented in `references/build123d-guide.md`.
 
 ## Tests
 
-`uv run pytest -v` — currently 161 tests across:
+`uv run pytest -v` — currently 168 tests across:
 
 - `test_cli.py` — CLI dispatch
 - `test_workspace.py` — init / new / sync / discovery
@@ -280,7 +280,7 @@ Both are documented in `references/build123d-guide.md`.
 - `test_validate.py`, `test_weak_check.py` — post-build validation + weak-check warnings
 - `test_probe.py` — probe + scan
 - `test_geometry.py` — pure shape primitives (AABB, clearance, accessibility, wall thickness)
-- `test_assembly.py` — assembly contracts, transform bans, mate residuals, pair coverage, SVG/MJCF artifacts
+- `test_assembly.py` — assembly contracts, transform bans, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, SVG/STL/MJCF artifacts
 - `test_precheck_review.py` — `agentcad precheck` and `agentcad review` integration
 - `test_jsonio.py`
 
@@ -293,6 +293,6 @@ Both are documented in `references/build123d-guide.md`.
 | V2 — design spec standardization | ✅ delivered | check IDs, schema validation, weak-check warnings, Markdown report (`agentcad report`) |
 | V2.5 — design-time observability | ✅ delivered (new) | `agentcad precheck`, `agentcad review`, four geometric relation checks, common-error catalog, mandatory TDD prompt |
 | V2.6 — design-thinking prompts | ✅ delivered (new) | split references, Discovery Gate, Concept Gate, Design Quality Review, real cable-hook e2e |
-| V4 — assembly validation MVP | ✅ delivered (new) | `agentcad assembly init/list/validate/review`, rigid transforms, metadata interface measurement, mate residuals, pair coverage, combined/exploded SVG, top-level interactive preview, mandatory MJCF round-trip |
+| V4 — assembly validation | ✅ delivered (new) | `agentcad assembly init/list/validate/review`, rigid transforms, metadata interface measurement, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, combined/exploded SVG, combined STL, top-level interactive preview, mandatory MJCF round-trip |
 
 Next milestones (V3+) are tracked in [`DESIGN.md`](DESIGN.md).

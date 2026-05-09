@@ -1,12 +1,13 @@
 # AgentCAD Assembly Technical Plan
 
-Last updated: 2026-05-09
+Last updated: 2026-05-10
 
-Status: V4 MVP implemented. The remaining gaps are exact narrow-phase collision
-for overlapping component meshes and full OCCT/MuJoCo browser runtime
-integration. The current implementation is conservative and blocks
-AABB-overlap pairs unless they are covered by explicit fit checks and an
-`ignore_pairs` reason.
+Status: V4 assembly validation is implemented beyond the original MVP. The
+validator has AABB broad phase, mesh narrow-phase contact/penetration evidence,
+descriptor-based inter-model clearance, assembly section checks, combined
+assembly STL export, mandatory MJCF export, and a top-level interactive preview
+command. External OCCT/MuJoCo browser runtimes remain optional viewers; they
+are not the source of truth for AgentCAD validation.
 
 Implemented CLI:
 
@@ -294,15 +295,19 @@ Rules:
    - mate residuals
 9. Write `assembly_geometry.json`.
 
-The initial interference implementation can be conservative:
+Interference measurement uses layered evidence:
 
 - broad phase: transformed component AABB overlap
-- narrow phase v1: sampled triangle / vertex distance with tolerance
-- narrow phase v2: exact BREP or signed distance acceleration if needed
+- narrow phase: BVH-pruned triangle contact candidates, deterministic mesh
+  samples, point-in-closed-mesh checks, maximum sampled penetration depth, and
+  minimum sampled surface distance
+- optional future acceleration: BREP or signed-distance kernels may improve
+  speed/precision, but the validation contract already records enough evidence
+  to avoid AABB-only false passes
 
-False positives are acceptable early if the report points to the component pair
-and the minimum-distance evidence. False negatives are not acceptable for
-declared mate surfaces.
+Surface contact without inside samples is reported as contact evidence, not
+solid interference. Real penetration is reported as negative clearance /
+positive penetration depth and is checked by `interference_free`.
 
 ## 8. Assembly Checks
 
@@ -485,7 +490,7 @@ The exporter must immediately parse the generated MJCF and produce an
 - site world positions after applying body transforms;
 - unresolved or dropped mate semantics.
 
-If MuJoCo is available in a later integration, a separate verification step can
+If MuJoCo is available in an external viewer, a separate verification step can
 add extra evidence:
 
 - site world positions after MJCF loading;
@@ -496,7 +501,8 @@ add extra evidence:
 
 Those data are useful additional evidence, especially for mechanisms. They
 still do not replace explicit AgentCAD checks such as radial clearance, axial
-engagement, and interference-free component pairs.
+engagement, section component counts, descriptor clearance, and
+interference-free component pairs.
 
 Importing external MJCF should be treated as preview-only until it can be mapped
 back to the JSON contract with measurable checks.
@@ -524,6 +530,8 @@ Acceptance:
   fit is correct.
 - `bit_holder.mjcf.xml` is generated and references both component meshes for
   human inspection.
+- `<assembly>.stl` is generated from transformed component meshes for external
+  viewers and slicers.
 - Breaking the lid inner diameter or transform causes a deterministic failing
   check before visual review.
 
@@ -551,7 +559,7 @@ Acceptance:
 - Add check registry for assembly checks.
 - Implement mate and fit checks.
 - Implement anti-false-pass gates.
-- Implement conservative interference detection.
+- Implement mesh narrow-phase interference detection.
 - Write `assembly_validation.json`.
 
 ### Phase 4: Rendering And Review
@@ -576,10 +584,11 @@ Acceptance:
 
 ### Phase 6: Additional Export Adapters
 
-- Add STL/OBJ combined mesh export.
-- Add glTF if SVG becomes insufficient.
-- Add optional MuJoCo-backed MJCF verification metrics if the dependency is
-  acceptable.
+- Add combined STL export.
+- Add OBJ/glTF only if downstream human review needs those formats.
+- Keep optional MuJoCo-backed verification metrics as external viewer evidence;
+  AgentCAD validation remains CLI-first and numeric without requiring a browser
+  runtime.
 
 ## 15. Open Questions
 

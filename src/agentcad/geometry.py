@@ -230,6 +230,9 @@ def min_clearance_3d(shape_a: dict, shape_b: dict) -> dict:
     if z_overlap < 0:
         clearance = -z_overlap
         interferes = False
+    elif abs(z_overlap) <= 1e-9:
+        clearance = 0.0
+        interferes = False
     else:
         clearance = xy_clearance_mm
         interferes = xy_clearance_mm < 0

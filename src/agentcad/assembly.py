@@ -4,14 +4,17 @@ import itertools
 import math
 import os
 import re
+import struct
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .geometry import min_clearance_3d, parse_shape
 from .jsonio import read_json, write_json
 from .render import triangles_to_svg
 from .runner import build_model
+from .section import AXIS_X, AXIS_Y, AXIS_Z, analyze_section_segments, section_segments
 from .stl import Triangle, Vec3, cross, dot, length, mesh_report, normalize, read_stl, section_radius_at_z, sub
 from .workspace import model_dir, normalize_model_name, outputs_dir
 
@@ -36,6 +39,14 @@ class Transform:
     rotation_euler_deg: Vec3
     rotation: tuple[Vec3, Vec3, Vec3]
     matrix: list[list[float]]
+
+
+@dataclass
+class _TriBvhNode:
+    bbox: tuple[Vec3, Vec3]
+    indices: list[int] | None = None
+    left: "_TriBvhNode | None" = None
+    right: "_TriBvhNode | None" = None
 
 
 def assemblies_dir(project: Path) -> Path:
@@ -186,6 +197,17 @@ def validate_assembly(project: Path, name: str) -> dict:
             }
         )
 
+        stl_payload = _export_assembly_stl(project, safe, geometry)
+        checks.append(
+            {
+                "name": "assembly_stl_generated",
+                "type": "artifact_exists",
+                "ok": bool(stl_payload.get("ok")),
+                "artifacts": stl_payload.get("artifacts", {}),
+                "error": stl_payload.get("error"),
+            }
+        )
+
         mjcf_payload = _export_mjcf(project, safe, contract, geometry)
         mjcf_check = _mjcf_consistency_check(mjcf_payload, geometry)
         checks.append(mjcf_check)
@@ -197,6 +219,7 @@ def validate_assembly(project: Path, name: str) -> dict:
             "observability": str(observability_path),
         }
         artifacts.update(render_payload.get("artifacts") or {})
+        artifacts.update(stl_payload.get("artifacts") or {})
         artifacts.update(mjcf_payload.get("artifacts") or {})
 
         preview_seed = {
@@ -287,7 +310,7 @@ def review_assembly(project: Path, name: str) -> dict:
                 ],
             }
         )
-        for key in ("mjcf", "preview_combined_iso", "preview_exploded_iso", "preview_page", "geometry"):
+        for key in ("mjcf", "assembly_stl", "preview_combined_iso", "preview_exploded_iso", "preview_page", "geometry"):
             path = (validation.get("artifacts") or {}).get(key)
             checks.append(
                 {
@@ -517,14 +540,20 @@ def _collect_references(contract: dict) -> list[str]:
                 _append_ref(refs, mate.get(key))
     for check in contract.get("checks", []) or []:
         if isinstance(check, dict):
-            for key in ("ref", "path", "a", "b", "inner", "outer"):
-                _append_ref(refs, check.get(key))
+            for key in ("ref", "path", "a", "b", "inner", "outer", "feature_a", "feature_b", "shape_a", "shape_b"):
+                _append_ref_value(refs, check.get(key))
     return sorted(set(refs))
 
 
 def _append_ref(refs: list[str], value: Any) -> None:
     if isinstance(value, str) and "." in value:
         refs.append(value)
+
+
+def _append_ref_value(refs: list[str], value: Any) -> None:
+    _append_ref(refs, value)
+    if isinstance(value, dict) and isinstance(value.get("ref"), str):
+        _append_ref(refs, value.get("ref"))
 
 
 def _resolve_references(refs: list[str], components: dict[str, dict]) -> dict[str, dict]:
@@ -597,6 +626,16 @@ def _transform_descriptor(value: Any, transform: Transform) -> Any:
             "world_axis_direction": _round_vec(normalize(sub(world_b, world_a))),
             "radius_mm": _descriptor_radius(value),
         }
+    if _is_box_descriptor(value):
+        return {
+            **value,
+            "world_shape": _transform_shape_descriptor(value, transform.matrix),
+        }
+    if _is_sphere_descriptor(value):
+        return {
+            **value,
+            "world_shape": _transform_shape_descriptor(value, transform.matrix),
+        }
     transformed = {}
     for key, item in value.items():
         transformed[key] = _transform_descriptor(item, transform)
@@ -609,6 +648,14 @@ def _is_axis_descriptor(value: Any) -> bool:
 
 def _is_cylinder_descriptor(value: Any) -> bool:
     return isinstance(value, dict) and value.get("type") == "cylinder"
+
+
+def _is_box_descriptor(value: Any) -> bool:
+    return isinstance(value, dict) and value.get("type") == "box"
+
+
+def _is_sphere_descriptor(value: Any) -> bool:
+    return isinstance(value, dict) and value.get("type") == "sphere"
 
 
 def _descriptor_radius(desc: dict) -> float | None:
@@ -958,16 +1005,408 @@ def _point_axis_distance(point: Vec3, axis_point: Vec3, axis_dir: Vec3) -> float
 def _measure_pairwise(components: dict[str, dict]) -> list[dict]:
     rows = []
     for a_id, b_id in itertools.combinations(sorted(components), 2):
+        component_a = components[a_id]
+        component_b = components[b_id]
         bbox_a = components[a_id].get("world_bbox")
         bbox_b = components[b_id].get("world_bbox")
+        bbox_overlap = _bbox_overlap(bbox_a, bbox_b)
+        aabb_clearance = _bbox_clearance(bbox_a, bbox_b)
+        narrow = _mesh_pair_evidence(
+            component_a.get("world_triangles") or [],
+            component_b.get("world_triangles") or [],
+            bbox_overlap=bbox_overlap,
+            aabb_clearance=aabb_clearance,
+        )
         rows.append(
             {
                 "components": [a_id, b_id],
-                "bbox_overlap": _bbox_overlap(bbox_a, bbox_b),
-                "aabb_clearance_mm": _bbox_clearance(bbox_a, bbox_b),
+                "bbox_overlap": bbox_overlap,
+                "aabb_clearance_mm": aabb_clearance,
+                **narrow,
             }
         )
     return rows
+
+
+def _mesh_pair_evidence(
+    triangles_a: list[Triangle],
+    triangles_b: list[Triangle],
+    *,
+    bbox_overlap: bool,
+    aabb_clearance: float | None,
+) -> dict:
+    if not triangles_a or not triangles_b:
+        return {
+            "method": "mesh_narrow_phase_unavailable",
+            "mesh_clearance_mm": None,
+            "mesh_penetration_mm": None,
+            "interferes": False,
+            "narrow_phase": {
+                "ok": False,
+                "error": {"type": "MeshMissing", "message": "both components need STL triangles for narrow-phase evidence"},
+            },
+        }
+    if not bbox_overlap:
+        return {
+            "method": "aabb_separated",
+            "mesh_clearance_mm": aabb_clearance,
+            "mesh_penetration_mm": 0.0,
+            "interferes": False,
+            "narrow_phase": {
+                "ok": True,
+                "broad_phase": "separated",
+                "triangle_intersection_count": 0,
+                "inside_sample_count": 0,
+                "min_sample_distance_mm": aabb_clearance,
+            },
+        }
+
+    evidence = _narrow_phase_mesh_pair(triangles_a, triangles_b)
+    penetration = float(evidence.get("max_penetration_mm") or 0.0)
+    triangle_hits = int(evidence.get("triangle_intersection_count") or 0)
+    clearance = -penetration if penetration > EPS else (0.0 if triangle_hits else evidence.get("min_sample_distance_mm"))
+    return {
+        "method": "mesh_narrow_phase_v1",
+        "mesh_clearance_mm": clearance,
+        "mesh_penetration_mm": penetration,
+        "interferes": penetration > EPS,
+        "narrow_phase": evidence,
+    }
+
+
+def _narrow_phase_mesh_pair(triangles_a: list[Triangle], triangles_b: list[Triangle]) -> dict:
+    boxes_a = [_triangle_aabb(tri) for tri in triangles_a]
+    boxes_b = [_triangle_aabb(tri) for tri in triangles_b]
+    candidate_pairs = list(_overlapping_triangle_pairs(boxes_a, boxes_b))
+    triangle_intersections = 0
+    for i, j in candidate_pairs:
+        if _triangles_intersect(triangles_a[i], triangles_b[j]):
+            triangle_intersections += 1
+            if triangle_intersections >= 256:
+                break
+
+    samples_a = _mesh_sample_points(triangles_a)
+    samples_b = _mesh_sample_points(triangles_b)
+    inside: list[dict] = []
+    min_distance: float | None = None
+
+    for owner, samples, other in (("a", samples_a, triangles_b), ("b", samples_b, triangles_a)):
+        for point in samples:
+            distance = _point_mesh_distance(point, other)
+            if min_distance is None or distance < min_distance:
+                min_distance = distance
+            if distance > 1e-5 and _point_inside_mesh(point, other):
+                inside.append(
+                    {
+                        "owner": owner,
+                        "point": _round_vec(point),
+                        "penetration_mm": distance,
+                    }
+                )
+
+    max_penetration = max((row["penetration_mm"] for row in inside), default=0.0)
+    deepest = max(inside, key=lambda row: row["penetration_mm"], default=None)
+    return {
+        "ok": True,
+        "broad_phase": "aabb_overlap",
+        "triangle_candidate_pairs": len(candidate_pairs),
+        "triangle_intersection_count": triangle_intersections,
+        "inside_sample_count": len(inside),
+        "sample_count": len(samples_a) + len(samples_b),
+        "min_sample_distance_mm": min_distance,
+        "max_penetration_mm": max_penetration,
+        "deepest_sample": deepest,
+        "note": "inside samples estimate solid penetration; triangle intersections without inside samples are treated as surface contact evidence",
+    }
+
+
+def _mesh_sample_points(triangles: list[Triangle], max_samples: int = 384) -> list[Vec3]:
+    points: list[Vec3] = []
+    for tri in triangles:
+        points.extend(tri)
+        points.append(_triangle_centroid(tri))
+    dedup: list[Vec3] = []
+    seen: set[Vec3] = set()
+    for point in points:
+        key = (round(point[0], 4), round(point[1], 4), round(point[2], 4))
+        if key in seen:
+            continue
+        seen.add(key)
+        dedup.append(point)
+    if len(dedup) <= max_samples:
+        return dedup
+    step = len(dedup) / max_samples
+    return [dedup[min(int(i * step), len(dedup) - 1)] for i in range(max_samples)]
+
+
+def _triangle_centroid(tri: Triangle) -> Vec3:
+    return (
+        (tri[0][0] + tri[1][0] + tri[2][0]) / 3.0,
+        (tri[0][1] + tri[1][1] + tri[2][1]) / 3.0,
+        (tri[0][2] + tri[1][2] + tri[2][2]) / 3.0,
+    )
+
+
+def _triangle_aabb(tri: Triangle) -> tuple[Vec3, Vec3]:
+    return (
+        (min(p[0] for p in tri), min(p[1] for p in tri), min(p[2] for p in tri)),
+        (max(p[0] for p in tri), max(p[1] for p in tri), max(p[2] for p in tri)),
+    )
+
+
+def _overlapping_triangle_pairs(
+    boxes_a: list[tuple[Vec3, Vec3]],
+    boxes_b: list[tuple[Vec3, Vec3]],
+) -> list[tuple[int, int]]:
+    if not boxes_a or not boxes_b:
+        return []
+    tree_a = _build_tri_bvh(boxes_a, list(range(len(boxes_a))))
+    tree_b = _build_tri_bvh(boxes_b, list(range(len(boxes_b))))
+    pairs: list[tuple[int, int]] = []
+    _collect_bvh_pairs(tree_a, tree_b, boxes_a, boxes_b, pairs)
+    return pairs
+
+
+def _build_tri_bvh(boxes: list[tuple[Vec3, Vec3]], indices: list[int]) -> _TriBvhNode:
+    bbox = _union_box([boxes[index] for index in indices])
+    if len(indices) <= 24:
+        return _TriBvhNode(bbox=bbox, indices=indices)
+    spans = [bbox[1][axis] - bbox[0][axis] for axis in range(3)]
+    axis = max(range(3), key=lambda item: spans[item])
+    indices.sort(key=lambda index: (boxes[index][0][axis] + boxes[index][1][axis]) / 2.0)
+    mid = max(1, min(len(indices) - 1, len(indices) // 2))
+    return _TriBvhNode(
+        bbox=bbox,
+        left=_build_tri_bvh(boxes, indices[:mid]),
+        right=_build_tri_bvh(boxes, indices[mid:]),
+    )
+
+
+def _collect_bvh_pairs(
+    a: _TriBvhNode,
+    b: _TriBvhNode,
+    boxes_a: list[tuple[Vec3, Vec3]],
+    boxes_b: list[tuple[Vec3, Vec3]],
+    pairs: list[tuple[int, int]],
+) -> None:
+    if not _boxes_overlap(a.bbox, b.bbox):
+        return
+    if a.indices is not None and b.indices is not None:
+        for i in a.indices:
+            for j in b.indices:
+                if _boxes_overlap(boxes_a[i], boxes_b[j]):
+                    pairs.append((i, j))
+        return
+    if b.indices is not None or (a.indices is None and _box_volume(a.bbox) >= _box_volume(b.bbox)):
+        if a.left is not None:
+            _collect_bvh_pairs(a.left, b, boxes_a, boxes_b, pairs)
+        if a.right is not None:
+            _collect_bvh_pairs(a.right, b, boxes_a, boxes_b, pairs)
+    else:
+        if b.left is not None:
+            _collect_bvh_pairs(a, b.left, boxes_a, boxes_b, pairs)
+        if b.right is not None:
+            _collect_bvh_pairs(a, b.right, boxes_a, boxes_b, pairs)
+
+
+def _union_box(boxes: list[tuple[Vec3, Vec3]]) -> tuple[Vec3, Vec3]:
+    return (
+        (min(box[0][0] for box in boxes), min(box[0][1] for box in boxes), min(box[0][2] for box in boxes)),
+        (max(box[1][0] for box in boxes), max(box[1][1] for box in boxes), max(box[1][2] for box in boxes)),
+    )
+
+
+def _boxes_overlap(a: tuple[Vec3, Vec3], b: tuple[Vec3, Vec3], eps: float = 1e-8) -> bool:
+    return all(a[0][axis] <= b[1][axis] + eps and b[0][axis] <= a[1][axis] + eps for axis in range(3))
+
+
+def _box_volume(box: tuple[Vec3, Vec3]) -> float:
+    return max(box[1][0] - box[0][0], 0.0) * max(box[1][1] - box[0][1], 0.0) * max(box[1][2] - box[0][2], 0.0)
+
+
+def _triangles_intersect(a: Triangle, b: Triangle) -> bool:
+    for p, q in ((a[0], a[1]), (a[1], a[2]), (a[2], a[0])):
+        if _segment_triangle_intersects(p, q, b):
+            return True
+    for p, q in ((b[0], b[1]), (b[1], b[2]), (b[2], b[0])):
+        if _segment_triangle_intersects(p, q, a):
+            return True
+    return _coplanar_triangles_overlap(a, b)
+
+
+def _segment_triangle_intersects(p0: Vec3, p1: Vec3, tri: Triangle, eps: float = 1e-9) -> bool:
+    direction = sub(p1, p0)
+    edge1 = sub(tri[1], tri[0])
+    edge2 = sub(tri[2], tri[0])
+    h = cross(direction, edge2)
+    det = dot(edge1, h)
+    if abs(det) < eps:
+        return False
+    inv_det = 1.0 / det
+    s = sub(p0, tri[0])
+    u = inv_det * dot(s, h)
+    if u < -eps or u > 1.0 + eps:
+        return False
+    q = cross(s, edge1)
+    v = inv_det * dot(direction, q)
+    if v < -eps or u + v > 1.0 + eps:
+        return False
+    t = inv_det * dot(edge2, q)
+    return -eps <= t <= 1.0 + eps
+
+
+def _coplanar_triangles_overlap(a: Triangle, b: Triangle, eps: float = 1e-7) -> bool:
+    normal_a = cross(sub(a[1], a[0]), sub(a[2], a[0]))
+    normal_b = cross(sub(b[1], b[0]), sub(b[2], b[0]))
+    if length(normal_a) <= eps or length(normal_b) <= eps:
+        return False
+    na = normalize(normal_a)
+    nb = normalize(normal_b)
+    if abs(abs(dot(na, nb)) - 1.0) > 1e-5:
+        return False
+    if any(abs(dot(sub(point, a[0]), na)) > eps for point in b):
+        return False
+    drop = max(range(3), key=lambda axis: abs(na[axis]))
+    pa = [_project2(point, drop) for point in a]
+    pb = [_project2(point, drop) for point in b]
+    for e1 in ((pa[0], pa[1]), (pa[1], pa[2]), (pa[2], pa[0])):
+        for e2 in ((pb[0], pb[1]), (pb[1], pb[2]), (pb[2], pb[0])):
+            if _segments_intersect_2d(e1[0], e1[1], e2[0], e2[1]):
+                return True
+    return _point_in_triangle_2d(pa[0], pb) or _point_in_triangle_2d(pb[0], pa)
+
+
+def _project2(point: Vec3, drop_axis: int) -> tuple[float, float]:
+    axes = [axis for axis in (0, 1, 2) if axis != drop_axis]
+    return (point[axes[0]], point[axes[1]])
+
+
+def _segments_intersect_2d(
+    a: tuple[float, float],
+    b: tuple[float, float],
+    c: tuple[float, float],
+    d: tuple[float, float],
+    eps: float = 1e-9,
+) -> bool:
+    def orient(p: tuple[float, float], q: tuple[float, float], r: tuple[float, float]) -> float:
+        return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+
+    o1 = orient(a, b, c)
+    o2 = orient(a, b, d)
+    o3 = orient(c, d, a)
+    o4 = orient(c, d, b)
+    if (o1 > eps) != (o2 > eps) and (o3 > eps) != (o4 > eps):
+        return True
+    return (
+        abs(o1) <= eps and _point_on_segment_2d(c, a, b, eps)
+        or abs(o2) <= eps and _point_on_segment_2d(d, a, b, eps)
+        or abs(o3) <= eps and _point_on_segment_2d(a, c, d, eps)
+        or abs(o4) <= eps and _point_on_segment_2d(b, c, d, eps)
+    )
+
+
+def _point_on_segment_2d(
+    point: tuple[float, float],
+    a: tuple[float, float],
+    b: tuple[float, float],
+    eps: float,
+) -> bool:
+    return (
+        min(a[0], b[0]) - eps <= point[0] <= max(a[0], b[0]) + eps
+        and min(a[1], b[1]) - eps <= point[1] <= max(a[1], b[1]) + eps
+    )
+
+
+def _point_in_triangle_2d(point: tuple[float, float], tri: list[tuple[float, float]], eps: float = 1e-9) -> bool:
+    a, b, c = tri
+    area = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+    if abs(area) <= eps:
+        return False
+    s = ((a[1] - c[1]) * (point[0] - c[0]) + (c[0] - a[0]) * (point[1] - c[1])) / area
+    t = ((c[1] - b[1]) * (point[0] - c[0]) + (b[0] - c[0]) * (point[1] - c[1])) / area
+    u = 1.0 - s - t
+    return s >= -eps and t >= -eps and u >= -eps
+
+
+def _point_mesh_distance(point: Vec3, triangles: list[Triangle]) -> float:
+    return min((_point_triangle_distance(point, tri) for tri in triangles), default=float("inf"))
+
+
+def _point_triangle_distance(point: Vec3, tri: Triangle) -> float:
+    # Real-Time Collision Detection, closest point on triangle.
+    a, b, c = tri
+    ab = sub(b, a)
+    ac = sub(c, a)
+    ap = sub(point, a)
+    d1 = dot(ab, ap)
+    d2 = dot(ac, ap)
+    if d1 <= 0.0 and d2 <= 0.0:
+        return length(sub(point, a))
+
+    bp = sub(point, b)
+    d3 = dot(ab, bp)
+    d4 = dot(ac, bp)
+    if d3 >= 0.0 and d4 <= d3:
+        return length(sub(point, b))
+
+    vc = d1 * d4 - d3 * d2
+    if vc <= 0.0 and d1 >= 0.0 and d3 <= 0.0:
+        v = d1 / (d1 - d3)
+        nearest = _add(a, _mul(ab, v))
+        return length(sub(point, nearest))
+
+    cp = sub(point, c)
+    d5 = dot(ab, cp)
+    d6 = dot(ac, cp)
+    if d6 >= 0.0 and d5 <= d6:
+        return length(sub(point, c))
+
+    vb = d5 * d2 - d1 * d6
+    if vb <= 0.0 and d2 >= 0.0 and d6 <= 0.0:
+        w = d2 / (d2 - d6)
+        nearest = _add(a, _mul(ac, w))
+        return length(sub(point, nearest))
+
+    va = d3 * d6 - d5 * d4
+    if va <= 0.0 and (d4 - d3) >= 0.0 and (d5 - d6) >= 0.0:
+        w = (d4 - d3) / ((d4 - d3) + (d5 - d6))
+        nearest = _add(b, _mul(sub(c, b), w))
+        return length(sub(point, nearest))
+
+    n = normalize(cross(ab, ac))
+    return abs(dot(sub(point, a), n))
+
+
+def _point_inside_mesh(point: Vec3, triangles: list[Triangle]) -> bool:
+    direction = normalize((0.817137, 0.271828, 0.506731))
+    hits: list[float] = []
+    for tri in triangles:
+        t = _ray_triangle_t(point, direction, tri)
+        if t is None or t <= 1e-7:
+            continue
+        if not any(abs(t - existing) <= 1e-6 for existing in hits):
+            hits.append(t)
+    return len(hits) % 2 == 1
+
+
+def _ray_triangle_t(origin: Vec3, direction: Vec3, tri: Triangle, eps: float = 1e-9) -> float | None:
+    edge1 = sub(tri[1], tri[0])
+    edge2 = sub(tri[2], tri[0])
+    h = cross(direction, edge2)
+    det = dot(edge1, h)
+    if abs(det) < eps:
+        return None
+    inv_det = 1.0 / det
+    s = sub(origin, tri[0])
+    u = inv_det * dot(s, h)
+    if u < -eps or u > 1.0 + eps:
+        return None
+    q = cross(s, edge1)
+    v = inv_det * dot(direction, q)
+    if v < -eps or u + v > 1.0 + eps:
+        return None
+    t = inv_det * dot(edge2, q)
+    return t if t > eps else None
 
 
 def _bbox_overlap(a: dict | None, b: dict | None) -> bool:
@@ -1047,6 +1486,8 @@ def _evaluate_user_checks(contract: dict, geometry: dict) -> list[dict]:
             checks.append(_eval_inter_model_min_clearance(name, check, geometry))
         elif ctype == "assembly_bbox_size":
             checks.append(_eval_assembly_bbox_size(name, check, geometry))
+        elif ctype == "assembly_section_component_count":
+            checks.append(_eval_assembly_section_component_count(name, check, geometry))
         elif ctype in ("anchor_exists", "interface_exists"):
             checks.append(_eval_reference_exists(name, ctype, check, geometry))
         elif ctype == "component_exists":
@@ -1126,42 +1567,62 @@ def _radius_from_descriptor(desc: Any, surface: str) -> float | None:
 
 
 def _eval_interference_free(name: str, check: dict, geometry: dict) -> dict:
-    pair = _pair_key(check.get("components") or [])
+    pair = _pair_key(check.get("components") or _components_from_refs([check.get("a"), check.get("b"), check.get("feature_a"), check.get("feature_b")]))
     row = _pair_row(geometry, pair)
+    tolerance = float(check.get("tolerance_mm", check.get("tolerance", 0.0)))
     if row is None:
         return {
             "name": name,
             "type": "interference_free",
             "ok": False,
             "components": list(pair),
-            "error": {"type": "PairMissing", "message": "component pair not found"},
+                "error": {"type": "PairMissing", "message": "component pair not found"},
         }
+    penetration = row.get("mesh_penetration_mm")
     overlap = bool(row.get("bbox_overlap"))
+    ok = penetration is not None and float(penetration) <= tolerance
     return {
         "name": name,
         "type": "interference_free",
-        "ok": not overlap,
+        "ok": ok,
         "components": list(pair),
-        "method": "aabb_conservative",
+        "method": row.get("method"),
         "bbox_overlap": overlap,
+        "mesh_clearance_mm": row.get("mesh_clearance_mm"),
+        "mesh_penetration_mm": penetration,
+        "tolerance_mm": tolerance,
         "aabb_clearance_mm": row.get("aabb_clearance_mm"),
-        "error": {"type": "AabbOverlapRequiresNarrowPhase", "message": "AABB overlap is treated as a failure in MVP"} if overlap else None,
+        "narrow_phase": row.get("narrow_phase"),
+        "error": None if ok else {"type": "MeshInterference", "message": "component pair has measured mesh penetration"},
     }
 
 
 def _eval_inter_model_min_clearance(name: str, check: dict, geometry: dict) -> dict:
-    pair = _pair_key(check.get("components") or [])
+    pair = _pair_key(check.get("components") or _components_from_refs([check.get("a"), check.get("b"), check.get("feature_a"), check.get("feature_b"), check.get("shape_a"), check.get("shape_b")]))
     row = _pair_row(geometry, pair)
     min_mm = _required_float(check, "min_mm", name)
+    shape_result = _shape_clearance_for_check(check, geometry)
+    if shape_result is not None:
+        actual = shape_result.get("clearance_mm")
+        return {
+            "name": name,
+            "type": "inter_model_min_clearance",
+            "ok": actual is not None and min_mm is not None and float(actual) >= min_mm,
+            "components": shape_result.get("components") or list(pair),
+            "actual_mm": actual,
+            "min_mm": min_mm,
+            "method": "shape_descriptor",
+            "evidence": shape_result,
+        }
     if row is None:
         return {
             "name": name,
             "type": "inter_model_min_clearance",
             "ok": False,
             "components": list(pair),
-            "error": {"type": "PairMissing", "message": "component pair not found"},
+                "error": {"type": "PairMissing", "message": "component pair not found"},
         }
-    actual = row.get("aabb_clearance_mm")
+    actual = row.get("mesh_clearance_mm")
     return {
         "name": name,
         "type": "inter_model_min_clearance",
@@ -1169,7 +1630,9 @@ def _eval_inter_model_min_clearance(name: str, check: dict, geometry: dict) -> d
         "components": list(pair),
         "actual_mm": actual,
         "min_mm": min_mm,
-        "method": "aabb",
+        "method": row.get("method") or "mesh_or_aabb",
+        "aabb_clearance_mm": row.get("aabb_clearance_mm"),
+        "narrow_phase": row.get("narrow_phase"),
     }
 
 
@@ -1194,6 +1657,234 @@ def _eval_assembly_bbox_size(name: str, check: dict, geometry: dict) -> dict:
         "expected": [float(value) for value in expected],
         "tolerance_mm": tol,
     }
+
+
+def _eval_assembly_section_component_count(name: str, check: dict, geometry: dict) -> dict:
+    axis, value = _section_axis_value(check)
+    if axis is None or value is None:
+        return {
+            "name": name,
+            "type": "assembly_section_component_count",
+            "ok": False,
+            "error": {"type": "SectionMissing", "message": "provide x, y, z or axis/value for the section"},
+        }
+    expected = check.get("expected", check.get("expected_component_count", check.get("count")))
+    if expected is None:
+        return {
+            "name": name,
+            "type": "assembly_section_component_count",
+            "ok": False,
+            "error": {"type": "ExpectedCountMissing", "message": "expected component count is required"},
+        }
+    selected = set(str(item) for item in (check.get("components") or []))
+    hits = []
+    total_segments = 0
+    disconnected_contours = 0
+    for cid, component in (geometry.get("components") or {}).items():
+        if selected and cid not in selected:
+            continue
+        triangles = _component_triangles_from_public_record(component)
+        segments = section_segments(triangles, axis, value)
+        analysis = analyze_section_segments(segments, axis, value)
+        if segments:
+            hits.append(
+                {
+                    "component": cid,
+                    "segment_count": len(segments),
+                    "component_count": analysis.get("component_count"),
+                    "bbox": analysis.get("bbox"),
+                }
+            )
+            total_segments += len(segments)
+            disconnected_contours += int(analysis.get("component_count") or 0)
+    actual = len(hits)
+    return {
+        "name": name,
+        "type": "assembly_section_component_count",
+        "ok": actual == int(expected),
+        "axis": _axis_name(axis),
+        "value_mm": value,
+        "actual": actual,
+        "expected": int(expected),
+        "total_segment_count": total_segments,
+        "disconnected_contour_count": disconnected_contours,
+        "components": [row["component"] for row in hits],
+        "evidence": hits,
+    }
+
+
+def _section_axis_value(check: dict) -> tuple[int | None, float | None]:
+    for key, axis in (("x", AXIS_X), ("section_x", AXIS_X), ("y", AXIS_Y), ("section_y", AXIS_Y), ("z", AXIS_Z), ("section_z", AXIS_Z)):
+        if key in check:
+            return axis, float(check[key])
+    axis_value = check.get("axis")
+    value = check.get("value", check.get("section_value"))
+    if isinstance(axis_value, str) and value is not None:
+        lowered = axis_value.lower()
+        if lowered == "x":
+            return AXIS_X, float(value)
+        if lowered == "y":
+            return AXIS_Y, float(value)
+        if lowered == "z":
+            return AXIS_Z, float(value)
+    return None, None
+
+
+def _axis_name(axis: int) -> str:
+    return {AXIS_X: "x", AXIS_Y: "y", AXIS_Z: "z"}.get(axis, "?")
+
+
+def _shape_clearance_for_check(check: dict, geometry: dict) -> dict | None:
+    left = check.get("a", check.get("feature_a", check.get("shape_a")))
+    right = check.get("b", check.get("feature_b", check.get("shape_b")))
+    if left is None or right is None:
+        return None
+    try:
+        shape_a, components_a = _shape_from_check_side(left, check, geometry, side="a")
+        shape_b, components_b = _shape_from_check_side(right, check, geometry, side="b")
+        result = min_clearance_3d(shape_a, shape_b)
+        return {
+            **result,
+            "components": sorted(set(components_a + components_b)),
+            "shape_a": shape_a,
+            "shape_b": shape_b,
+        }
+    except Exception as exc:
+        return {
+            "clearance_mm": None,
+            "components": _components_from_refs([left, right]),
+            "error": {"type": type(exc).__name__, "message": str(exc)},
+        }
+
+
+def _shape_from_check_side(value: Any, check: dict, geometry: dict, *, side: str) -> tuple[dict, list[str]]:
+    if isinstance(value, str):
+        return _shape_from_ref(value, geometry)
+    if isinstance(value, dict) and isinstance(value.get("ref"), str):
+        return _shape_from_ref(value["ref"], geometry)
+    if not isinstance(value, dict):
+        raise AssemblyError("ShapeDescriptorInvalid", f"{side} must be a metadata ref or shape descriptor")
+    shape = value.get("shape") if isinstance(value.get("shape"), dict) else value
+    component = (
+        value.get("component")
+        or check.get(f"{side}_component")
+        or check.get(f"feature_{side}_component")
+        or check.get(f"feature_{side}_model")
+    )
+    if component:
+        component_record = (geometry.get("components") or {}).get(str(component))
+        if component_record is None:
+            raise AssemblyError("ComponentMissing", f"component not found for {side}: {component}")
+        return _transform_shape_descriptor(shape, component_record["transform"]["matrix"]), [str(component)]
+    return parse_shape(_normalize_shape_descriptor(shape)), []
+
+
+def _shape_from_ref(ref: str, geometry: dict) -> tuple[dict, list[str]]:
+    resolved = (geometry.get("references") or {}).get(ref)
+    if not resolved or not resolved.get("ok"):
+        raise AssemblyError("ReferenceMissing", f"metadata reference not found: {ref}")
+    component = (geometry.get("components") or {}).get(resolved.get("component"))
+    if component is None:
+        raise AssemblyError("ComponentMissing", f"component not found for ref: {ref}")
+    local = resolved.get("local")
+    return _transform_shape_descriptor(local, component["transform"]["matrix"]), [str(resolved.get("component"))]
+
+
+def _transform_shape_descriptor(desc: Any, matrix: list[list[float]]) -> dict:
+    if not isinstance(desc, dict):
+        raise AssemblyError("ShapeDescriptorInvalid", "shape descriptor must be an object")
+    normalized = _normalize_shape_descriptor(desc)
+    kind = normalized.get("type")
+    if kind == "sphere":
+        center = _vec3(normalized["center"], "sphere.center")
+        return parse_shape({"type": "sphere", "center": _round_vec(_transform_point_matrix(center, matrix)), "radius": float(normalized["radius"])})
+    if kind == "box":
+        corners = _box_corners(normalized)
+        world = [_transform_point_matrix(point, matrix) for point in corners]
+        return parse_shape(
+            {
+                "type": "box",
+                "x_range": [min(point[0] for point in world), max(point[0] for point in world)],
+                "y_range": [min(point[1] for point in world), max(point[1] for point in world)],
+                "z_range": [min(point[2] for point in world), max(point[2] for point in world)],
+            }
+        )
+    if kind == "cylinder":
+        radius = float(normalized["radius"])
+        a, b = _cylinder_endpoints(normalized)
+        world_a = _transform_point_matrix(a, matrix)
+        world_b = _transform_point_matrix(b, matrix)
+        axis_name = _cardinal_axis_name(normalize(sub(world_b, world_a)))
+        if axis_name is None:
+            # The static relation solver is axis-aligned. For rotated cylinders,
+            # fall back to a conservative world AABB expanded by radius.
+            min_v = [min(world_a[i], world_b[i]) - radius for i in range(3)]
+            max_v = [max(world_a[i], world_b[i]) + radius for i in range(3)]
+            return parse_shape({"type": "box", "x_range": [min_v[0], max_v[0]], "y_range": [min_v[1], max_v[1]], "z_range": [min_v[2], max_v[2]]})
+        if axis_name == "z":
+            return parse_shape(
+                {
+                    "type": "cylinder",
+                    "axis": "z",
+                    "center": [(world_a[0] + world_b[0]) / 2.0, (world_a[1] + world_b[1]) / 2.0],
+                    "radius": radius,
+                    "z_range": sorted([world_a[2], world_b[2]]),
+                }
+            )
+        if axis_name == "x":
+            return parse_shape(
+                {
+                    "type": "cylinder",
+                    "axis": "x",
+                    "center": [(world_a[1] + world_b[1]) / 2.0, (world_a[2] + world_b[2]) / 2.0],
+                    "radius": radius,
+                    "x_range": sorted([world_a[0], world_b[0]]),
+                }
+            )
+        return parse_shape(
+            {
+                "type": "cylinder",
+                "axis": "y",
+                "center": [(world_a[0] + world_b[0]) / 2.0, (world_a[2] + world_b[2]) / 2.0],
+                "radius": radius,
+                "y_range": sorted([world_a[1], world_b[1]]),
+            }
+        )
+    raise AssemblyError("ShapeDescriptorInvalid", f"unsupported shape descriptor: {kind}")
+
+
+def _normalize_shape_descriptor(desc: dict) -> dict:
+    result = dict(desc)
+    if result.get("type") == "cylinder":
+        radius = _descriptor_radius(result)
+        if radius is None:
+            raise AssemblyError("ShapeDescriptorInvalid", "cylinder shape must include radius/radius_mm or diameter/diameter_mm")
+        result["radius"] = radius
+        axis = str(result.get("axis", "z")).lower()
+        if axis == "x" and "x_range" not in result and "range" in result:
+            result["x_range"] = result["range"]
+        if axis == "y" and "y_range" not in result and "range" in result:
+            result["y_range"] = result["range"]
+        if axis == "z" and "z_range" not in result and "range" in result:
+            result["z_range"] = result["range"]
+    if result.get("type") == "sphere" and "radius" not in result and "radius_mm" in result:
+        result["radius"] = result["radius_mm"]
+    return result
+
+
+def _box_corners(shape: dict) -> list[Vec3]:
+    x0, x1 = sorted([float(shape["x_range"][0]), float(shape["x_range"][1])])
+    y0, y1 = sorted([float(shape["y_range"][0]), float(shape["y_range"][1])])
+    z0, z1 = sorted([float(shape["z_range"][0]), float(shape["z_range"][1])])
+    return [(x, y, z) for x in (x0, x1) for y in (y0, y1) for z in (z0, z1)]
+
+
+def _cardinal_axis_name(direction: Vec3, tol: float = 1e-6) -> str | None:
+    axes = {"x": (1.0, 0.0, 0.0), "y": (0.0, 1.0, 0.0), "z": (0.0, 0.0, 1.0)}
+    for name, axis in axes.items():
+        if abs(abs(dot(direction, axis)) - 1.0) <= tol:
+            return name
+    return None
 
 
 def _eval_reference_exists(name: str, ctype: str, check: dict, geometry: dict) -> dict:
@@ -1247,7 +1938,17 @@ def _component_pair_classification_checks(contract: dict, geometry: dict) -> lis
     covered = set()
     for check in contract.get("checks", []) or []:
         if isinstance(check, dict) and check.get("type") in ("interference_free", "inter_model_min_clearance"):
-            covered.add(_pair_key(check.get("components") or []))
+            components = check.get("components") or _components_from_refs(
+                [
+                    check.get("a"),
+                    check.get("b"),
+                    check.get("feature_a"),
+                    check.get("feature_b"),
+                    check.get("shape_a"),
+                    check.get("shape_b"),
+                ]
+            )
+            covered.add(_pair_key(components))
     ignored = {
         _pair_key(item.get("components") or []): item
         for item in contract.get("ignore_pairs", []) or []
@@ -1289,7 +1990,17 @@ def _components_from_refs(refs: list[Any]) -> list[str]:
     for ref in refs:
         if isinstance(ref, str) and "." in ref:
             components.append(ref.split(".", 1)[0])
+        elif isinstance(ref, dict) and isinstance(ref.get("ref"), str) and "." in ref["ref"]:
+            components.append(ref["ref"].split(".", 1)[0])
+        elif isinstance(ref, dict) and ref.get("component"):
+            components.append(str(ref["component"]))
     return sorted(set(components))
+
+
+def _component_triangles_from_public_record(component: dict) -> list[Triangle]:
+    stl_path = Path(component["paths"]["stl"])
+    matrix = component["transform"]["matrix"]
+    return [tuple(_transform_point_matrix(point, matrix) for point in tri) for tri in read_stl(stl_path)]  # type: ignore[list-item]
 
 
 def _render_assembly_previews(project: Path, name: str, geometry: dict) -> dict:
@@ -1321,13 +2032,46 @@ def _render_assembly_previews(project: Path, name: str, geometry: dict) -> dict:
         }
 
 
+def _export_assembly_stl(project: Path, name: str, geometry: dict) -> dict:
+    out_dir = assembly_outputs_dir(project, name)
+    out_path = out_dir / f"{name}.stl"
+    try:
+        triangles = _assembly_triangles_from_geometry(geometry)
+        _write_binary_stl(out_path, triangles)
+        return {
+            "ok": True,
+            "stage": "assembly_export_stl",
+            "assembly": name,
+            "triangle_count": len(triangles),
+            "artifacts": {"assembly_stl": str(out_path)},
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "stage": "assembly_export_stl",
+            "assembly": name,
+            "error": {"type": type(exc).__name__, "message": str(exc)},
+            "artifacts": {"assembly_stl": str(out_path)},
+        }
+
+
+def _write_binary_stl(path: Path, triangles: list[Triangle]) -> None:
+    header = b"AgentCAD assembly STL".ljust(80, b" ")
+    with path.open("wb") as fh:
+        fh.write(header)
+        fh.write(struct.pack("<I", len(triangles)))
+        for tri in triangles:
+            normal = normalize(cross(sub(tri[1], tri[0]), sub(tri[2], tri[0])))
+            fh.write(struct.pack("<3f", *normal))
+            for point in tri:
+                fh.write(struct.pack("<3f", *point))
+            fh.write(struct.pack("<H", 0))
+
+
 def _assembly_triangles_from_geometry(geometry: dict) -> list[Triangle]:
     triangles: list[Triangle] = []
     for component in (geometry.get("components") or {}).values():
-        stl_path = Path(component["paths"]["stl"])
-        matrix = component["transform"]["matrix"]
-        for tri in read_stl(stl_path):
-            triangles.append(tuple(_transform_point_matrix(point, matrix) for point in tri))  # type: ignore[arg-type]
+        triangles.extend(_component_triangles_from_public_record(component))
     return triangles
 
 
@@ -1497,16 +2241,30 @@ def _transform_consistency_check(geometry: dict, mjcf_payload: dict) -> dict:
 
 def _write_observability(path: Path, name: str, geometry: dict, validation: dict) -> None:
     failed_checks = [check for check in validation.get("checks", []) if not check.get("ok")]
+    pairwise = geometry.get("pairwise") or []
+    clearances = [
+        float(row["mesh_clearance_mm"])
+        for row in pairwise
+        if row.get("mesh_clearance_mm") is not None
+    ]
+    interferes = [row for row in pairwise if row.get("interferes")]
     payload = {
         "ok": bool(validation.get("ok")),
         "schema": OBSERVABILITY_SCHEMA,
         "stage": "assembly_observability",
         "assembly": name,
+        "summary": {
+            "component_count": ((geometry.get("assembly_geometry") or {}).get("component_count")),
+            "failing_check_count": len(failed_checks),
+            "minimum_clearance_mm": min(clearances) if clearances else None,
+            "interfering_pair_count": len(interferes),
+            "warning_count": 0,
+        },
         "geometry": geometry.get("assembly_geometry"),
         "components": geometry.get("components"),
         "references": geometry.get("references"),
         "mate_residuals": geometry.get("mate_residuals"),
-        "pairwise": geometry.get("pairwise"),
+        "pairwise": pairwise,
         "checks": {
             "total": len(validation.get("checks", [])),
             "failed": [

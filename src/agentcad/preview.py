@@ -173,8 +173,9 @@ def _runtime_caps(*, mjcf: bool) -> dict:
     return {
         "three": {"enabled": True, "source": f"jsdelivr three@{THREE_VERSION}"},
         "stl": {"enabled": True, "mode": "embedded-base64"},
-        "occt": {"enabled": False, "mode": "reserved-for-step-brep-wasm"},
-        "mujoco": {"enabled": False, "mjcf_present": mjcf, "mode": "reserved-for-mujoco-wasm"},
+        "mjcf": {"enabled": mjcf, "mode": "browser-xml-summary-and-agentcad-roundtrip"},
+        "occt": {"enabled": False, "mode": "external-viewer-compatible-step-artifact"},
+        "mujoco": {"enabled": False, "mjcf_present": mjcf, "mode": "external-viewer-compatible-mjcf-artifact"},
     }
 
 
@@ -232,6 +233,7 @@ def _assembly_artifact_links(root: Path, out_dir: Path) -> dict[str, str]:
         "observability": out_dir / "assembly_observability.json",
         "review": out_dir / "assembly_review.json",
         "mjcf": out_dir / f"{root.name}.mjcf.xml",
+        "assembly_stl": out_dir / f"{root.name}.stl",
     }
     return {key: _rel_link(path, out_dir) for key, path in candidates.items() if path.exists()}
 

@@ -1,0 +1,69 @@
+{
+  "schema": "agentcad.assembly.v1",
+  "name": "fan_with_screen",
+  "units": "mm",
+  "intent": "Fan duct adapter seated against the magnetic screen plate with a shared 8025 fan-frame footprint.",
+  "components": [
+    {
+      "id": "screen_plate",
+      "model": "outlet_magnetic_screen_plate_8025",
+      "transform": {
+        "translation": [0, 0, 0],
+        "rotation_euler_deg": [0, 0, 0]
+      }
+    },
+    {
+      "id": "duct_adapter",
+      "model": "fan_duct_adapter_8025",
+      "transform": {
+        "translation": [0, 0, 9],
+        "rotation_euler_deg": [0, 0, 0]
+      }
+    }
+  ],
+  "mates": [],
+  "checks": [
+    {
+      "id": "screen_plate_adapter_contact",
+      "type": "inter_model_min_clearance",
+      "feature_a": {
+        "component": "screen_plate",
+        "shape": {
+          "type": "box",
+          "x_range": [-44, 44],
+          "y_range": [-44, 44],
+          "z_range": [0, 9]
+        }
+      },
+      "feature_b": {
+        "component": "duct_adapter",
+        "shape": {
+          "type": "box",
+          "x_range": [-43, 43],
+          "y_range": [-43, 43],
+          "z_range": [0, 33]
+        }
+      },
+      "min_mm": 0.0
+    },
+    {
+      "id": "screen_plate_adapter_no_mesh_penetration",
+      "type": "interference_free",
+      "components": ["screen_plate", "duct_adapter"],
+      "tolerance_mm": 0.05
+    },
+    {
+      "id": "closed_stack_envelope",
+      "type": "assembly_bbox_size",
+      "expected": [88, 88, 42],
+      "tolerance_mm": 0.6
+    },
+    {
+      "id": "mid_stack_section_has_both_models",
+      "type": "assembly_section_component_count",
+      "z": 9,
+      "expected": 2
+    }
+  ],
+  "ignore_pairs": []
+}

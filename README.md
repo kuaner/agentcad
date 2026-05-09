@@ -82,10 +82,11 @@ Manual preview regeneration uses the same top-level command as single models:
 `models/` or `assemblies/`; use `--kind model` or `--kind assembly` only when
 a model and an assembly intentionally share the same name.
 
-The initial interference gate is intentionally conservative: non-overlapping
-AABBs can pass, but overlapping component AABBs fail unless the pair is covered
-by more specific fit checks and an explicit `ignore_pairs` reason. This avoids
-false passes while exact narrow-phase collision work remains future scope.
+Interference validation now uses two layers: AABB broad phase first, then a
+mesh narrow phase for overlapping component pairs. The narrow phase records
+triangle-contact evidence, inside-sample penetration depth, and sampled minimum
+surface distance, so `interference_free` can distinguish acceptable contact
+from real solid penetration.
 
 ## Quick start
 
@@ -138,7 +139,7 @@ common-error catalog live in `AGENTS.md`, `CLAUDE.md`, and `references/`
 
 | Path | What it shows |
 |---|---|
-| `examples/fan-adapter-8025/` | Two validated models: a fan-to-duct adapter and a magnetic outlet plate |
+| `examples/fan-adapter-8025/` | Two validated models plus `assemblies/fan_with_screen/` for inter-model clearance, section, STL, MJCF, and preview validation |
 | `examples/iphone15pro-case/` | Real-world phone case with multi-cutouts + section validation |
 | `examples/e2e-test/` | Sub-agent end-to-end test: design → precheck → build → validate → review on a mounting bracket |
 | `examples/e2e-real-cable-hook/` | Real e2e surface-mounted cable hook with concept + quality review artifacts |
@@ -158,7 +159,7 @@ agentcad review fan_duct_adapter_8025
 uv run pytest -v
 ```
 
-161 tests at last count, covering CLI dispatch, workspace scaffolding, STL
+The test suite covers CLI dispatch, workspace scaffolding, STL
 reading and measurement, section extraction and SVG rendering, JSON IO,
 post-build validation checks, weak-check warnings, stale build detection,
 geometric primitives, interactive previews, assembly validation, and

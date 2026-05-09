@@ -320,16 +320,18 @@ loss of validation strength.
 - rigid component transforms with assembly-level scale rejected
 - metadata anchors/interfaces resolved from component `metadata.json`
 - mate residuals for coincident, axis-aligned, coaxial, and axial engagement
-- radial clearance, assembly bbox, pair coverage, and conservative AABB
-  interference checks
+- radial clearance, assembly bbox, pair coverage, descriptor clearance,
+  assembly section count, and mesh narrow-phase interference checks
 - mandatory MJCF export plus round-trip consistency check against measured
   assembly geometry
+- combined transformed assembly STL export
 - interactive local `preview.html` for model and assembly review
 - top-level `agentcad preview <name>` regenerates either model or assembly
   previews; assembly remains an optional workflow layer, not the owner of
   preview
-- remaining work: exact narrow-phase collision, richer inter-model checks, and
-  full OCCT/MuJoCo browser runtime integration
+- OCCT/MuJoCo remain optional external viewer runtimes; AgentCAD validation is
+  decided by JSON contracts, measured geometry, STL evidence, and MJCF
+  consistency
 
 ### V5 — CAD CI
 

@@ -66,6 +66,30 @@ def _socket_source() -> str:
     )
 
 
+def _box_source(name: str) -> str:
+    return (
+        "from build123d import *\n"
+        "with BuildPart() as bp:\n"
+        "    Box(10, 10, 10)\n"
+        "result = bp.part\n"
+        "metadata = {\n"
+        "    'schema': 'agentcad.part.metadata.v1',\n"
+        "    'units': 'mm',\n"
+        f"    'model': '{name}',\n"
+        "    'interfaces': {\n"
+        "        'body': {\n"
+        "            'box': {\n"
+        "                'type': 'box',\n"
+        "                'x_range': [-5, 5],\n"
+        "                'y_range': [-5, 5],\n"
+        "                'z_range': [-5, 5],\n"
+        "            }\n"
+        "        }\n"
+        "    },\n"
+        "}\n"
+    )
+
+
 def _write_assembly(project: Path, ignore_pair: bool = True) -> None:
     root = project / "assemblies" / "pin_socket"
     root.mkdir(parents=True, exist_ok=True)
@@ -146,6 +170,7 @@ def test_assembly_validate_generates_geometry_previews_and_mjcf(tmp_path):
     assert Path(result["artifacts"]["geometry"]).exists()
     assert Path(result["artifacts"]["preview_combined_iso"]).exists()
     assert Path(result["artifacts"]["preview_exploded_iso"]).exists()
+    assert Path(result["artifacts"]["assembly_stl"]).exists()
     preview_page = Path(result["artifacts"]["preview_page"])
     assert preview_page.exists()
     preview_html = preview_page.read_text(encoding="utf-8")
@@ -190,3 +215,76 @@ def test_assembly_validate_blocks_unclassified_component_pair(tmp_path):
     assert result["ok"] is False
     pair_check = next(check for check in result["checks"] if check["type"] == "component_pair_classified")
     assert pair_check["ok"] is False
+
+
+def _project_with_box_pair(tmp_path: Path, separation: float, checks: list[dict]) -> Path:
+    init_workspace(tmp_path)
+    _scaffold_model(tmp_path, "box_a", _box_source("box_a"))
+    _scaffold_model(tmp_path, "box_b", _box_source("box_b"))
+    root = tmp_path / "assemblies" / "box_pair"
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "assembly.json").write_text(
+        json.dumps(
+            {
+                "schema": "agentcad.assembly.v1",
+                "name": "box_pair",
+                "units": "mm",
+                "components": [
+                    {"id": "a", "model": "box_a", "transform": {"translation": [0, 0, 0]}},
+                    {"id": "b", "model": "box_b", "transform": {"translation": [separation, 0, 0]}},
+                ],
+                "mates": [],
+                "checks": checks,
+                "ignore_pairs": [],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return tmp_path
+
+
+def test_interference_free_uses_mesh_narrow_phase_for_overlapping_boxes(tmp_path):
+    project = _project_with_box_pair(
+        tmp_path,
+        separation=6.0,
+        checks=[{"id": "boxes_do_not_interfere", "type": "interference_free", "components": ["a", "b"], "tolerance_mm": 0.05}],
+    )
+    result = validate_assembly(project, "box_pair")
+
+    assert result["ok"] is False
+    check = next(check for check in result["checks"] if check["name"] == "boxes_do_not_interfere")
+    assert check["method"] == "mesh_narrow_phase_v1"
+    assert check["mesh_penetration_mm"] > 0.05
+    assert check["narrow_phase"]["inside_sample_count"] > 0
+
+
+def test_inter_model_min_clearance_uses_metadata_shape_refs_and_section_count(tmp_path):
+    project = _project_with_box_pair(
+        tmp_path,
+        separation=12.0,
+        checks=[
+            {
+                "id": "box_gap",
+                "type": "inter_model_min_clearance",
+                "a": "a.interfaces.body.box",
+                "b": "b.interfaces.body.box",
+                "min_mm": 1.5,
+            },
+            {
+                "id": "mid_section_has_two_boxes",
+                "type": "assembly_section_component_count",
+                "z": 0,
+                "expected": 2,
+            },
+        ],
+    )
+    result = validate_assembly(project, "box_pair")
+
+    assert result["ok"] is True
+    clearance = next(check for check in result["checks"] if check["name"] == "box_gap")
+    assert clearance["method"] == "shape_descriptor"
+    assert clearance["actual_mm"] == 2.0
+    section = next(check for check in result["checks"] if check["name"] == "mid_section_has_two_boxes")
+    assert section["actual"] == 2

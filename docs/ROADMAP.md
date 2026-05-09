@@ -119,13 +119,13 @@ showcase example and the fan-adapter rewrite.
 
 Detailed design proposal: [`ASSEMBLY_TECHNICAL_PLAN.md`](ASSEMBLY_TECHNICAL_PLAN.md).
 
-Status: MVP delivered in the CLI as `agentcad assembly init/list/validate/review`
-plus the cross-cutting `agentcad preview <name>` command for both models and
-assemblies.
-Remaining work is exact narrow-phase collision, richer inter-model relation
-checks, and full OCCT/MuJoCo browser runtime integration; the current
-interference gate is conservative and fails on AABB overlap unless the pair is
-explicitly ignored with a reason.
+Status: V4 validation delivered in the CLI as
+`agentcad assembly init/list/validate/review` plus the cross-cutting
+`agentcad preview <name>` command for both models and assemblies. The original
+MVP has been extended with mesh narrow-phase interference evidence,
+descriptor-based inter-model clearance, assembly section component counts,
+combined STL export, MJCF round-trip validation, and a `fan_with_screen`
+acceptance fixture.
 
 ### Why
 
@@ -158,15 +158,16 @@ through matching metadata values instead of an assembly-level mate contract.
   reference shapes declared in two different models.
 - Metadata-to-geometry consistency checks ensure assembly interfaces declared in
   `metadata.json` match the built STL instead of being trusted blindly.
-- Mandatory MJCF export as a human-verifiable assembly artifact; optional
-  MuJoCo-derived metrics can later augment the numeric validation report.
+- Mandatory MJCF export as a human-verifiable assembly artifact. Optional
+  MuJoCo-derived metrics may augment external viewer workflows, but do not
+  replace AgentCAD's numeric checks.
 
 ### Acceptance
 
-- A new example `examples/fan-with-screen/` combines the existing
-  `fan_duct_adapter_8025` and `outlet_magnetic_screen_plate_8025` into
-  an assembly with mate points and pass an inter-model
-  `min_clearance` check.
+- `examples/fan-adapter-8025/assemblies/fan_with_screen/` combines the existing
+  `fan_duct_adapter_8025` and `outlet_magnetic_screen_plate_8025` models into
+  an assembly that passes descriptor clearance, mesh penetration,
+  section-count, bbox, MJCF, and preview artifact checks.
 
 ---
 
