@@ -2,8 +2,9 @@
   "ok": true,
   "stage": "build",
   "model": "fan_duct_adapter_8025",
-  "startedAt": "2026-05-06T08:15:59.557311+00:00",
-  "endedAt": "2026-05-06T08:16:00.866525+00:00",
+  "sourceHash": "d6b2e468ab4509ca",
+  "startedAt": "2026-05-09T21:16:43.815772+00:00",
+  "endedAt": "2026-05-09T21:16:43.900737+00:00",
   "artifacts": {
     "step": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.step",
     "stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.stl",
