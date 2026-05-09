@@ -363,7 +363,7 @@ def _html(title: str, payload: str) -> str:
     .mono {{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }}
     .component-row {{
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: auto minmax(0, 1fr) auto;
       gap: 10px;
       align-items: center;
       padding: 8px 0;
@@ -372,6 +372,20 @@ def _html(title: str, payload: str) -> str:
     .swatch {{ width: 14px; height: 14px; border: 1px solid rgba(0,0,0,.18); }}
     .component-row label {{ display: flex; align-items: center; gap: 8px; min-width: 0; }}
     .component-row input {{ width: 16px; height: 16px; }}
+    .component-main {{ min-width: 0; }}
+    .component-title {{ display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+    .component-meta {{ display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }}
+    .component-actions {{ display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }}
+    .mini-btn {{
+      min-height: 26px;
+      padding: 3px 8px;
+      border: 1px solid var(--line-strong);
+      background: #fffdfa;
+      color: var(--tool);
+      cursor: pointer;
+      font-size: 12px;
+    }}
+    .mini-btn.active {{ background: var(--tool-2); color: #fffdfa; border-color: var(--tool-2); }}
     .check-list {{ display: grid; gap: 8px; }}
     .check {{
       border-left: 4px solid var(--line-strong);
@@ -445,6 +459,11 @@ def _html(title: str, payload: str) -> str:
           <button class="tool-btn" id="view-iso" type="button">Iso</button>
           <button class="tool-btn" id="view-top" type="button">Top</button>
           <button class="tool-btn" id="view-front" type="button">Front</button>
+          <button class="tool-btn" id="assembled" type="button">Assembled</button>
+          <button class="tool-btn" id="exploded" type="button">Exploded</button>
+          <button class="tool-btn" id="show-all" type="button">All Parts</button>
+          <button class="tool-btn" id="prev-part" type="button">Prev Part</button>
+          <button class="tool-btn" id="next-part" type="button">Next Part</button>
           <div class="slider"><span>Explode</span><input id="explode" type="range" min="0" max="1" value="0" step="0.01"></div>
         </div>
         <div id="viewer"></div>
@@ -520,6 +539,7 @@ def _html(title: str, payload: str) -> str:
     const loader = new STLLoader();
     const entries = [];
     let currentMode = "solid";
+    let activeSoloId = null;
 
     function decodeBase64(b64) {{
       const binary = atob(b64);
@@ -584,8 +604,21 @@ def _html(title: str, payload: str) -> str:
       const size = box.getSize(new THREE.Vector3()).length() || 1;
       entries.forEach((entry) => entry.group.position.copy(entry.group.userData.explodeDir.clone().multiplyScalar(value * size * 0.42)));
     }}
-    function fitCamera(view = "iso") {{
-      const box = new THREE.Box3().setFromObject(root);
+    function visibleBox() {{
+      const box = new THREE.Box3();
+      let hasVisible = false;
+      entries.forEach((entry) => {{
+        if (!entry.group.visible) return;
+        const entryBox = new THREE.Box3().setFromObject(entry.group);
+        if (!entryBox.isEmpty()) {{
+          box.union(entryBox);
+          hasVisible = true;
+        }}
+      }});
+      return hasVisible ? box : new THREE.Box3().setFromObject(root);
+    }}
+    function fitCamera(view = "iso", object = null) {{
+      const box = object ? new THREE.Box3().setFromObject(object) : visibleBox();
       if (box.isEmpty()) return;
       const center = box.getCenter(new THREE.Vector3());
       const sphere = box.getBoundingSphere(new THREE.Sphere());
@@ -602,6 +635,34 @@ def _html(title: str, payload: str) -> str:
       camera.updateProjectionMatrix();
       controls.target.copy(center);
       controls.update();
+    }}
+    function syncComponentControls() {{
+      entries.forEach((entry) => {{
+        if (entry.checkbox) entry.checkbox.checked = entry.group.visible;
+        if (entry.soloButton) entry.soloButton.classList.toggle("active", activeSoloId === entry.component.id);
+      }});
+    }}
+    function showAllParts() {{
+      activeSoloId = null;
+      entries.forEach((entry) => {{ entry.group.visible = true; }});
+      syncComponentControls();
+      fitCamera("iso");
+    }}
+    function soloComponent(entry) {{
+      activeSoloId = entry.component.id;
+      entries.forEach((candidate) => {{ candidate.group.visible = candidate === entry; }});
+      syncComponentControls();
+      fitCamera("iso", entry.group);
+    }}
+    function soloByOffset(delta) {{
+      if (!entries.length) return;
+      let index = entries.findIndex((entry) => entry.component.id === activeSoloId);
+      if (index < 0) index = delta >= 0 ? -1 : 0;
+      const next = (index + delta + entries.length) % entries.length;
+      soloComponent(entries[next]);
+    }}
+    function focusComponent(entry) {{
+      fitCamera("iso", entry.group);
     }}
     function resize() {{
       const rect = host.getBoundingClientRect();
@@ -652,15 +713,39 @@ def _html(title: str, payload: str) -> str:
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.checked = true;
-        checkbox.addEventListener("change", () => {{ entry.group.visible = checkbox.checked; }});
+        checkbox.addEventListener("change", () => {{
+          activeSoloId = null;
+          entry.group.visible = checkbox.checked;
+          syncComponentControls();
+          fitCamera("iso");
+        }});
+        entry.checkbox = checkbox;
+        const main = document.createElement("span");
+        main.className = "component-main";
         const name = document.createElement("span");
+        name.className = "component-title";
         name.textContent = `${{entry.component.id}} / ${{entry.component.model || entry.component.id}}`;
-        label.append(checkbox, name);
-        const tris = document.createElement("span");
-        tris.className = "mono";
         const mesh = entry.component.mesh || {{}};
+        const tris = document.createElement("span");
+        tris.className = "component-meta mono";
         tris.textContent = mesh.triangles ? `${{mesh.triangles}} tri` : "";
-        row.append(swatch, label, tris);
+        main.append(name, tris);
+        label.append(checkbox, main);
+        const actions = document.createElement("div");
+        actions.className = "component-actions";
+        const focus = document.createElement("button");
+        focus.type = "button";
+        focus.className = "mini-btn";
+        focus.textContent = "Focus";
+        focus.addEventListener("click", () => focusComponent(entry));
+        const solo = document.createElement("button");
+        solo.type = "button";
+        solo.className = "mini-btn";
+        solo.textContent = "Solo";
+        solo.addEventListener("click", () => soloComponent(entry));
+        entry.soloButton = solo;
+        actions.append(focus, solo);
+        row.append(swatch, label, actions);
         components.append(row);
       }});
 
@@ -769,6 +854,21 @@ def _html(title: str, payload: str) -> str:
     document.getElementById("view-iso").addEventListener("click", () => fitCamera("iso"));
     document.getElementById("view-top").addEventListener("click", () => fitCamera("top"));
     document.getElementById("view-front").addEventListener("click", () => fitCamera("front"));
+    document.getElementById("assembled").addEventListener("click", () => {{
+      const input = document.getElementById("explode");
+      input.value = "0";
+      setExplode(0);
+      fitCamera("iso");
+    }});
+    document.getElementById("exploded").addEventListener("click", () => {{
+      const input = document.getElementById("explode");
+      input.value = "1";
+      setExplode(1);
+      fitCamera("iso");
+    }});
+    document.getElementById("show-all").addEventListener("click", () => showAllParts());
+    document.getElementById("prev-part").addEventListener("click", () => soloByOffset(-1));
+    document.getElementById("next-part").addEventListener("click", () => soloByOffset(1));
   </script>
 </body>
 </html>

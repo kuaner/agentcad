@@ -144,7 +144,8 @@ through matching metadata values instead of an assembly-level mate contract.
   - `agentcad assembly init <name>` — scaffold an assembly directory.
   - `agentcad assembly list` — list discovered assemblies.
   - `agentcad assembly validate <name>` — run inter-model
-    checks, emit combined/exploded SVG previews, generate `preview.html`, and generate MJCF.
+    checks, emit combined/exploded SVG previews, generate an explodable
+    component-isolation `preview.html`, and generate MJCF.
   - `agentcad assembly preview <name>` — regenerate the local interactive
     Three.js review page from existing assembly artifacts.
   - `agentcad assembly review <name>` — block delivery on uncovered mates,

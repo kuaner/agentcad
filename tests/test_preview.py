@@ -20,6 +20,9 @@ def test_validate_writes_interactive_model_preview(tmp_path):
     assert "STLLoader" in html
     assert '"kind": "model"' in html
     assert '"stlBase64"' in html
+    assert 'id="exploded"' in html
+    assert 'id="next-part"' in html
+    assert "soloComponent" in html
 
 
 def test_preview_command_fails_before_stl_exists(tmp_path):

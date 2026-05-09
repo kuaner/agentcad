@@ -254,7 +254,8 @@ Findings folded back into the project:
     against that geometry to catch export drift.
 11. Humans need a first-class preview artifact, not a pile of JSON paths.
     `preview.html` now embeds STL geometry directly and presents Three.js
-    inspection, checks, SVG evidence, MJCF text, and measurements in one local
+    inspection, checks, SVG evidence, MJCF text, measurements, assembly
+    explode controls, and per-component isolate/focus controls in one local
     page.
 12. Side/top/front/back views are not optional; side view caught a floating lip
    that iso and bbox validation did not make obvious.
