@@ -259,6 +259,7 @@ def _html(title: str, payload: str) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
   <title>{escaped_title}</title>
   <style>
     :root {{
@@ -278,15 +279,21 @@ def _html(title: str, payload: str) -> str:
       --shadow: 0 18px 48px rgba(32, 28, 20, .18);
     }}
     * {{ box-sizing: border-box; }}
+    html {{
+      height: 100%;
+      overflow: hidden;
+    }}
     body {{
       margin: 0;
+      height: 100%;
       min-height: 100vh;
+      overflow: hidden;
       background: var(--paper);
       color: var(--ink);
       font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }}
     button, input {{ font: inherit; }}
-    .app {{ min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }}
+    .app {{ height: 100vh; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }}
     .topbar {{
       display: flex;
       align-items: center;
@@ -315,7 +322,9 @@ def _html(title: str, payload: str) -> str:
     .shell {{
       display: grid;
       grid-template-columns: minmax(280px, 360px) minmax(360px, 1fr) minmax(300px, 420px);
+      height: 100%;
       min-height: 0;
+      overflow: hidden;
     }}
     aside {{
       min-height: 0;
@@ -324,7 +333,7 @@ def _html(title: str, payload: str) -> str:
       border-right: 1px solid var(--line);
     }}
     aside.right {{ border-right: 0; border-left: 1px solid var(--line); }}
-    .stage {{ position: relative; min-height: 0; background: #e8e4da; display: grid; grid-template-rows: auto 1fr; }}
+    .stage {{ position: relative; min-height: 0; overflow: hidden; background: #e8e4da; display: grid; grid-template-rows: auto minmax(0, 1fr); }}
     .toolbar {{
       display: flex;
       align-items: center;
@@ -345,7 +354,8 @@ def _html(title: str, payload: str) -> str:
     .tool-btn.active {{ background: var(--tool); color: #fffdfa; border-color: var(--tool); }}
     .slider {{ display: inline-flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 12px; }}
     .slider input {{ width: 160px; }}
-    #viewer {{ min-height: 420px; width: 100%; height: 100%; }}
+    #viewer {{ position: relative; min-height: 0; width: 100%; height: 100%; overflow: hidden; contain: layout size paint; }}
+    #viewer canvas {{ display: block; width: 100% !important; height: 100% !important; }}
     .section {{ padding: 16px 16px 18px; border-bottom: 1px solid var(--line); }}
     .section h2 {{ margin: 0 0 10px; font-size: 12px; line-height: 1.2; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }}
     .kv {{ display: grid; grid-template-columns: 116px 1fr; gap: 6px 10px; }}
@@ -395,6 +405,9 @@ def _html(title: str, payload: str) -> str:
     .empty {{ color: var(--muted); }}
     @media (max-width: 1080px) {{
       .shell {{ grid-template-columns: 1fr; grid-template-rows: auto minmax(520px, 70vh) auto; }}
+      html, body {{ overflow: auto; }}
+      .app {{ height: auto; min-height: 100vh; }}
+      .shell {{ height: auto; overflow: visible; }}
       aside, aside.right {{ border: 0; border-bottom: 1px solid var(--line); }}
       aside.left {{ order: 2; }}
       .stage {{ order: 1; }}
@@ -461,11 +474,19 @@ def _html(title: str, payload: str) -> str:
       </aside>
     </main>
   </div>
+  <script type="importmap">
+    {{
+      "imports": {{
+        "three": "https://cdn.jsdelivr.net/npm/three@{THREE_VERSION}/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@{THREE_VERSION}/examples/jsm/"
+      }}
+    }}
+  </script>
   <script>window.AGENTCAD_PREVIEW = {payload};</script>
   <script type="module">
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@{THREE_VERSION}/build/three.module.js";
-    import {{ OrbitControls }} from "https://cdn.jsdelivr.net/npm/three@{THREE_VERSION}/examples/jsm/controls/OrbitControls.js";
-    import {{ STLLoader }} from "https://cdn.jsdelivr.net/npm/three@{THREE_VERSION}/examples/jsm/loaders/STLLoader.js";
+    import * as THREE from "three";
+    import {{ OrbitControls }} from "three/addons/controls/OrbitControls.js";
+    import {{ STLLoader }} from "three/addons/loaders/STLLoader.js";
 
     const data = window.AGENTCAD_PREVIEW;
     const colors = [0x2f6f95, 0xb46a2b, 0x4d7f48, 0x8d5a97, 0xa14b4b, 0x5f7f94, 0x7d713b];
@@ -474,7 +495,7 @@ def _html(title: str, payload: str) -> str:
     scene.background = new THREE.Color(0xe8e4da);
     const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 10000);
     const renderer = new THREE.WebGLRenderer({{ antialias: true, alpha: false }});
-    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     host.appendChild(renderer.domElement);
@@ -584,8 +605,12 @@ def _html(title: str, payload: str) -> str:
     }}
     function resize() {{
       const rect = host.getBoundingClientRect();
-      renderer.setSize(rect.width, rect.height, false);
-      camera.aspect = Math.max(rect.width, 1) / Math.max(rect.height, 1);
+      const width = Math.min(Math.max(Math.floor(rect.width || host.clientWidth || 1), 1), 4096);
+      const height = Math.min(Math.max(Math.floor(rect.height || host.clientHeight || 1), 1), 4096);
+      renderer.setSize(width, height, false);
+      renderer.domElement.style.width = "100%";
+      renderer.domElement.style.height = "100%";
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
     }}
     function renderLoop() {{
