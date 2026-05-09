@@ -293,6 +293,6 @@ Both are documented in `references/build123d-guide.md`.
 | V2 — design spec standardization | ✅ delivered | check IDs, schema validation, weak-check warnings, Markdown report (`agentcad report`) |
 | V2.5 — design-time observability | ✅ delivered (new) | `agentcad precheck`, `agentcad review`, four geometric relation checks, common-error catalog, mandatory TDD prompt |
 | V2.6 — design-thinking prompts | ✅ delivered (new) | split references, Discovery Gate, Concept Gate, Design Quality Review, real cable-hook e2e |
-| V4 — assembly validation MVP | ✅ delivered (new) | `agentcad assembly init/list/validate/preview/review`, rigid transforms, metadata interface measurement, mate residuals, pair coverage, combined/exploded SVG, interactive preview, mandatory MJCF round-trip |
+| V4 — assembly validation MVP | ✅ delivered (new) | `agentcad assembly init/list/validate/review`, rigid transforms, metadata interface measurement, mate residuals, pair coverage, combined/exploded SVG, top-level interactive preview, mandatory MJCF round-trip |
 
 Next milestones (V3+) are tracked in [`DESIGN.md`](DESIGN.md).

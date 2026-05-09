@@ -119,7 +119,9 @@ showcase example and the fan-adapter rewrite.
 
 Detailed design proposal: [`ASSEMBLY_TECHNICAL_PLAN.md`](ASSEMBLY_TECHNICAL_PLAN.md).
 
-Status: MVP delivered in the CLI as `agentcad assembly init/list/validate/preview/review`.
+Status: MVP delivered in the CLI as `agentcad assembly init/list/validate/review`
+plus the cross-cutting `agentcad preview <name>` command for both models and
+assemblies.
 Remaining work is exact narrow-phase collision, richer inter-model relation
 checks, and full OCCT/MuJoCo browser runtime integration; the current
 interference gate is conservative and fails on AABB overlap unless the pair is
@@ -146,8 +148,9 @@ through matching metadata values instead of an assembly-level mate contract.
   - `agentcad assembly validate <name>` — run inter-model
     checks, emit combined/exploded SVG previews, generate an explodable
     component-isolation `preview.html`, and generate MJCF.
-  - `agentcad assembly preview <name>` — regenerate the local interactive
-    Three.js review page from existing assembly artifacts.
+  - `agentcad preview <name>` — regenerate the local interactive Three.js
+    review page for either a model or an assembly. Preview is a universal
+    artifact-viewing command; assembly is optional and should not own it.
   - `agentcad assembly review <name>` — block delivery on uncovered mates,
     missing MJCF, stale artifacts, or unresolved component-pair risks.
 - Inter-model relational checks: the existing four geometric-relation

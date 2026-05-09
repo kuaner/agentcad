@@ -24,12 +24,12 @@ discovery -> concept -> design contract -> precheck -> params/source -> build
 | Build | `agentcad build <model>` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
 | Measure | `agentcad measure <model>` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
 | Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews + Z/X/Y cross-section SVGs with measurement sidecars |
-| Preview | `agentcad preview <model>` | Generate a local `preview.html` with interactive Three.js STL inspection, component isolation, and geometry/check panels |
+| Preview | `agentcad preview <name>` | Generate a local `preview.html` for either a model or an assembly, with interactive Three.js STL inspection, component isolation, and geometry/check panels |
 | Probe | `agentcad probe <model>` | Cross-section diameter / bbox / component analysis plus ad-hoc line, point, and region measurements; `--scan` to discover step changes |
 | Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + measurement JSON + suggested probes |
 | Validate | `agentcad validate <model>` | Build + measure + render all orthographic previews + design checks + feature coverage; emits observability and debug artifacts |
 | Review | `agentcad review <model>` | Pre-delivery checklist with pairwise relations matrix, hole-access enforcement, and must-view SVG list |
-| Assembly | `agentcad assembly init/list/validate/preview/review` | Multi-model assembly contracts with component transforms, mate residuals, fit checks, combined/exploded SVGs, explodable/isolate-capable interactive preview, and mandatory MJCF export |
+| Assembly | `agentcad assembly init/list/validate/review` | Optional multi-model assembly contracts with component transforms, mate residuals, fit checks, combined/exploded SVGs, preview generation during validation, and mandatory MJCF export |
 | Deliver | `agentcad deliver <model>` | Delivery manifest |
 | Report | `agentcad report <model>` | Markdown summary of validation result |
 
@@ -76,6 +76,11 @@ emits mate residuals, checks pair coverage, writes combined/exploded SVG
 previews, exports `<name>.mjcf.xml`, generates an interactive `preview.html`
 that can explode the assembly and isolate components one by one, and
 round-trips the MJCF body/site data against `assembly_geometry.json`.
+
+Manual preview regeneration uses the same top-level command as single models:
+`agentcad preview <name>`. The command auto-detects whether `<name>` is under
+`models/` or `assemblies/`; use `--kind model` or `--kind assembly` only when
+a model and an assembly intentionally share the same name.
 
 The initial interference gate is intentionally conservative: non-overlapping
 AABBs can pass, but overlapping component AABBs fail unless the pair is covered

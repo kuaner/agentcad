@@ -25,7 +25,9 @@ models using the `agentcad` CLI and build123d geometry library.
     artifact.
 12. **Preview**: open `models/<name>/outputs/preview.html` or run
     `agentcad preview <name>` to regenerate it. Use the interactive 3D view to
-    inspect topology, section SVGs, geometry values, and failing checks.
+    inspect topology, section SVGs, geometry values, and failing checks. For an
+    assembly, open `assemblies/<name>/outputs/preview.html` or run the same
+    top-level `agentcad preview <name>` command.
 13. **Quality Review**: apply `references/design-quality-review.md`. If the
     model is merely valid but not good, revise the concept, contract, or
     geometry and repeat validation.
@@ -53,7 +55,11 @@ Read only the references needed for the current stage.
 
 - Units are millimeters unless the user explicitly says otherwise.
 - Coordinate convention: +X right, +Y back, +Z up.
-- Do not write generated artifacts outside `models/<name>/outputs/`.
+- Do not write generated artifacts outside `models/<name>/outputs/` or
+  `assemblies/<name>/outputs/`.
+- Do not create an assembly unless the user asks for multiple parts, fit,
+  motion, enclosure/cover relationships, or another inter-model relationship.
+  Assembly is optional and on-demand; preview is a universal review command.
 - Treat `design.json` as the design contract: source of truth for what the
   model should be.
 - Treat CLI JSON output as the source of truth for what the model actually is.
@@ -98,6 +104,18 @@ models/<name>/
     section.z10.00.json Section measurement sidecar
     <name>.step         STEP export
     <name>.stl          STL export
+
+assemblies/<name>/
+  assembly.json          Optional multi-model fit/mate contract
+  outputs/
+    assembly_geometry.json
+    assembly_validation.json
+    assembly_observability.json
+    assembly_review.json
+    preview.html          Interactive assembly preview
+    preview.combined.iso.svg
+    preview.exploded.iso.svg
+    <name>.mjcf.xml       MJCF verification artifact
 ```
 
 ## CLI Quick Reference
@@ -111,7 +129,9 @@ agentcad build <model> --force
 agentcad measure <model>
 agentcad render <model>
 agentcad render <model> --views iso,front,top,side,back
-agentcad preview <model>
+agentcad preview <name>
+agentcad preview <name> --kind model
+agentcad preview <name> --kind assembly
 agentcad validate <model>
 agentcad review <model>
 agentcad deliver <model>
@@ -135,7 +155,6 @@ agentcad report <model>
 agentcad assembly init <assembly>
 agentcad assembly list
 agentcad assembly validate <assembly>
-agentcad assembly preview <assembly>
 agentcad assembly review <assembly>
 ```
 

@@ -36,6 +36,7 @@ src/agentcad/          # Main package
   workspace.py          # workspace init/new, project discovery, model directory helpers
   measure.py            # STL geometry measurement -> geometry.json
   render.py             # Dependency-free SVG preview renderer from STL
+  preview.py            # Interactive HTML preview for models and assemblies
   validate.py           # Full validation pipeline: build + measure + render + design checks + feature coverage
   precheck.py           # Static design-time solver (no STL): clearance + schema + coverage
   review.py             # Pre-delivery checklist + pairwise relations matrix + must-view SVGs
@@ -69,6 +70,8 @@ agentcad precheck <model>                        # Static design solve before wr
 agentcad build <model>                           # Build + export STEP/STL
 agentcad measure <model>                         # Measure STL geometry
 agentcad render <model>                          # SVG preview from STL
+agentcad preview <name>                          # Interactive HTML preview for model or assembly
+agentcad preview <name> --kind assembly          # Disambiguate if a model and assembly share a name
 agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
 agentcad validate <model>                        # Full validation pipeline
 agentcad review <model>                          # Pre-delivery checklist + relations matrix
@@ -76,7 +79,12 @@ agentcad deliver <model>                         # Delivery manifest
 agentcad probe <model> --scan --axis z|x|y       # Profile scan for step changes / void detection
 agentcad inspect <model>                         # Three-axis scan + section SVGs + suggested probes
 agentcad report <model>                                 # Markdown validation report
+agentcad assembly init/list/validate/review      # Optional multi-model assembly workflow
 ```
+
+Preview is a cross-cutting artifact review command, not an assembly subcommand.
+Assemblies are optional and only needed for multi-part fit, mate, clearance, or
+motion relationships.
 
 All commands return stable machine-readable JSON output. Failures include `stage`, `error.type`, and `error.message`.
 
@@ -98,9 +106,17 @@ project/
       geometry.json
       validation.json
       deliverable.json
+      preview.html
       preview.iso.svg
       <name>.step
       <name>.stl
+  assemblies/<name>/
+    assembly.json        # Optional multi-model fit/mate contract
+    outputs/
+      assembly_geometry.json
+      assembly_validation.json
+      preview.html
+      <name>.mjcf.xml
 ```
 
 ## Key Conventions
@@ -112,7 +128,7 @@ project/
 - Every feature must reference at least one check (feature coverage is validated)
 - Coordinate convention: +X right, +Y back, +Z up
 - Units are millimeters unless explicitly stated otherwise
-- Generated artifacts live only under `models/<name>/outputs/`
+- Generated artifacts live only under `models/<name>/outputs/` or `assemblies/<name>/outputs/`
 
 ## Validation Check Types
 

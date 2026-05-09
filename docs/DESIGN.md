@@ -315,7 +315,7 @@ loss of validation strength.
 
 ### V4 — Assembly + relations
 
-- MVP delivered: `agentcad assembly init/list/validate/preview/review`
+- MVP delivered: `agentcad assembly init/list/validate/review`
 - assembly workspace convention (`assemblies/<name>/assembly.json`)
 - rigid component transforms with assembly-level scale rejected
 - metadata anchors/interfaces resolved from component `metadata.json`
@@ -325,6 +325,9 @@ loss of validation strength.
 - mandatory MJCF export plus round-trip consistency check against measured
   assembly geometry
 - interactive local `preview.html` for model and assembly review
+- top-level `agentcad preview <name>` regenerates either model or assembly
+  previews; assembly remains an optional workflow layer, not the owner of
+  preview
 - remaining work: exact narrow-phase collision, richer inter-model checks, and
   full OCCT/MuJoCo browser runtime integration
 

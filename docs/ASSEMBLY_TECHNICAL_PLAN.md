@@ -14,7 +14,7 @@ Implemented CLI:
 agentcad assembly init <assembly>
 agentcad assembly list
 agentcad assembly validate <assembly>
-agentcad assembly preview <assembly>
+agentcad preview <assembly>
 agentcad assembly review <assembly>
 ```
 
@@ -382,7 +382,7 @@ Minimum V4 commands:
 agentcad assembly init <assembly>
 agentcad assembly list
 agentcad assembly validate <assembly>
-agentcad assembly preview <assembly>
+agentcad preview <assembly>
 agentcad assembly review <assembly>
 ```
 
@@ -390,6 +390,12 @@ agentcad assembly review <assembly>
 and consistency checks. The implementation may expose debug commands such as
 `assembly measure`, `assembly render`, or `assembly export-mjcf`, but the MVP
 should not require users or agents to call them separately.
+
+Preview is deliberately not an assembly subcommand. It is a cross-cutting
+review affordance for any generated CAD artifact. A model preview and an
+assembly preview differ by source directory and payload shape, not by workflow
+stage. `agentcad preview <name>` should auto-detect `models/<name>` versus
+`assemblies/<name>`, with an explicit kind flag only for name collisions.
 
 `assembly validate` should run measure first, then all assembly checks, then
 render combined and exploded previews, then generate the MJCF verification
