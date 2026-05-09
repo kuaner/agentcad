@@ -24,11 +24,12 @@ discovery -> concept -> design contract -> precheck -> params/source -> build
 | Build | `agentcad build <model>` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
 | Measure | `agentcad measure <model>` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
 | Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews + Z/X/Y cross-section SVGs with measurement sidecars |
+| Preview | `agentcad preview <model>` | Generate a local `preview.html` with interactive Three.js STL inspection and geometry/check panels |
 | Probe | `agentcad probe <model>` | Cross-section diameter / bbox / component analysis plus ad-hoc line, point, and region measurements; `--scan` to discover step changes |
 | Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + measurement JSON + suggested probes |
 | Validate | `agentcad validate <model>` | Build + measure + render all orthographic previews + design checks + feature coverage; emits observability and debug artifacts |
 | Review | `agentcad review <model>` | Pre-delivery checklist with pairwise relations matrix, hole-access enforcement, and must-view SVG list |
-| Assembly | `agentcad assembly init/list/validate/review` | Multi-model assembly contracts with component transforms, mate residuals, fit checks, combined/exploded SVGs, and mandatory MJCF export |
+| Assembly | `agentcad assembly init/list/validate/preview/review` | Multi-model assembly contracts with component transforms, mate residuals, fit checks, combined/exploded SVGs, interactive preview, and mandatory MJCF export |
 | Deliver | `agentcad deliver <model>` | Delivery manifest |
 | Report | `agentcad report <model>` | Markdown summary of validation result |
 
@@ -72,8 +73,8 @@ models by component id, model name, and rigid transform. `agentcad assembly
 validate <name>` rebuilds stale components, resolves metadata anchors and
 interfaces, measures declared cylindrical interfaces against STL sections,
 emits mate residuals, checks pair coverage, writes combined/exploded SVG
-previews, exports `<name>.mjcf.xml`, and round-trips the MJCF body/site data
-against `assembly_geometry.json`.
+previews, exports `<name>.mjcf.xml`, generates an interactive `preview.html`,
+and round-trips the MJCF body/site data against `assembly_geometry.json`.
 
 The initial interference gate is intentionally conservative: non-overlapping
 AABBs can pass, but overlapping component AABBs fail unless the pair is covered
@@ -151,11 +152,11 @@ agentcad review fan_duct_adapter_8025
 uv run pytest -v
 ```
 
-159 tests at last count, covering CLI dispatch, workspace scaffolding, STL
+161 tests at last count, covering CLI dispatch, workspace scaffolding, STL
 reading and measurement, section extraction and SVG rendering, JSON IO,
 post-build validation checks, weak-check warnings, stale build detection,
-geometric primitives, assembly validation, and `precheck` / `review`
-integration.
+geometric primitives, interactive previews, assembly validation, and
+`precheck` / `review` integration.
 
 ## Documentation
 

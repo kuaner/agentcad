@@ -146,6 +146,12 @@ def test_assembly_validate_generates_geometry_previews_and_mjcf(tmp_path):
     assert Path(result["artifacts"]["geometry"]).exists()
     assert Path(result["artifacts"]["preview_combined_iso"]).exists()
     assert Path(result["artifacts"]["preview_exploded_iso"]).exists()
+    preview_page = Path(result["artifacts"]["preview_page"])
+    assert preview_page.exists()
+    preview_html = preview_page.read_text(encoding="utf-8")
+    assert "three.module.js" in preview_html
+    assert "STLLoader" in preview_html
+    assert '"kind": "assembly"' in preview_html
     assert Path(result["artifacts"]["mjcf"]).exists()
     radial = next(check for check in result["checks"] if check["name"] == "pin_socket_radial_clearance")
     assert 0.2 <= radial["actual_mm"] <= 0.4

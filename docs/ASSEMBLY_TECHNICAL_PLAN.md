@@ -2,10 +2,11 @@
 
 Last updated: 2026-05-09
 
-Status: V4 MVP implemented. The remaining gap is exact narrow-phase collision
-for overlapping component meshes; the current implementation is conservative
-and blocks AABB-overlap pairs unless they are covered by explicit fit checks and
-an `ignore_pairs` reason.
+Status: V4 MVP implemented. The remaining gaps are exact narrow-phase collision
+for overlapping component meshes and full OCCT/MuJoCo browser runtime
+integration. The current implementation is conservative and blocks
+AABB-overlap pairs unless they are covered by explicit fit checks and an
+`ignore_pairs` reason.
 
 Implemented CLI:
 
@@ -13,6 +14,7 @@ Implemented CLI:
 agentcad assembly init <assembly>
 agentcad assembly list
 agentcad assembly validate <assembly>
+agentcad assembly preview <assembly>
 agentcad assembly review <assembly>
 ```
 
@@ -380,6 +382,7 @@ Minimum V4 commands:
 agentcad assembly init <assembly>
 agentcad assembly list
 agentcad assembly validate <assembly>
+agentcad assembly preview <assembly>
 agentcad assembly review <assembly>
 ```
 
@@ -390,8 +393,9 @@ should not require users or agents to call them separately.
 
 `assembly validate` should run measure first, then all assembly checks, then
 render combined and exploded previews, then generate the MJCF verification
-artifact. The command should fail if MJCF generation fails, because the human
-review path must always be available.
+artifact and interactive `preview.html`. The command should fail if MJCF or
+interactive preview generation fails, because the human review path must always
+be available.
 
 `assembly review` should block delivery when:
 

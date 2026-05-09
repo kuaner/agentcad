@@ -191,7 +191,6 @@ def validate_assembly(project: Path, name: str) -> dict:
         checks.append(mjcf_check)
         checks.append(_transform_consistency_check(geometry, mjcf_payload))
 
-        failed = [check for check in checks if not check.get("ok")]
         artifacts = {
             "geometry": str(out_dir / "assembly_geometry.json"),
             "validation": str(validation_path),
@@ -200,6 +199,30 @@ def validate_assembly(project: Path, name: str) -> dict:
         artifacts.update(render_payload.get("artifacts") or {})
         artifacts.update(mjcf_payload.get("artifacts") or {})
 
+        preview_seed = {
+            "ok": all(check.get("ok") for check in checks),
+            "stage": "assembly_validate",
+            "assembly": safe,
+            "checks": checks,
+            "mate_residuals": geometry.get("mate_residuals", []),
+            "pairwise": geometry.get("pairwise", []),
+            "artifacts": artifacts,
+        }
+        from .preview import write_assembly_preview
+
+        preview_payload = write_assembly_preview(project, safe, validation_payload=preview_seed, geometry_payload=geometry)
+        artifacts.update(preview_payload.get("artifacts") or {})
+        checks.append(
+            {
+                "name": "interactive_preview_generated",
+                "type": "artifact_exists",
+                "ok": bool(preview_payload.get("ok")),
+                "artifacts": preview_payload.get("artifacts", {}),
+                "error": preview_payload.get("error"),
+            }
+        )
+
+        failed = [check for check in checks if not check.get("ok")]
         payload = {
             "ok": not failed,
             "schema": VALIDATION_SCHEMA,
@@ -264,7 +287,7 @@ def review_assembly(project: Path, name: str) -> dict:
                 ],
             }
         )
-        for key in ("mjcf", "preview_combined_iso", "preview_exploded_iso", "geometry"):
+        for key in ("mjcf", "preview_combined_iso", "preview_exploded_iso", "preview_page", "geometry"):
             path = (validation.get("artifacts") or {}).get(key)
             checks.append(
                 {

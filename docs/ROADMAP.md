@@ -20,7 +20,7 @@ For background on what is already shipped, see
 | V2 | Design spec standardization | ✅ delivered | check IDs, schema, weak-check warnings, Markdown report |
 | V2.5 | Design-time observability | ✅ delivered | `precheck`, `review`, four relational checks, common-error catalog |
 | **V3** | **Feature library** | **next** | **declarative helpers that emit matching checks** |
-| V4 | Assembly + relations | MVP delivered | assembly contracts, mate residuals, fit checks, SVG previews, mandatory MJCF |
+| V4 | Assembly + relations | MVP delivered | assembly contracts, mate residuals, fit checks, interactive preview, mandatory MJCF |
 | V5 | CAD CI | planned | `validate all`, regression snapshots, GitHub Actions |
 | V6 | Optional integrations | deferred | MCP server, live viewer, PNG / glTF previews |
 
@@ -119,10 +119,11 @@ showcase example and the fan-adapter rewrite.
 
 Detailed design proposal: [`ASSEMBLY_TECHNICAL_PLAN.md`](ASSEMBLY_TECHNICAL_PLAN.md).
 
-Status: MVP delivered in the CLI as `agentcad assembly init/list/validate/review`.
-Remaining work is exact narrow-phase collision and richer inter-model relation
-checks; the current interference gate is conservative and fails on AABB overlap
-unless the pair is explicitly ignored with a reason.
+Status: MVP delivered in the CLI as `agentcad assembly init/list/validate/preview/review`.
+Remaining work is exact narrow-phase collision, richer inter-model relation
+checks, and full OCCT/MuJoCo browser runtime integration; the current
+interference gate is conservative and fails on AABB overlap unless the pair is
+explicitly ignored with a reason.
 
 ### Why
 
@@ -143,7 +144,9 @@ through matching metadata values instead of an assembly-level mate contract.
   - `agentcad assembly init <name>` — scaffold an assembly directory.
   - `agentcad assembly list` — list discovered assemblies.
   - `agentcad assembly validate <name>` — run inter-model
-    checks, emit combined/exploded SVG previews, and generate MJCF.
+    checks, emit combined/exploded SVG previews, generate `preview.html`, and generate MJCF.
+  - `agentcad assembly preview <name>` — regenerate the local interactive
+    Three.js review page from existing assembly artifacts.
   - `agentcad assembly review <name>` — block delivery on uncovered mates,
     missing MJCF, stale artifacts, or unresolved component-pair risks.
 - Inter-model relational checks: the existing four geometric-relation

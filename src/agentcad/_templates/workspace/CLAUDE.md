@@ -3,7 +3,7 @@
 You are working in an AgentCAD workspace. Your job is to create and refine CAD
 models using the `agentcad` CLI and build123d geometry library.
 
-## Workflow (13 stages, do not skip)
+## Workflow (14 stages, do not skip)
 
 1. **Understand**: read the user request, identify every feature, and pass the
    Discovery Gate in `references/discovery.md`.
@@ -23,10 +23,13 @@ models using the `agentcad` CLI and build123d geometry library.
 10. **Validate**: run `agentcad validate <name>`. It must pass.
 11. **Review**: run `agentcad review <name>` and inspect every `must_view`
     artifact.
-12. **Quality Review**: apply `references/design-quality-review.md`. If the
+12. **Preview**: open `models/<name>/outputs/preview.html` or run
+    `agentcad preview <name>` to regenerate it. Use the interactive 3D view to
+    inspect topology, section SVGs, geometry values, and failing checks.
+13. **Quality Review**: apply `references/design-quality-review.md`. If the
     model is merely valid but not good, revise the concept, contract, or
     geometry and repeat validation.
-13. **Deliver**: run `agentcad deliver <name>` only after review and quality
+14. **Deliver**: run `agentcad deliver <name>` only after review and quality
     review pass.
 
 Do not manually export STEP/STL from `part.py`. The runner owns all exports.
@@ -86,6 +89,7 @@ models/<name>/
     geometry.json       STL measurement report
     validation.json     Validation results
     observability.json  Aggregate previews, scans, and section measurements
+    preview.html        Interactive local Three.js preview page
     precheck.json       Static contract report
     review.json         Pre-delivery review report
     deliverable.json    Delivery manifest
@@ -107,6 +111,7 @@ agentcad build <model> --force
 agentcad measure <model>
 agentcad render <model>
 agentcad render <model> --views iso,front,top,side,back
+agentcad preview <model>
 agentcad validate <model>
 agentcad review <model>
 agentcad deliver <model>
@@ -127,6 +132,11 @@ agentcad render <model> --section-x <x>
 agentcad render <model> --section-y <y>
 agentcad inspect <model>
 agentcad report <model>
+agentcad assembly init <assembly>
+agentcad assembly list
+agentcad assembly validate <assembly>
+agentcad assembly preview <assembly>
+agentcad assembly review <assembly>
 ```
 
 All commands output machine-readable JSON by default. Read the JSON before

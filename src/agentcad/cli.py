@@ -11,6 +11,7 @@ from .jsonio import print_payload
 from .measure import measure_model
 from .precheck import precheck_model
 from .probe import probe_model, probe_scan
+from .preview import write_assembly_preview, write_model_preview
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .report import report_model
 from .review import review_model
@@ -71,6 +72,9 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("--section-y", dest="section_y", type=float, default=None,
                         help="render a Y cross-section SVG (XZ plane) at this position (mm)")
 
+    preview = sub.add_parser("preview", help="generate an interactive local HTML preview")
+    preview.add_argument("model")
+
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
     validate.add_argument("model")
     validate.add_argument("--view", choices=["iso", "front", "top", "side", "back"], default="iso")
@@ -127,6 +131,8 @@ def build_parser() -> argparse.ArgumentParser:
     assembly_sub.add_parser("list", help="list assemblies in this workspace")
     assembly_validate = assembly_sub.add_parser("validate", help="measure, check, render, and export MJCF for an assembly")
     assembly_validate.add_argument("assembly")
+    assembly_preview = assembly_sub.add_parser("preview", help="generate an interactive local HTML assembly preview")
+    assembly_preview.add_argument("assembly")
     assembly_review = assembly_sub.add_parser("review", help="run assembly delivery gates")
     assembly_review.add_argument("assembly")
 
@@ -184,6 +190,8 @@ def dispatch(args: argparse.Namespace) -> dict:
             return list_assemblies(project)
         if args.assembly_command == "validate":
             return validate_assembly(project, args.assembly)
+        if args.assembly_command == "preview":
+            return write_assembly_preview(project, args.assembly)
         if args.assembly_command == "review":
             return review_assembly(project, args.assembly)
     if args.command == "new":
@@ -215,6 +223,8 @@ def dispatch(args: argparse.Namespace) -> dict:
             views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS]
             return render_models_multi(project, args.model, views or [args.view])
         return render_model(project, args.model, view=args.view)
+    if args.command == "preview":
+        return write_model_preview(project, args.model)
     if args.command == "validate":
         views_arg = getattr(args, "views", None)
         render_views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS] if views_arg else None
