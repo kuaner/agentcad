@@ -87,7 +87,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument(
         "--views",
         default=None,
-        help="comma-separated list of views to render during validation (default: iso,back)",
+        help="comma-separated list of views to render during validation (default: iso,front,top,side,back)",
     )
 
     deliver = sub.add_parser("deliver", help="write a delivery manifest")

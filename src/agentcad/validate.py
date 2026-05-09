@@ -106,6 +106,7 @@ def validate_model(
     if observability:
         artifacts["observability"] = str(observability_path)
     payload = _validation_payload(name, checks, artifacts=artifacts, warnings=warnings or None, auto_scan=auto_scan or None)
+    write_json(validation_path, payload)
     preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure)
     if preview.get("ok"):
         payload["artifacts"]["preview_page"] = (preview.get("artifacts") or {}).get("preview_page")

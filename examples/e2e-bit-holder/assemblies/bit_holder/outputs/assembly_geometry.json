@@ -1,0 +1,559 @@
+{
+  "ok": true,
+  "schema": "agentcad.assembly.geometry.v1",
+  "stage": "assembly_measure",
+  "assembly": "bit_holder",
+  "source": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/assemblies/bit_holder/assembly.json",
+  "units": "mm",
+  "components": {
+    "body": {
+      "id": "body",
+      "model": "bit_holder_body",
+      "paths": {
+        "model_dir": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body",
+        "build": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/build.json",
+        "stl": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/bit_holder_body.stl",
+        "step": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/bit_holder_body.step",
+        "metadata": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/metadata.json"
+      },
+      "build": {
+        "ok": true,
+        "sourceHash": "9afd55f24f0e17c3",
+        "skipped": true
+      },
+      "artifacts_exist": {
+        "stl": true,
+        "step": true,
+        "metadata": true
+      },
+      "transform": {
+        "translation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_euler_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "matrix": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "local_bbox": {
+        "min": [
+          -33.0,
+          -32.989742279052734,
+          0.0
+        ],
+        "max": [
+          33.0,
+          32.989742279052734,
+          84.0
+        ],
+        "size": [
+          66.0,
+          65.97948455810547,
+          84.0
+        ],
+        "center": [
+          0.0,
+          0.0,
+          42.0
+        ]
+      },
+      "world_bbox": {
+        "min": [
+          -33.0,
+          -32.989742279052734,
+          0.0
+        ],
+        "max": [
+          33.0,
+          32.989742279052734,
+          84.0
+        ],
+        "size": [
+          66.0,
+          65.97948455810547,
+          84.0
+        ],
+        "center": [
+          0.0,
+          0.0,
+          42.0
+        ]
+      },
+      "mesh": {
+        "triangles": 11084,
+        "vertices": 33252,
+        "unique_edges": 16626,
+        "boundary_or_nonmanifold_edges": 0,
+        "watertight": true
+      },
+      "triangle_count": 11084
+    },
+    "lid": {
+      "id": "lid",
+      "model": "bit_holder_lid",
+      "paths": {
+        "model_dir": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid",
+        "build": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/build.json",
+        "stl": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.stl",
+        "step": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.step",
+        "metadata": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/metadata.json"
+      },
+      "build": {
+        "ok": true,
+        "sourceHash": "daaddc71c62231eb",
+        "skipped": true
+      },
+      "artifacts_exist": {
+        "stl": true,
+        "step": true,
+        "metadata": true
+      },
+      "transform": {
+        "translation": [
+          0.0,
+          0.0,
+          79.0
+        ],
+        "rotation_euler_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "matrix": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            79.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "local_bbox": {
+        "min": [
+          -35.0,
+          -34.98912048339844,
+          0.0
+        ],
+        "max": [
+          35.0,
+          34.98912048339844,
+          13.0
+        ],
+        "size": [
+          70.0,
+          69.97824096679688,
+          13.0
+        ],
+        "center": [
+          0.0,
+          0.0,
+          6.5
+        ]
+      },
+      "world_bbox": {
+        "min": [
+          -35.0,
+          -34.98912048339844,
+          79.0
+        ],
+        "max": [
+          35.0,
+          34.98912048339844,
+          92.0
+        ],
+        "size": [
+          70.0,
+          69.97824096679688,
+          13.0
+        ],
+        "center": [
+          0.0,
+          0.0,
+          85.5
+        ]
+      },
+      "mesh": {
+        "triangles": 1256,
+        "vertices": 3768,
+        "unique_edges": 1884,
+        "boundary_or_nonmanifold_edges": 0,
+        "watertight": true
+      },
+      "triangle_count": 1256
+    }
+  },
+  "references": {
+    "body.interfaces.lid_neck.axis": {
+      "ok": true,
+      "ref": "body.interfaces.lid_neck.axis",
+      "component": "body",
+      "path": "interfaces.lid_neck.axis",
+      "local": {
+        "point": [
+          0,
+          0,
+          79.0
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ]
+      },
+      "world": {
+        "point": [
+          0,
+          0,
+          79.0
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "world_point": [
+          0.0,
+          0.0,
+          79.0
+        ],
+        "world_direction": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    },
+    "body.interfaces.lid_neck.outer_cylinder": {
+      "ok": true,
+      "ref": "body.interfaces.lid_neck.outer_cylinder",
+      "component": "body",
+      "path": "interfaces.lid_neck.outer_cylinder",
+      "local": {
+        "type": "cylinder",
+        "axis": "z",
+        "center": [
+          0,
+          0
+        ],
+        "radius_mm": 31.0,
+        "z_range": [
+          79.0,
+          84.0
+        ],
+        "surface": "outer",
+        "tolerance_mm": 0.35
+      },
+      "world": {
+        "type": "cylinder",
+        "axis": "z",
+        "center": [
+          0,
+          0
+        ],
+        "radius_mm": 31.0,
+        "z_range": [
+          79.0,
+          84.0
+        ],
+        "surface": "outer",
+        "tolerance_mm": 0.35,
+        "world_axis_point": [
+          0.0,
+          0.0,
+          79.0
+        ],
+        "world_axis_end": [
+          0.0,
+          0.0,
+          84.0
+        ],
+        "world_axis_direction": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    },
+    "lid.interfaces.recess.axis": {
+      "ok": true,
+      "ref": "lid.interfaces.recess.axis",
+      "component": "lid",
+      "path": "interfaces.recess.axis",
+      "local": {
+        "point": [
+          0,
+          0,
+          0
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ]
+      },
+      "world": {
+        "point": [
+          0,
+          0,
+          0
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "world_point": [
+          0.0,
+          0.0,
+          79.0
+        ],
+        "world_direction": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    },
+    "lid.interfaces.recess.inner_cylinder": {
+      "ok": true,
+      "ref": "lid.interfaces.recess.inner_cylinder",
+      "component": "lid",
+      "path": "interfaces.recess.inner_cylinder",
+      "local": {
+        "type": "cylinder",
+        "axis": "z",
+        "center": [
+          0,
+          0
+        ],
+        "radius_mm": 31.35,
+        "z_range": [
+          0,
+          6.3
+        ],
+        "surface": "inner",
+        "tolerance_mm": 0.35
+      },
+      "world": {
+        "type": "cylinder",
+        "axis": "z",
+        "center": [
+          0,
+          0
+        ],
+        "radius_mm": 31.35,
+        "z_range": [
+          0,
+          6.3
+        ],
+        "surface": "inner",
+        "tolerance_mm": 0.35,
+        "world_axis_point": [
+          0.0,
+          0.0,
+          79.0
+        ],
+        "world_axis_end": [
+          0.0,
+          0.0,
+          85.3
+        ],
+        "world_axis_direction": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    }
+  },
+  "metadata_geometry_checks": [
+    {
+      "name": "interface_geometry_consistency:body.interfaces.lid_neck.outer_cylinder",
+      "type": "interface_geometry_consistency",
+      "ok": true,
+      "ref": "body.interfaces.lid_neck.outer_cylinder",
+      "component": "body",
+      "surface": "outer",
+      "expected_radius_mm": 31.0,
+      "measured_radius_mm": 30.99999939060116,
+      "delta_mm": 6.093988389466176e-07,
+      "tolerance_mm": 0.35,
+      "section": {
+        "ok": true,
+        "z": 81.5,
+        "point_count": 10584,
+        "radius_min": 3.599857872207104,
+        "radius_max": 31.000001036184713,
+        "radius_mean": 18.63638146376317,
+        "radius_outer_estimate": 30.99999939060116,
+        "radius_inner_estimate": 3.599858084126338,
+        "diameter_outer_estimate": 61.99999878120232,
+        "diameter_inner_estimate": 7.199716168252676
+      }
+    },
+    {
+      "name": "interface_geometry_consistency:lid.interfaces.recess.inner_cylinder",
+      "type": "interface_geometry_consistency",
+      "ok": true,
+      "ref": "lid.interfaces.recess.inner_cylinder",
+      "component": "lid",
+      "surface": "inner",
+      "expected_radius_mm": 31.35,
+      "measured_radius_mm": 31.340300073228313,
+      "delta_mm": 0.009699926771688183,
+      "tolerance_mm": 0.35,
+      "section": {
+        "ok": true,
+        "z": 3.15,
+        "point_count": 1008,
+        "radius_min": 31.340299733976444,
+        "radius_max": 35.00000179583976,
+        "radius_mean": 33.17057789687432,
+        "radius_outer_estimate": 35.000001134606364,
+        "radius_inner_estimate": 31.340300073228313,
+        "diameter_outer_estimate": 70.00000226921273,
+        "diameter_inner_estimate": 62.68060014645663
+      }
+    }
+  ],
+  "mate_residuals": [
+    {
+      "name": "lid_axis_coaxial",
+      "type": "mate_coaxial",
+      "ok": true,
+      "measurable": true,
+      "components": [
+        "body",
+        "lid"
+      ],
+      "angle_deg": 0.0,
+      "radial_offset_mm": 0.0,
+      "max_axis_angle_deg": 0.1,
+      "max_radial_offset_mm": 0.05
+    },
+    {
+      "name": "lid_neck_engagement",
+      "type": "axial_engagement",
+      "ok": true,
+      "measurable": true,
+      "components": [
+        "body",
+        "lid"
+      ],
+      "actual_mm": 5.0,
+      "min_mm": 4.5,
+      "intervals": {
+        "a": [
+          79.0,
+          84.0
+        ],
+        "b": [
+          79.0,
+          85.3
+        ]
+      }
+    }
+  ],
+  "pairwise": [
+    {
+      "components": [
+        "body",
+        "lid"
+      ],
+      "bbox_overlap": true,
+      "aabb_clearance_mm": 0.0,
+      "method": "mesh_narrow_phase_v1",
+      "mesh_clearance_mm": 0.0,
+      "mesh_penetration_mm": 0.0,
+      "interferes": false,
+      "narrow_phase": {
+        "ok": true,
+        "broad_phase": "aabb_overlap",
+        "triangle_candidate_pairs": 4837,
+        "triangle_intersection_count": 256,
+        "inside_sample_count": 0,
+        "sample_count": 768,
+        "min_sample_distance_mm": 0.0,
+        "max_penetration_mm": 0.0,
+        "deepest_sample": null,
+        "note": "inside samples estimate solid penetration; triangle intersections without inside samples are treated as surface contact evidence"
+      }
+    }
+  ],
+  "assembly_geometry": {
+    "component_count": 2,
+    "triangle_count": 12340,
+    "bbox": {
+      "min": [
+        -35.0,
+        -34.98912048339844,
+        0.0
+      ],
+      "max": [
+        35.0,
+        34.98912048339844,
+        92.0
+      ],
+      "size": [
+        70.0,
+        69.97824096679688,
+        92.0
+      ],
+      "center": [
+        0.0,
+        0.0,
+        46.0
+      ]
+    }
+  },
+  "artifacts": {
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/assemblies/bit_holder/outputs/assembly_geometry.json"
+  }
+}

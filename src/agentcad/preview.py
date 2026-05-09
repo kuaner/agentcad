@@ -148,7 +148,7 @@ def write_assembly_preview(
 
 def _write_preview_file(path: Path, data: dict, title: str) -> dict:
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+    payload = json.dumps(data, ensure_ascii=True).replace("</", "<\\/")
     path.write_text(_html(title, payload), encoding="utf-8")
     return {
         "ok": True,
@@ -692,6 +692,28 @@ def _html(title: str, payload: str) -> str:
       v.className = "mono";
       host.append(k, v);
     }}
+    function emptyNode(message) {{
+      const node = document.createElement("div");
+      node.className = "empty";
+      node.textContent = message;
+      return node;
+    }}
+    function metricNode(value, label) {{
+      const node = document.createElement("div");
+      node.className = "metric";
+      const strong = document.createElement("b");
+      strong.textContent = value;
+      const caption = document.createElement("span");
+      caption.textContent = label;
+      node.append(strong, caption);
+      return node;
+    }}
+    function linkNode(href, label) {{
+      const a = document.createElement("a");
+      a.href = href || "#";
+      a.textContent = label;
+      return a;
+    }}
     function renderUi() {{
       document.getElementById("title").textContent = `${{data.kind}} / ${{data.title}}`;
       const status = document.getElementById("status");
@@ -753,7 +775,7 @@ def _html(title: str, payload: str) -> str:
 
       const checks = document.getElementById("checks");
       const orderedChecks = [...(data.checks || [])].sort((a, b) => Number(Boolean(a.ok)) - Number(Boolean(b.ok)));
-      if (!orderedChecks.length) checks.innerHTML = '<div class="empty">No checks found.</div>';
+      if (!orderedChecks.length) checks.append(emptyNode("No checks found."));
       orderedChecks.forEach((check) => {{
         const row = document.createElement("div");
         row.className = `check ${{check.ok ? "ok" : "fail"}}`;
@@ -776,28 +798,19 @@ def _html(title: str, payload: str) -> str:
       const bbox = (data.geometry || {{}}).bbox || data.geometry || {{}};
       const size = bbox.size || [];
       [["X", size[0]], ["Y", size[1]], ["Z", size[2]]].forEach(([label, value]) => {{
-        const m = document.createElement("div");
-        m.className = "metric";
-        m.innerHTML = `<b>${{mm(value)}}</b><span>${{label}} envelope</span>`;
-        metrics.append(m);
+        metrics.append(metricNode(mm(value), `${{label}} envelope`));
       }});
       const mesh = (data.geometry || {{}}).mesh || {{}};
       if (mesh.triangles) {{
-        const m = document.createElement("div");
-        m.className = "metric";
-        m.innerHTML = `<b>${{mesh.triangles}}</b><span>triangles</span>`;
-        metrics.append(m);
+        metrics.append(metricNode(text(mesh.triangles), "triangles"));
       }}
       if ((data.geometry || {{}}).triangle_count) {{
-        const m = document.createElement("div");
-        m.className = "metric";
-        m.innerHTML = `<b>${{data.geometry.triangle_count}}</b><span>triangles</span>`;
-        metrics.append(m);
+        metrics.append(metricNode(text(data.geometry.triangle_count), "triangles"));
       }}
 
       const relations = document.getElementById("relations");
       const relRows = [...(data.mates || []), ...(data.pairwise || []), ...((data.review || {{}}).relations || [])];
-      if (!relRows.length) relations.innerHTML = '<div class="empty">No mate or pair rows.</div>';
+      if (!relRows.length) relations.append(emptyNode("No mate or pair rows."));
       relRows.forEach((row) => {{
         const box = document.createElement("div");
         box.className = `check ${{row.ok === false || row.interferes ? "fail" : "ok"}}`;
@@ -807,26 +820,40 @@ def _html(title: str, payload: str) -> str:
         if (row.radial_offset_mm !== undefined) details.push(`offset ${{mm(row.radial_offset_mm)}}`);
         if (row.actual_mm !== undefined) details.push(`actual ${{mm(row.actual_mm)}}`);
         if (row.aabb_clearance_mm !== undefined) details.push(`AABB clearance ${{mm(row.aabb_clearance_mm)}}`);
-        box.innerHTML = `<div class="check-name"><span>${{row.name || row.type || comps || "relation"}}</span><span>${{row.ok === false || row.interferes ? "fail" : "ok"}}</span></div><div class="check-type">${{comps}} ${{details.join(" / ")}}</div>`;
+        const head = document.createElement("div");
+        head.className = "check-name";
+        const name = document.createElement("span");
+        name.textContent = row.name || row.type || comps || "relation";
+        const result = document.createElement("span");
+        result.textContent = row.ok === false || row.interferes ? "fail" : "ok";
+        head.append(name, result);
+        const type = document.createElement("div");
+        type.className = "check-type";
+        type.textContent = [comps, details.join(" / ")].filter(Boolean).join(" ");
+        box.append(head, type);
         relations.append(box);
       }});
 
       const svgs = document.getElementById("svgs");
-      if (!(data.svgs || []).length) svgs.innerHTML = '<div class="empty">No SVG evidence found.</div>';
+      if (!(data.svgs || []).length) svgs.append(emptyNode("No SVG evidence found."));
       (data.svgs || []).forEach((item) => {{
         const card = document.createElement("div");
         card.className = "svg-card";
-        card.innerHTML = `<a href="${{item.path}}">${{item.label}}</a><img src="data:image/svg+xml;base64,${{item.svgBase64}}" alt="${{item.label}}">`;
+        const a = linkNode(item.path, item.label || item.path || "svg");
+        const img = document.createElement("img");
+        img.src = `data:image/svg+xml;base64,${{item.svgBase64 || ""}}`;
+        img.alt = item.label || "";
+        card.append(a, img);
         svgs.append(card);
       }});
 
       const links = document.getElementById("links");
       Object.entries(data.artifacts || {{}}).forEach(([key, value]) => {{
         const row = document.createElement("div");
-        row.innerHTML = `<a href="${{value}}">${{key}}</a>`;
+        row.append(linkNode(value, key));
         links.append(row);
       }});
-      if (!links.children.length) links.innerHTML = '<div class="empty">No artifact links.</div>';
+      if (!links.children.length) links.append(emptyNode("No artifact links."));
 
       const mjcfSection = document.getElementById("mjcf-section");
       const mjcfXml = data.mjcf && data.mjcf.xml;

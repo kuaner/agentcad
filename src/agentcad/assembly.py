@@ -153,6 +153,11 @@ def measure_assembly(project: Path, name: str) -> dict:
         payload["artifacts"] = {"geometry": str(geometry_path)}
         write_json(geometry_path, payload)
         return payload
+    except Exception as exc:
+        payload = _failure(safe, "assembly_measure", type(exc).__name__, str(exc))
+        payload["artifacts"] = {"geometry": str(geometry_path)}
+        write_json(geometry_path, payload)
+        return payload
 
 
 def validate_assembly(project: Path, name: str) -> dict:
@@ -176,6 +181,7 @@ def validate_assembly(project: Path, name: str) -> dict:
                 },
             }
             write_json(validation_path, payload)
+            _write_observability(observability_path, safe, geometry, payload)
             return payload
 
         checks: list[dict] = []
@@ -222,15 +228,17 @@ def validate_assembly(project: Path, name: str) -> dict:
         artifacts.update(stl_payload.get("artifacts") or {})
         artifacts.update(mjcf_payload.get("artifacts") or {})
 
-        preview_seed = {
-            "ok": all(check.get("ok") for check in checks),
-            "stage": "assembly_validate",
-            "assembly": safe,
-            "checks": checks,
-            "mate_residuals": geometry.get("mate_residuals", []),
-            "pairwise": geometry.get("pairwise", []),
-            "artifacts": artifacts,
-        }
+        preview_seed_failed = [check for check in checks if not check.get("ok")]
+        preview_seed = _assembly_validation_payload(
+            safe,
+            checks,
+            geometry,
+            artifacts,
+            message="assembly validation passed" if not preview_seed_failed else "assembly validation failed",
+        )
+        write_json(validation_path, preview_seed)
+        _write_observability(observability_path, safe, geometry, preview_seed)
+
         from .preview import write_assembly_preview
 
         preview_payload = write_assembly_preview(project, safe, validation_payload=preview_seed, geometry_payload=geometry)
@@ -246,30 +254,37 @@ def validate_assembly(project: Path, name: str) -> dict:
         )
 
         failed = [check for check in checks if not check.get("ok")]
-        payload = {
-            "ok": not failed,
-            "schema": VALIDATION_SCHEMA,
-            "stage": "assembly_validate",
-            "assembly": safe,
-            "summary": {
-                "checks": len(checks),
-                "passed": len(checks) - len(failed),
-                "failed": len(failed),
-            },
-            "checks": checks,
-            "geometry_summary": geometry.get("assembly_geometry"),
-            "mate_residuals": geometry.get("mate_residuals", []),
-            "pairwise": geometry.get("pairwise", []),
-            "artifacts": artifacts,
-            "message": "assembly validation passed" if not failed else "assembly validation failed",
-        }
+        payload = _assembly_validation_payload(
+            safe,
+            checks,
+            geometry,
+            artifacts,
+            message="assembly validation passed" if not failed else "assembly validation failed",
+        )
         write_json(validation_path, payload)
         _write_observability(observability_path, safe, geometry, payload)
+        if preview_payload.get("ok"):
+            write_assembly_preview(project, safe, validation_payload=payload, geometry_payload=geometry)
         return payload
     except AssemblyError as exc:
         payload = _failure(safe, "assembly_validate", exc.error_type, exc.message)
-        payload["artifacts"] = {"validation": str(validation_path)}
+        payload["artifacts"] = {
+            "geometry": str(out_dir / "assembly_geometry.json"),
+            "validation": str(validation_path),
+            "observability": str(observability_path),
+        }
         write_json(validation_path, payload)
+        _write_observability(observability_path, safe, {}, payload)
+        return payload
+    except Exception as exc:
+        payload = _failure(safe, "assembly_validate", type(exc).__name__, str(exc))
+        payload["artifacts"] = {
+            "geometry": str(out_dir / "assembly_geometry.json"),
+            "validation": str(validation_path),
+            "observability": str(observability_path),
+        }
+        write_json(validation_path, payload)
+        _write_observability(observability_path, safe, {}, payload)
         return payload
 
 
@@ -349,6 +364,7 @@ def _load_contract(project: Path, name: str) -> tuple[dict, Path]:
     components = data.get("components")
     if not isinstance(components, list):
         raise AssemblyError("ComponentsInvalid", "assembly components must be a list")
+    _validate_component_ids(components)
     return data, contract_path
 
 
@@ -413,6 +429,28 @@ def _load_components(project: Path, contract: dict) -> dict[str, dict]:
             "triangle_count": len(world_triangles),
         }
     return records
+
+
+def _validate_component_ids(components: list) -> None:
+    safe_names: dict[str, str] = {}
+    for index, raw in enumerate(components):
+        if not isinstance(raw, dict):
+            continue
+        cid = str(raw.get("id") or "").strip()
+        if not cid:
+            continue
+        safe = _safe_xml_name(cid)
+        if safe != cid:
+            raise AssemblyError(
+                "ComponentIdInvalid",
+                f"component id {cid!r} is not MJCF-safe; use letters, numbers, underscores, dots, or hyphens and start with a letter or underscore",
+            )
+        previous = safe_names.get(safe)
+        if previous is not None:
+            if previous == cid:
+                raise AssemblyError("DuplicateComponentId", f"duplicate component id: {cid}")
+            raise AssemblyError("ComponentIdCollision", f"component ids {previous!r} and {cid!r} collapse to the same MJCF name {safe!r}")
+        safe_names[safe] = cid
 
 
 def _parse_transform(raw: dict, cid: str) -> Transform:
@@ -669,24 +707,43 @@ def _descriptor_radius(desc: dict) -> float | None:
     return None
 
 
+def _descriptor_float(value: Any, label: str) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise AssemblyError("CylinderDescriptorInvalid", f"{label} must be numeric") from exc
+
+
+def _descriptor_center(desc: dict, axis: str) -> tuple[float, ...]:
+    center = desc.get("center", [0.0, 0.0])
+    if not isinstance(center, (list, tuple)):
+        raise AssemblyError("CylinderDescriptorInvalid", "cylinder center must be a number array")
+    if axis == "z":
+        if len(center) not in (2, 3):
+            raise AssemblyError("CylinderDescriptorInvalid", "z-axis cylinder center must contain two or three values")
+        return (_descriptor_float(center[0], "cylinder center[0]"), _descriptor_float(center[1], "cylinder center[1]"))
+    if axis in ("x", "y"):
+        if len(center) < 2:
+            raise AssemblyError("CylinderDescriptorInvalid", f"{axis}-axis cylinder center must contain at least two values")
+        return (_descriptor_float(center[0], "cylinder center[0]"), _descriptor_float(center[1], "cylinder center[1]"))
+    raise AssemblyError("CylinderDescriptorInvalid", f"unsupported cylinder axis: {axis}")
+
+
 def _cylinder_endpoints(desc: dict) -> tuple[Vec3, Vec3]:
     axis = desc.get("axis", "z")
     z_range = desc.get("z_range") or desc.get("range") or [0.0, 0.0]
     if not isinstance(z_range, (list, tuple)) or len(z_range) != 2:
         raise AssemblyError("CylinderDescriptorInvalid", "cylinder z_range must contain two values")
-    start = float(z_range[0])
-    end = float(z_range[1])
-    center = desc.get("center", [0.0, 0.0])
+    start = _descriptor_float(z_range[0], "cylinder z_range[0]")
+    end = _descriptor_float(z_range[1], "cylinder z_range[1]")
+    center = _descriptor_center(desc, str(axis))
     if axis == "z":
-        if len(center) == 2:
-            return ((float(center[0]), float(center[1]), start), (float(center[0]), float(center[1]), end))
-        if len(center) == 3:
-            return ((float(center[0]), float(center[1]), start), (float(center[0]), float(center[1]), end))
-    if axis == "x" and len(center) >= 2:
-        y, z = float(center[0]), float(center[1])
+        return ((center[0], center[1], start), (center[0], center[1], end))
+    if axis == "x":
+        y, z = center[0], center[1]
         return ((start, y, z), (end, y, z))
-    if axis == "y" and len(center) >= 2:
-        x, z = float(center[0]), float(center[1])
+    if axis == "y":
+        x, z = center[0], center[1]
         return ((x, start, z), (x, end, z))
     raise AssemblyError("CylinderDescriptorInvalid", f"unsupported cylinder axis: {axis}")
 
@@ -894,7 +951,7 @@ def _eval_axial_engagement(name: str, mate: dict, refs: dict[str, dict]) -> dict
 
 def _required_float(payload: dict, key: str, name: str) -> float | None:
     if key not in payload:
-        return None
+        raise AssemblyError("RequiredFieldMissing", f"{name}.{key} is required")
     try:
         return float(payload[key])
     except (TypeError, ValueError) as exc:
@@ -2107,9 +2164,12 @@ def _export_mjcf(project: Path, name: str, contract: dict, geometry: dict) -> di
         asset = ET.SubElement(root, "asset")
         worldbody = ET.SubElement(root, "worldbody")
         site_specs: dict[str, dict] = {}
+        used_names: set[str] = {_safe_xml_name(cid) for cid in (geometry.get("components") or {})}
 
         for cid, component in (geometry.get("components") or {}).items():
-            mesh_name = f"{_safe_xml_name(cid)}_mesh"
+            body_name = _safe_xml_name(cid)
+            mesh_name = _unique_xml_name(f"{body_name}_mesh", used_names)
+            geom_name = _unique_xml_name(f"{body_name}_geom", used_names)
             mesh_file = os.path.relpath(component["paths"]["stl"], start=out_dir)
             ET.SubElement(asset, "mesh", {"name": mesh_name, "file": mesh_file})
             transform = component["transform"]
@@ -2117,19 +2177,19 @@ def _export_mjcf(project: Path, name: str, contract: dict, geometry: dict) -> di
                 worldbody,
                 "body",
                 {
-                    "name": cid,
+                    "name": body_name,
                     "pos": _mjcf_vec(transform["translation"]),
                     "euler": _mjcf_vec(transform["rotation_euler_deg"]),
                 },
             )
-            ET.SubElement(body, "geom", {"name": f"{_safe_xml_name(cid)}_geom", "type": "mesh", "mesh": mesh_name})
+            ET.SubElement(body, "geom", {"name": geom_name, "type": "mesh", "mesh": mesh_name})
             for ref, resolved in sorted((geometry.get("references") or {}).items()):
                 if resolved.get("component") != cid or not resolved.get("ok"):
                     continue
                 site = _local_site_from_descriptor(resolved.get("local"))
                 if site is None:
                     continue
-                site_name = _safe_xml_name(ref.replace(".", "_"))
+                site_name = _unique_xml_name(_safe_xml_name(ref.replace(".", "_")), used_names)
                 ET.SubElement(body, "site", {"name": site_name, "pos": _mjcf_vec(site), "size": "0.5"})
                 site_specs[site_name] = {"component": cid, "ref": ref, "pos": _round_vec(site)}
 
@@ -2192,9 +2252,10 @@ def _mjcf_consistency_check(mjcf_payload: dict, geometry: dict) -> dict:
         errors = []
         out_dir = Path(path).parent
         for cid, component in (geometry.get("components") or {}).items():
-            body = bodies.get(cid)
+            body_name = _safe_xml_name(cid)
+            body = bodies.get(body_name)
             if body is None:
-                errors.append(f"missing body {cid}")
+                errors.append(f"missing body {body_name}")
                 continue
             if not _vectors_close(_parse_mjcf_vec(body.attrib.get("pos", "")), component["transform"]["translation"]):
                 errors.append(f"body {cid} pos mismatch")
@@ -2282,6 +2343,27 @@ def _write_observability(path: Path, name: str, geometry: dict, validation: dict
     write_json(path, payload)
 
 
+def _assembly_validation_payload(name: str, checks: list[dict], geometry: dict, artifacts: dict, message: str) -> dict:
+    failed = [check for check in checks if not check.get("ok")]
+    return {
+        "ok": not failed,
+        "schema": VALIDATION_SCHEMA,
+        "stage": "assembly_validate",
+        "assembly": name,
+        "summary": {
+            "checks": len(checks),
+            "passed": len(checks) - len(failed),
+            "failed": len(failed),
+        },
+        "checks": checks,
+        "geometry_summary": geometry.get("assembly_geometry"),
+        "mate_residuals": geometry.get("mate_residuals", []),
+        "pairwise": geometry.get("pairwise", []),
+        "artifacts": artifacts,
+        "message": message,
+    }
+
+
 def _mjcf_vec(values: Any) -> str:
     return " ".join(f"{float(value):.9g}" for value in values)
 
@@ -2295,6 +2377,16 @@ def _safe_xml_name(value: str) -> str:
     if not cleaned or not (cleaned[0].isalpha() or cleaned[0] == "_"):
         cleaned = f"n_{cleaned}"
     return cleaned
+
+
+def _unique_xml_name(base: str, used: set[str]) -> str:
+    name = base
+    suffix = 2
+    while name in used:
+        name = f"{base}_{suffix}"
+        suffix += 1
+    used.add(name)
+    return name
 
 
 def _vectors_close(a: list[float], b: list[float], tol: float = 1e-6) -> bool:

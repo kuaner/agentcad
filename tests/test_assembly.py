@@ -180,6 +180,8 @@ def test_assembly_validate_generates_geometry_previews_and_mjcf(tmp_path):
     assert 'id="show-all"' in preview_html
     assert 'id="prev-part"' in preview_html
     assert "soloComponent" in preview_html
+    assert '"validation": "assembly_validation.json"' in preview_html
+    assert '"observability": "assembly_observability.json"' in preview_html
     assert Path(result["artifacts"]["mjcf"]).exists()
     radial = next(check for check in result["checks"] if check["name"] == "pin_socket_radial_clearance")
     assert 0.2 <= radial["actual_mm"] <= 0.4
@@ -207,6 +209,9 @@ def test_assembly_validate_rejects_scale(tmp_path):
     result = validate_assembly(tmp_path, "scaled")
     assert result["ok"] is False
     assert result["error"]["type"] == "ScaleNotAllowed"
+    out_dir = tmp_path / "assemblies" / "scaled" / "outputs"
+    assert (out_dir / "assembly_validation.json").exists()
+    assert (out_dir / "assembly_observability.json").exists()
 
 
 def test_assembly_validate_blocks_unclassified_component_pair(tmp_path):
@@ -288,3 +293,58 @@ def test_inter_model_min_clearance_uses_metadata_shape_refs_and_section_count(tm
     assert clearance["actual_mm"] == 2.0
     section = next(check for check in result["checks"] if check["name"] == "mid_section_has_two_boxes")
     assert section["actual"] == 2
+
+
+def test_assembly_validate_reports_missing_required_field(tmp_path):
+    project = _project_with_pin_socket(tmp_path)
+    contract_path = project / "assemblies" / "pin_socket" / "assembly.json"
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    del contract["mates"][0]["max_axis_angle_deg"]
+    contract_path.write_text(json.dumps(contract, indent=2) + "\n", encoding="utf-8")
+
+    result = validate_assembly(project, "pin_socket")
+
+    assert result["ok"] is False
+    assert result["error"]["type"] == "RequiredFieldMissing"
+    assert (project / "assemblies" / "pin_socket" / "outputs" / "assembly_validation.json").exists()
+    assert (project / "assemblies" / "pin_socket" / "outputs" / "assembly_observability.json").exists()
+
+
+def test_assembly_validate_rejects_malformed_cylinder_center(tmp_path):
+    project = _project_with_pin_socket(tmp_path)
+    _write_part(
+        project / "models" / "pin",
+        _pin_source().replace("'center': [0, 0]", "'center': {'x': 0, 'y': 0}"),
+    )
+
+    result = validate_assembly(project, "pin_socket")
+
+    assert result["ok"] is False
+    assert result["error"]["type"] == "CylinderDescriptorInvalid"
+    assert (project / "assemblies" / "pin_socket" / "outputs" / "assembly_geometry.json").exists()
+
+
+def test_assembly_validate_rejects_component_ids_that_are_not_mjcf_safe(tmp_path):
+    init_workspace(tmp_path)
+    root = tmp_path / "assemblies" / "bad_ids"
+    root.mkdir(parents=True)
+    (root / "assembly.json").write_text(
+        json.dumps(
+            {
+                "schema": "agentcad.assembly.v1",
+                "name": "bad_ids",
+                "units": "mm",
+                "components": [
+                    {"id": "bad id", "model": "missing", "transform": {"translation": [0, 0, 0]}},
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = validate_assembly(tmp_path, "bad_ids")
+
+    assert result["ok"] is False
+    assert result["error"]["type"] == "ComponentIdInvalid"
