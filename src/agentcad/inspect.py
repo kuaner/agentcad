@@ -48,11 +48,17 @@ def inspect_model(project: Path, name: str, scan_samples: int = 20) -> dict:
     # ── Standard section SVGs ─────────────────────────────────────────────────
     # For each axis: midpoint + step change positions
     sections: dict[str, str] = {}
+    section_analysis_json: dict[str, str] = {}
+    section_analyses: dict[str, dict] = {}
 
     def _write(axis_int: int, axis_name: str, value: float, label: str) -> None:
         svg_path = out_dir / f"section.{axis_name}{value:.2f}.svg"
         info = write_section_svg(triangles, axis_int, value, svg_path)
         sections[label] = info["svg"]
+        if info.get("analysis_json"):
+            section_analysis_json[label] = info["analysis_json"]
+        if info.get("analysis"):
+            section_analyses[label] = info["analysis"]
 
     for axis_int, axis_name in ((AXIS_Z, "z"), (AXIS_X, "x"), (AXIS_Y, "y")):
         scan = scans[axis_name]
@@ -98,5 +104,7 @@ def inspect_model(project: Path, name: str, scan_samples: int = 20) -> dict:
         "geometry": report,
         "scans": scans,
         "sections": sections,
+        "section_analysis_json": section_analysis_json,
+        "section_analyses": section_analyses,
         "suggested_next": suggested_next,
     }

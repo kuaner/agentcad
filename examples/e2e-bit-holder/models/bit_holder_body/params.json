@@ -1,0 +1,18 @@
+{
+  "bit_diameter": 6.5,
+  "bit_height": 75.0,
+  "slot_diameter": 7.2,
+  "slot_depth": 76.0,
+  "slot_count": 20,
+  "inner_ring_count": 7,
+  "outer_ring_count": 12,
+  "inner_ring_radius": 11.0,
+  "outer_ring_radius": 23.0,
+  "outer_ring_angle_offset_deg": 15.0,
+  "body_radius": 33.0,
+  "body_height": 84.0,
+  "base_thickness": 8.0,
+  "neck_radius": 31.0,
+  "neck_height": 5.0,
+  "lid_fit_clearance_diameter": 0.7
+}

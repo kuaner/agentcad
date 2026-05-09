@@ -68,6 +68,8 @@ def test_probe_single_z(cube_project):
     section = result["section"]
     assert section["ok"] is True
     assert section["point_count"] > 0
+    assert result["section_analysis"]["bbox"]["u_size"] == pytest.approx(10.0, abs=0.01)
+    assert result["section_analysis"]["component_count"] == 1
     # Cube 10x10x10 centred at (5,5): outer radius from center should be ~7mm
     assert section["radius_outer_estimate"] > 5.0
     assert "suggested_checks" in result
@@ -116,3 +118,28 @@ def test_probe_suggested_checks_format(cube_project):
     assert outer["center"] == [5.0, 5.0]
     assert isinstance(outer["expected"], float)
     assert outer["tolerance"] == 1.0
+
+
+def test_probe_x_includes_section_analysis(cube_project):
+    result = probe_model(cube_project, "cube", x_values=[5.0])
+    assert result["ok"] is True
+    assert result["axis"] == "X"
+    assert result["section"]["ok"] is True
+    assert result["section_analysis"]["plane_label"] == "YZ plane"
+    assert result["section_analysis"]["bbox"]["u_size"] == pytest.approx(10.0, abs=0.01)
+    assert result["section_analysis"]["bbox"]["v_size"] == pytest.approx(10.0, abs=0.01)
+
+
+def test_probe_z_line_and_point_measurements(cube_project):
+    result = probe_model(
+        cube_project,
+        "cube",
+        z_values=[5.0],
+        line_u=5.0,
+        point=(5.0, 5.0),
+    )
+
+    assert result["ok"] is True
+    assert result["measurements"]["line_u"]["intersection_count"] == 2
+    assert result["measurements"]["line_u"]["span"]["size"] == pytest.approx(10.0, abs=0.01)
+    assert result["measurements"]["point"]["nearest_distance_mm"] == pytest.approx(5.0, abs=0.01)

@@ -1,12 +1,22 @@
 from __future__ import annotations
 
-from ..section import AXIS_Z, write_section_svg
+from ..section import (
+    AXIS_X,
+    AXIS_Y,
+    AXIS_Z,
+    analyze_section_segments,
+    section_segments,
+    write_section_svg,
+)
 from ..stl import section_bbox_at_z, section_radius_at_z
 from . import CheckContext, POST_BUILD, register_check
 
 
 def _triangles(ctx: CheckContext):
     return ctx.get_triangles()
+
+
+_AXIS_BY_NAME = {"x": AXIS_X, "y": AXIS_Y, "z": AXIS_Z}
 
 
 @register_check("outer_diameter_at_z", layer=POST_BUILD)
@@ -113,7 +123,48 @@ def evaluate_section_bbox_at_z(check: dict, ctx: CheckContext) -> dict:
         svg_path = ctx.out_dir / f"debug.{check.get('id') or 'section_bbox'}.z{z:.2f}.svg"
         info = write_section_svg(triangles, AXIS_Z, z, svg_path)
         result["debug_svg"] = info.get("svg")
+        result["debug_analysis_json"] = info.get("analysis_json")
     return result
+
+
+@register_check("section_component_count", layer=POST_BUILD)
+def evaluate_section_component_count(check: dict, ctx: CheckContext) -> dict:
+    check_id = check.get("id") or "section_component_count"
+    axis_name = str(check.get("axis", "z")).lower()
+    axis = _AXIS_BY_NAME.get(axis_name)
+    if axis is None:
+        return _input_error(check, "section_component_count", "axis must be 'x', 'y', or 'z'")
+    raw_position = check.get("position", check.get(axis_name))
+    if raw_position is None:
+        return _input_error(check, "section_component_count", f"check requires '{axis_name}' or 'position'")
+    if check.get("expected") is None:
+        return _input_error(check, "section_component_count", "check requires 'expected' component count")
+
+    position = float(raw_position)
+    expected = int(check["expected"])
+    tolerance = int(check.get("tolerance", 0))
+    triangles = _triangles(ctx)
+    segs = section_segments(triangles, axis, position)
+    analysis = analyze_section_segments(segs, axis, position)
+    actual = int(analysis.get("component_count", 0))
+    ok = abs(actual - expected) <= tolerance
+    payload = {
+        "name": check_id,
+        "type": "section_component_count",
+        "ok": ok,
+        "axis": axis_name,
+        "position": position,
+        "expected": expected,
+        "actual": actual,
+        "tolerance": tolerance,
+        "analysis": analysis,
+    }
+    if not ok:
+        svg_path = ctx.out_dir / f"debug.{check_id}.{axis_name}{position:.2f}.svg"
+        info = write_section_svg(triangles, axis, position, svg_path)
+        payload["debug_svg"] = info.get("svg")
+        payload["debug_analysis_json"] = info.get("analysis_json")
+    return payload
 
 
 @register_check("feature_position", layer=POST_BUILD)
@@ -156,6 +207,7 @@ def evaluate_feature_position(check: dict, ctx: CheckContext) -> dict:
         svg_path = ctx.out_dir / f"debug.{check_id}.z{z:.2f}.svg"
         info = write_section_svg(triangles, AXIS_Z, z, svg_path)
         payload["debug_svg"] = info.get("svg")
+        payload["debug_analysis_json"] = info.get("analysis_json")
     return payload
 
 
@@ -187,6 +239,7 @@ def _evaluate_section_diameter(check: dict, ctx: CheckContext, diameter_kind: st
         svg_path = ctx.out_dir / f"debug.{check.get('id') or 'section'}.z{z:.2f}.svg"
         info = write_section_svg(triangles, AXIS_Z, z, svg_path)
         result["debug_svg"] = info.get("svg")
+        result["debug_analysis_json"] = info.get("analysis_json")
     return result
 
 

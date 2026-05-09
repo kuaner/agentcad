@@ -1,0 +1,102 @@
+{
+  "ok": true,
+  "stage": "precheck",
+  "model": "bit_holder_lid",
+  "precheckedAt": "2026-05-09T02:28:09.040866+00:00",
+  "checks": [
+    {
+      "name": "feature_coverage:outer_lid",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "outer_lid",
+      "checks": [
+        "lid_bbox",
+        "watertight",
+        "lid_outer_diameter",
+        "top_component_count"
+      ],
+      "matchedChecks": [
+        "lid_bbox",
+        "watertight",
+        "lid_outer_diameter",
+        "top_component_count"
+      ]
+    },
+    {
+      "name": "feature_coverage:stepped_inner_recess",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "stepped_inner_recess",
+      "checks": [
+        "recess_inner_diameter",
+        "recess_component_count",
+        "fit_inner_diameter_metadata",
+        "fit_clearance_metadata",
+        "recess_depth_metadata",
+        "top_clearance_metadata"
+      ],
+      "matchedChecks": [
+        "recess_inner_diameter",
+        "recess_component_count",
+        "fit_inner_diameter_metadata",
+        "fit_clearance_metadata",
+        "recess_depth_metadata",
+        "top_clearance_metadata"
+      ]
+    }
+  ],
+  "artifacts": {
+    "precheck": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/precheck.json"
+  },
+  "message": "precheck passed — safe to write part.py",
+  "deferred_to_validate": [
+    {
+      "id": "lid_bbox",
+      "type": "bbox_size"
+    },
+    {
+      "id": "watertight",
+      "type": "watertight"
+    },
+    {
+      "id": "lid_outer_diameter",
+      "type": "outer_diameter_at_z"
+    },
+    {
+      "id": "recess_inner_diameter",
+      "type": "inner_diameter_at_z"
+    },
+    {
+      "id": "recess_component_count",
+      "type": "section_component_count"
+    },
+    {
+      "id": "top_component_count",
+      "type": "section_component_count"
+    },
+    {
+      "id": "fit_inner_diameter_metadata",
+      "type": "metadata_equals"
+    },
+    {
+      "id": "fit_clearance_metadata",
+      "type": "metadata_equals"
+    },
+    {
+      "id": "recess_depth_metadata",
+      "type": "metadata_equals"
+    },
+    {
+      "id": "top_clearance_metadata",
+      "type": "metadata_equals"
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists"
+    }
+  ]
+}

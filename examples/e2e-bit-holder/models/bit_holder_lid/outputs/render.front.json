@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "stage": "render",
+  "model": "bit_holder_lid",
+  "view": "front",
+  "artifacts": {
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.front.svg",
+    "render": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/render.front.json"
+  },
+  "message": "preview rendered"
+}

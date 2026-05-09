@@ -13,6 +13,7 @@ GEOMETRY_CHECK_TYPES = frozenset({
     "inner_diameter_at_z",
     "diameter_decreases_along_z",
     "section_bbox_at_z",
+    "section_component_count",
     "min_clearance",
     "hole_accessibility",
     "min_wall_thickness",

@@ -1,0 +1,104 @@
+{
+  "schema": "design-spec.v1",
+  "model": "bit_holder_lid",
+  "units": "mm",
+  "intent": "Stepped slip-on lid for the 20-slot driver-bit holder body. The lid fits over the body's reduced top neck with a simple internal shoulder stop.",
+  "features": [
+    {
+      "id": "outer_lid",
+      "intent": "Round 70 mm diameter x 13 mm tall cap with closed top.",
+      "checks": ["lid_bbox", "watertight", "lid_outer_diameter", "top_component_count"]
+    },
+    {
+      "id": "stepped_inner_recess",
+      "intent": "Bottom recess slips over the body neck and stops on the shoulder step.",
+      "checks": [
+        "recess_inner_diameter",
+        "recess_component_count",
+        "fit_inner_diameter_metadata",
+        "fit_clearance_metadata",
+        "recess_depth_metadata",
+        "top_clearance_metadata"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "lid_bbox",
+      "type": "bbox_size",
+      "expected": [70.0, 70.0, 13.0],
+      "tolerance": 0.8
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "lid_outer_diameter",
+      "type": "outer_diameter_at_z",
+      "z": 3.0,
+      "center": [0.0, 0.0],
+      "expected": 70.0,
+      "tolerance": 0.8
+    },
+    {
+      "id": "recess_inner_diameter",
+      "type": "inner_diameter_at_z",
+      "z": 3.0,
+      "center": [0.0, 0.0],
+      "expected": 62.7,
+      "tolerance": 0.8
+    },
+    {
+      "id": "recess_component_count",
+      "type": "section_component_count",
+      "axis": "z",
+      "z": 3.0,
+      "expected": 2,
+      "tolerance": 0
+    },
+    {
+      "id": "top_component_count",
+      "type": "section_component_count",
+      "axis": "z",
+      "z": 10.0,
+      "expected": 1,
+      "tolerance": 0
+    },
+    {
+      "id": "fit_inner_diameter_metadata",
+      "type": "metadata_equals",
+      "path": "fit.inner_diameter_mm",
+      "expected": 62.7
+    },
+    {
+      "id": "fit_clearance_metadata",
+      "type": "metadata_equals",
+      "path": "fit.diametral_clearance_mm",
+      "expected": 0.7
+    },
+    {
+      "id": "recess_depth_metadata",
+      "type": "metadata_equals",
+      "path": "fit.recess_depth_mm",
+      "expected": 6.3
+    },
+    {
+      "id": "top_clearance_metadata",
+      "type": "metadata_equals",
+      "path": "fit.top_clearance_mm",
+      "expected": 1.3
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/bit_holder_lid.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/bit_holder_lid.stl"
+    }
+  ]
+}

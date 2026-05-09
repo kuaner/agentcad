@@ -43,8 +43,10 @@ agentcad precheck <model>                         # design-time solve before cod
 agentcad build <model>                            # build123d -> STEP + STL (hash-cached)
 agentcad measure <model>                          # mesh stats + structural facts
 agentcad render <model> --view iso                # iso/front/top/side/back SVG
-agentcad render <model> --section-z <z>                  # cross-section SVG (also --section-x, --section-y)
-agentcad probe <model> --z <z>                    # cross-section diameters / void at Z
+agentcad render <model> --section-z <z>                  # cross-section SVG + JSON sidecar (also --section-x, --section-y)
+agentcad probe <model> --z <z>                    # cross-section diameters / void / section analysis
+agentcad probe <model> --z <z> --line-u <u>       # active line measurement
+agentcad probe <model> --z <z> --point u,v        # nearest contour distance
 agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
 agentcad inspect <model>                          # three-axis scan + auto sections + suggested probes
 agentcad validate <model>                         # build + measure + render + design checks
@@ -83,10 +85,12 @@ project/
         build.json
         geometry.json
         validation.json
+        observability.json
         review.json
         deliverable.json
         preview.{iso,front,top,side,back}.svg
         section.{x,y,z}{value}.svg
+        section.{x,y,z}{value}.json              # measured sidecar for each section SVG
         debug.<check_id>.{x,y,z}{value}.svg     # auto on failed section checks
         <model>.step
         <model>.stl
@@ -120,6 +124,7 @@ Post-build mesh checks:
 - `outer_diameter_at_z`
 - `inner_diameter_at_z`
 - `section_bbox_at_z` (solid / void / explicit dimensions)
+- `section_component_count`
 - `diameter_decreases_along_z`
 - `volume_range`
 - automatic `feature_coverage`
@@ -236,6 +241,13 @@ Findings folded back into the project:
    hollow shells that have constant outer-bbox profiles.
 7. A feature body check is not a connection check. For lips, ribs, tabs, bosses,
    arms, and other load-bearing attachments, require a root/interface check.
+8. Treat section measurement JSON as the first-pass truth. SVGs are still
+   useful, but bbox, component count, closed-loop ratio, and warnings make
+   geometry failures easier for agents to detect deterministically.
+9. Multi-model products still need assembly-level fit validation. The
+   bit-holder body/lid example passes by matching metadata and per-model
+   geometry, but a first-class mate/clearance contract is the right long-term
+   check.
 8. Side/top/front/back views are not optional; side view caught a floating lip
    that iso and bbox validation did not make obvious.
 9. Two real build123d traps that always come back:

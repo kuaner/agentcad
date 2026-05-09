@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "stage": "render",
+  "model": "bit_holder_body",
+  "view": "iso",
+  "artifacts": {
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.iso.svg",
+    "render": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/render.iso.json"
+  },
+  "message": "preview rendered"
+}

@@ -1,0 +1,174 @@
+{
+  "ok": true,
+  "stage": "precheck",
+  "model": "bit_holder_body",
+  "precheckedAt": "2026-05-09T02:28:09.036721+00:00",
+  "checks": [
+    {
+      "name": "feature_coverage:outer_body",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "outer_body",
+      "checks": [
+        "body_bbox",
+        "watertight",
+        "body_outer_diameter",
+        "body_neck_diameter"
+      ],
+      "matchedChecks": [
+        "body_bbox",
+        "watertight",
+        "body_outer_diameter",
+        "body_neck_diameter"
+      ]
+    },
+    {
+      "name": "feature_coverage:bit_slot_array",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "bit_slot_array",
+      "checks": [
+        "slot_count_metadata",
+        "slot_depth_metadata",
+        "slot_component_count_mid",
+        "slot_component_count_neck",
+        "center_slot_diameter",
+        "inner_ring_slot_diameter",
+        "outer_ring_slot_diameter",
+        "slot_to_slot_clearance_center_inner",
+        "slot_to_slot_clearance_outer_adjacent"
+      ],
+      "matchedChecks": [
+        "slot_count_metadata",
+        "slot_depth_metadata",
+        "slot_component_count_mid",
+        "slot_component_count_neck",
+        "center_slot_diameter",
+        "inner_ring_slot_diameter",
+        "outer_ring_slot_diameter",
+        "slot_to_slot_clearance_center_inner",
+        "slot_to_slot_clearance_outer_adjacent"
+      ]
+    },
+    {
+      "name": "feature_coverage:lid_interface_neck",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "lid_interface_neck",
+      "checks": [
+        "neck_height_metadata",
+        "lid_fit_diameter_metadata",
+        "body_neck_diameter"
+      ],
+      "matchedChecks": [
+        "neck_height_metadata",
+        "lid_fit_diameter_metadata",
+        "body_neck_diameter"
+      ]
+    },
+    {
+      "name": "slot_to_slot_clearance_center_inner",
+      "type": "min_clearance",
+      "ok": true,
+      "min_mm": 3.0,
+      "tolerance": 0.0,
+      "actual_mm": 3.8000000000000003,
+      "z_overlap_mm": 76.0,
+      "xy_clearance_mm": 3.8000000000000003,
+      "interferes": false
+    },
+    {
+      "name": "slot_to_slot_clearance_outer_adjacent",
+      "type": "min_clearance",
+      "ok": true,
+      "min_mm": 3.0,
+      "tolerance": 0.0,
+      "actual_mm": 4.7052219214931075,
+      "z_overlap_mm": 76.0,
+      "xy_clearance_mm": 4.7052219214931075,
+      "interferes": false
+    }
+  ],
+  "artifacts": {
+    "precheck": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/precheck.json"
+  },
+  "message": "precheck passed — safe to write part.py",
+  "relations": [
+    {
+      "id": "slot_to_slot_clearance_center_inner",
+      "ok": true,
+      "clearance_mm": 3.8000000000000003,
+      "min_mm": 3.0,
+      "interferes": false
+    },
+    {
+      "id": "slot_to_slot_clearance_outer_adjacent",
+      "ok": true,
+      "clearance_mm": 4.7052219214931075,
+      "min_mm": 3.0,
+      "interferes": false
+    }
+  ],
+  "deferred_to_validate": [
+    {
+      "id": "body_bbox",
+      "type": "bbox_size"
+    },
+    {
+      "id": "watertight",
+      "type": "watertight"
+    },
+    {
+      "id": "body_outer_diameter",
+      "type": "outer_diameter_at_z"
+    },
+    {
+      "id": "body_neck_diameter",
+      "type": "outer_diameter_at_z"
+    },
+    {
+      "id": "slot_component_count_mid",
+      "type": "section_component_count"
+    },
+    {
+      "id": "slot_component_count_neck",
+      "type": "section_component_count"
+    },
+    {
+      "id": "center_slot_diameter",
+      "type": "inner_diameter_at_z"
+    },
+    {
+      "id": "inner_ring_slot_diameter",
+      "type": "inner_diameter_at_z"
+    },
+    {
+      "id": "outer_ring_slot_diameter",
+      "type": "inner_diameter_at_z"
+    },
+    {
+      "id": "slot_count_metadata",
+      "type": "metadata_equals"
+    },
+    {
+      "id": "slot_depth_metadata",
+      "type": "metadata_equals"
+    },
+    {
+      "id": "neck_height_metadata",
+      "type": "metadata_equals"
+    },
+    {
+      "id": "lid_fit_diameter_metadata",
+      "type": "metadata_equals"
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists"
+    }
+  ]
+}

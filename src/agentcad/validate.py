@@ -36,6 +36,7 @@ def validate_model(
     out_dir = outputs_dir(project, name)
     out_dir.mkdir(parents=True, exist_ok=True)
     validation_path = out_dir / "validation.json"
+    observability_path = out_dir / "observability.json"
 
     build = build_model(project, name)
     if not build.get("ok"):
@@ -56,6 +57,7 @@ def validate_model(
     ]
     warnings: list[dict] = []
     auto_scan: dict = {}
+    observability: dict | None = None
     if measure.get("ok"):
         schema_errors = validate_design_schema(project, name)
         if schema_errors:
@@ -71,14 +73,24 @@ def validate_model(
             scan = scan_profile(triangles, axis=AXIS_Z, samples=16, step_threshold=3.0)
             if scan.get("ok"):
                 section_artifacts: dict[str, str] = {}
+                section_analysis_artifacts: dict[str, str] = {}
+                section_analyses: dict[str, dict] = {}
                 for step in scan.get("step_changes", []):
                     z = step["pos"]
                     svg_path = out_dir / f"section.z{z:.2f}.svg"
-                    write_section_svg(triangles, AXIS_Z, z, svg_path)
+                    info = write_section_svg(triangles, AXIS_Z, z, svg_path)
                     key = f"section_z{z:.2f}".replace(".", "_")
                     section_artifacts[key] = str(svg_path)
+                    if info.get("analysis_json"):
+                        section_analysis_artifacts[f"{key}_analysis"] = info["analysis_json"]
+                    if info.get("analysis"):
+                        section_analyses[key] = info["analysis"]
                 scan["section_svgs"] = section_artifacts
+                scan["section_analysis_json"] = section_analysis_artifacts
+                scan["section_analyses"] = section_analyses
                 auto_scan = scan
+                observability = _observability_payload(name, measure, multi_render, auto_scan)
+                write_json(observability_path, observability)
 
     artifacts = {
         "validation": str(validation_path),
@@ -88,7 +100,10 @@ def validate_model(
         "stl": str(out_dir / f"{name}.stl"),
         **(multi_render.get("artifacts") or {}),
         **(auto_scan.get("section_svgs") or {}),
+        **(auto_scan.get("section_analysis_json") or {}),
     }
+    if observability:
+        artifacts["observability"] = str(observability_path)
     payload = _validation_payload(name, checks, artifacts=artifacts, warnings=warnings or None, auto_scan=auto_scan or None)
     write_json(validation_path, payload)
     return payload
@@ -216,6 +231,53 @@ def _validation_payload(
     if auto_scan:
         payload["auto_scan"] = auto_scan
     return payload
+
+
+def _observability_payload(
+    name: str,
+    measure_payload: dict,
+    multi_render: dict,
+    auto_scan: dict,
+) -> dict:
+    section_analyses = auto_scan.get("section_analyses") or {}
+    section_summaries = []
+    warnings = []
+    for key, analysis in section_analyses.items():
+        bbox = analysis.get("bbox") or {}
+        section_warnings = analysis.get("warnings") or []
+        section_summaries.append({
+            "key": key,
+            "axis": analysis.get("axis"),
+            "value": analysis.get("value"),
+            "bbox": bbox,
+            "segment_count": analysis.get("segment_count"),
+            "component_count": analysis.get("component_count"),
+            "total_segment_length_mm": analysis.get("total_segment_length_mm"),
+            "warnings": section_warnings,
+        })
+        warnings.extend({"section": key, "warning": warning} for warning in section_warnings)
+
+    max_components = max((s.get("component_count") or 0 for s in section_summaries), default=0)
+    return {
+        "ok": True,
+        "stage": "observe",
+        "model": name,
+        "observedAt": utc_now(),
+        "geometry": measure_payload,
+        "previews": multi_render.get("artifacts") or {},
+        "scan": auto_scan,
+        "section_summaries": section_summaries,
+        "summary": {
+            "section_count": len(section_summaries),
+            "max_component_count": max_components,
+            "multi_component_sections": [
+                s["key"] for s in section_summaries
+                if (s.get("component_count") or 0) > 1
+            ],
+            "warning_count": len(warnings),
+        },
+        "warnings": warnings,
+    }
 
 
 __all__ = [

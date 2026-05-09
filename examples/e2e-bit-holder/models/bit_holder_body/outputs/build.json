@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "stage": "build",
+  "model": "bit_holder_body",
+  "sourceHash": "149a71b54848e31a",
+  "startedAt": "2026-05-09T02:28:14.536103+00:00",
+  "endedAt": "2026-05-09T02:28:16.110267+00:00",
+  "artifacts": {
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/bit_holder_body.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/bit_holder_body.stl",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/build.json",
+    "metadata": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/metadata.json"
+  },
+  "stdout": "",
+  "stderr": "",
+  "message": "model built"
+}

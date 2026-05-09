@@ -92,6 +92,10 @@ def build_parser() -> argparse.ArgumentParser:
     probe.add_argument("--cx", type=float, default=None, help="center X for radial Z measurements (alias to --center first value)")
     probe.add_argument("--cy", type=float, default=None, help="center Y for radial Z measurements (alias to --center second value)")
     probe.add_argument("--region", default=None, help="x0,y0,x1,y1 — solid/void region check at Z")
+    probe.add_argument("--section-region", default=None, help="u0,v0,u1,v1 in the active section plane")
+    probe.add_argument("--line-u", type=float, default=None, help="measure contour intersections at fixed section U coordinate")
+    probe.add_argument("--line-v", type=float, default=None, help="measure contour intersections at fixed section V coordinate")
+    probe.add_argument("--point", default=None, help="u,v in the active section plane for nearest-contour distance")
     probe.add_argument("--scan", action="store_true", help="scan the full axis profile instead of a single section")
     probe.add_argument("--axis", choices=["x", "y", "z"], default="z", help="axis to scan (default: z)")
     probe.add_argument("--samples", type=int, default=20, help="number of scan samples (default: 20)")
@@ -213,9 +217,21 @@ def dispatch(args: argparse.Namespace) -> dict:
         if args.region:
             x0, y0, x1, y1 = (float(v) for v in args.region.split(","))
             region = ((x0, y0), (x1, y1))
+        section_region = None
+        if args.section_region:
+            u0, v0, u1, v1 = (float(v) for v in args.section_region.split(","))
+            section_region = ((u0, v0), (u1, v1))
+        point = None
+        if args.point:
+            u, v = (float(v) for v in args.point.split(","))
+            point = (u, v)
         return probe_model(project, args.model,
                            z_values=z_values, x_values=x_values, y_values=y_values,
-                           center=(cx, cy), region=region)
+                           center=(cx, cy), region=region,
+                           section_region=section_region,
+                           line_u=args.line_u,
+                           line_v=args.line_v,
+                           point=point)
     if args.command == "report":
         return report_model(project, args.model)
     if args.command == "inspect":
