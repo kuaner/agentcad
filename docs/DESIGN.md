@@ -352,10 +352,10 @@ loss of validation strength.
 - Validation run diff: `agentcad diff <model>` compares current vs previous
   validation run, classifying checks as fixed/regressed/stable/new/removed with
   geometry drift detection.
-- Model variants: `agentcad new <model> --variant <name>` creates a variant with
-  its own `params.json`; `--variant` flag on build/measure/validate/render/deliver/preview
-  routes to variant-specific output directories while sharing the same `part.py`
-  and `design.json`.
+- Model variants: `agentcad new <model>:<variant>` creates a variant with
+  its own `params.json`; `model:variant` syntax on any command
+  (build/validate/preview/deliver) routes to variant-specific output directories
+  while sharing the same `part.py` and `design.json`.
 - Fix suggestions: failing checks get `suggested_fix` objects with actionable
   guidance. Checks with `param_ref` produce param-targeted fixes with confidence
   levels; checks without get generic action strings.
