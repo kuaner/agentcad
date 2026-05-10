@@ -1,5 +1,7 @@
 # AgentCAD
 
+[![PyPI](https://img.shields.io/pypi/v/agentcad-cli.svg)](https://pypi.org/project/agentcad-cli/)
+
 AgentCAD is a CLI-first CAD workflow runtime for coding agents.
 
 It gives a coding agent a repeatable workspace, a contract-driven modeling
