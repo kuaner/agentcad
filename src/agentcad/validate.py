@@ -68,7 +68,7 @@ def validate_model(
             checks.extend(schema_errors)
         else:
             checks.extend(evaluate_feature_coverage(project, name))
-            checks.extend(evaluate_design_checks(project, name, measure))
+            checks.extend(evaluate_design_checks(project, name, measure, variant=variant))
             warnings = evaluate_weak_check_warnings(project, name)
 
         stl_path = out_dir / f"{name}.stl"
@@ -161,9 +161,10 @@ def deliver_model(project: Path, name: str, run_validation: bool = True, variant
     return payload
 
 
-def evaluate_design_checks(project: Path, name: str, measure_payload: dict) -> list[dict]:
-    design = read_json(outputs_dir(project, name).parent / "design.json", default={}) or {}
-    stl_path = outputs_dir(project, name) / f"{name}.stl"
+def evaluate_design_checks(project: Path, name: str, measure_payload: dict, variant: str | None = None) -> list[dict]:
+    out_dir = outputs_dir_for_variant(project, name, variant)
+    design = read_json(model_dir(project, name) / "design.json", default={}) or {}
+    stl_path = out_dir / f"{name}.stl"
     cache: list | None = None
 
     def get_triangles() -> list:
@@ -172,7 +173,7 @@ def evaluate_design_checks(project: Path, name: str, measure_payload: dict) -> l
             cache = read_stl(stl_path)
         return cache
 
-    ctx = CheckContext(project=project, name=name, measure=measure_payload, get_triangles=get_triangles, out_dir=outputs_dir(project, name))
+    ctx = CheckContext(project=project, name=name, measure=measure_payload, get_triangles=get_triangles, out_dir=out_dir)
     results: list[dict] = []
     for index, check in enumerate(design.get("checks") or []):
         if not isinstance(check, dict):

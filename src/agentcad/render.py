@@ -233,9 +233,9 @@ def _dimension_annotations(
     bar_mm = _nice_bar(mm_range)
     bar_px = bar_mm * scale
     bx = u_right - bar_px
-    by = v_bottom + 28
+    by = v_bottom + 16
     elements.append(f'<line x1="{bx:.1f}" y1="{by:.1f}" x2="{bx + bar_px:.1f}" y2="{by:.1f}" stroke="#999" stroke-width="1.5"/>')
-    elements.append(f'<text x="{bx + bar_px / 2:.1f}" y="{by + 11:.1f}" text-anchor="middle" font-size="9" fill="#999" font-family="sans-serif">{bar_mm:.0f} mm</text>')
+    elements.append(f'<text x="{bx + bar_px / 2:.1f}" y="{by + 10:.1f}" text-anchor="middle" font-size="9" fill="#999" font-family="sans-serif">{bar_mm:.0f} mm</text>')
 
     return f'<g id="annotations">{"".join(elements)}</g>'
 

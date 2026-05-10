@@ -593,6 +593,15 @@
     }
   </script>
   <script>window.AGENTCAD_PREVIEW = {{payload}};</script>
+  <div id="svg-modal" class="svg-modal">
+    <div class="svg-modal-inner">
+      <div class="svg-modal-header">
+        <h3 id="svg-modal-title"></h3>
+        <button class="svg-modal-close" type="button">Close</button>
+      </div>
+      <img id="svg-modal-img" alt="SVG preview">
+    </div>
+  </div>
   <script type="module">
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -1130,14 +1139,5 @@
     document.querySelector(".svg-modal").addEventListener("click", (e) => { if (e.target.classList.contains("svg-modal")) e.target.classList.remove("open"); });
     document.querySelector(".svg-modal-close").addEventListener("click", () => document.getElementById("svg-modal").classList.remove("open"));
   </script>
-  <div id="svg-modal" class="svg-modal">
-    <div class="svg-modal-inner">
-      <div class="svg-modal-header">
-        <h3 id="svg-modal-title"></h3>
-        <button class="svg-modal-close" type="button">Close</button>
-      </div>
-      <img id="svg-modal-img" alt="SVG preview">
-    </div>
-  </div>
 </body>
 </html>
