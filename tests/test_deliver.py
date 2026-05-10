@@ -15,7 +15,7 @@ def test_deliver_includes_only_existing_artifacts(tmp_path: Path, monkeypatch):
     (out_dir / "preview.back.svg").write_text("<svg/>", encoding="utf-8")
     (tmp_path / "models" / "m" / "metadata.json").write_text("{}", encoding="utf-8")
 
-    def fake_validate(project, name, render_view="iso", render_views=None):
+    def fake_validate(project, name, render_view="iso", render_views=None, variant=None):
         return {"ok": True, "stage": "validate"}
 
     monkeypatch.setattr("agentcad.validate.validate_model", fake_validate)

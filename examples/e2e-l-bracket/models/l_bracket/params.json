@@ -1,0 +1,9 @@
+{
+  "base_width": 60.0,
+  "base_depth": 40.0,
+  "base_thickness": 5.0,
+  "flange_height": 30.0,
+  "flange_thickness": 5.0,
+  "hole_diameter": 5.0,
+  "hole_spacing": 40.0
+}

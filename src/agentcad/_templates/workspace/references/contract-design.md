@@ -156,3 +156,41 @@ Pattern:
 
 Name these checks with words like `base`, `root`, `interface`, `connected`, or
 `junction` so the review trail is obvious.
+
+## Fix Suggestions with `param_ref`
+
+Checks accept an optional `param_ref` field that links the check to a key in
+`params.json`. When the check fails, `agentcad validate` generates a targeted
+fix suggestion with the current param value, a suggested value, and a confidence
+level.
+
+```json
+{
+  "id": "hole_diameter",
+  "type": "inner_diameter_at_z",
+  "z": 2.5,
+  "expected": 5.0,
+  "tolerance": 0.3,
+  "center": [0, 0],
+  "param_ref": "hole_diameter"
+}
+```
+
+When this check fails with `actual=4.2` and `hole_diameter` is `4.0` in
+`params.json`, the validation output includes:
+
+```json
+{
+  "suggested_fix": {
+    "param": "hole_diameter",
+    "current": 4.0,
+    "suggested": 4.8,
+    "confidence": "high",
+    "reason": "inner_diameter_at_z actual=4.2 target=5.0 delta=0.800"
+  }
+}
+```
+
+Without `param_ref`, the fix is a generic action string. Adding `param_ref` to
+checks that directly correspond to tunable dimensions makes the iteration loop
+faster and more reliable.

@@ -447,3 +447,52 @@ for each affected feature.
 - `diameter_inner_estimate` uses the 2nd percentile of nonzero radii. It picks
   up the nearest boundary around the center point, which is the hole wall for
   correctly centered checks.
+
+## Fix Suggestions on Failing Checks
+
+When `agentcad validate` reports failing checks, each one includes a
+`suggested_fix` object with actionable guidance.
+
+### With `param_ref` (targeted fix)
+
+If a check has a `param_ref` field pointing to a key in `params.json`, the fix
+includes the current value, a suggested value, and a confidence level:
+
+```json
+{
+  "name": "hole_diameter",
+  "ok": false,
+  "actual": 4.2,
+  "expected": 5.0,
+  "suggested_fix": {
+    "param": "hole_diameter",
+    "current": 4.0,
+    "suggested": 4.8,
+    "confidence": "high",
+    "reason": "inner_diameter_at_z actual=4.2 target=5.0 delta=0.800"
+  }
+}
+```
+
+When `confidence` is `"high"`, the delta is small relative to the current value.
+Update `params.json` directly. When `confidence` is `"low"`, the param may not
+control this dimension directly — inspect geometry before changing.
+
+### Without `param_ref` (generic fix)
+
+Checks without `param_ref` get an action string:
+
+```json
+{
+  "suggested_fix": {
+    "action": "fix inner_diameter_at_z check 'hole_dia'; actual: 4.2; target: 5.0",
+    "evidence": {"type": "inner_diameter_at_z", "actual": 4.2, "expected": 5.0}
+  }
+}
+```
+
+### Iteration with `agentcad diff`
+
+After fixing and re-running validation, use `agentcad diff <model>` to see
+which checks were fixed, which regressed, and whether geometry drifted between
+iterations. Add `--last` to compare only the two most recent runs.

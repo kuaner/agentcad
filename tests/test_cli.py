@@ -174,7 +174,7 @@ def test_preview_auto_detects_model(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path / "bracket")
     captured = {}
 
-    def fake_model_preview(project_path, target):
+    def fake_model_preview(project_path, target, **kwargs):
         captured["target"] = target
         return {"ok": True, "stage": "preview", "kind": "model", "name": target}
 

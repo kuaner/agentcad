@@ -1,0 +1,97 @@
+{
+  "ok": true,
+  "stage": "precheck",
+  "model": "l_bracket",
+  "precheckedAt": "2026-05-10T04:31:44.430515+00:00",
+  "checks": [
+    {
+      "name": "feature_coverage:base_plate",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "base_plate",
+      "checks": [
+        "base_bbox",
+        "watertight"
+      ],
+      "matchedChecks": [
+        "base_bbox",
+        "watertight"
+      ]
+    },
+    {
+      "name": "feature_coverage:vertical_flange",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "vertical_flange",
+      "checks": [
+        "flange_bbox"
+      ],
+      "matchedChecks": [
+        "flange_bbox"
+      ]
+    },
+    {
+      "name": "feature_coverage:mounting_holes",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "mounting_holes",
+      "checks": [
+        "left_hole_dia",
+        "right_hole_dia"
+      ],
+      "matchedChecks": [
+        "left_hole_dia",
+        "right_hole_dia"
+      ]
+    }
+  ],
+  "artifacts": {
+    "precheck": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/precheck.json"
+  },
+  "message": "precheck passed — safe to write part.py",
+  "warnings": [
+    {
+      "feature": "base_plate",
+      "linkedCheckTypes": [
+        "bbox_size",
+        "watertight"
+      ],
+      "message": "feature 'base_plate' has no geometry checks — geometry is not verified",
+      "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks"
+    },
+    {
+      "feature": "vertical_flange",
+      "linkedCheckTypes": [
+        "bbox_size"
+      ],
+      "message": "feature 'vertical_flange' has no geometry checks — geometry is not verified",
+      "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks"
+    }
+  ],
+  "deferred_to_validate": [
+    {
+      "id": "base_bbox",
+      "type": "bbox_size"
+    },
+    {
+      "id": "flange_bbox",
+      "type": "bbox_size"
+    },
+    {
+      "id": "watertight",
+      "type": "watertight"
+    },
+    {
+      "id": "min_tri",
+      "type": "min_triangles"
+    },
+    {
+      "id": "left_hole_dia",
+      "type": "inner_diameter_at_z"
+    },
+    {
+      "id": "right_hole_dia",
+      "type": "inner_diameter_at_z"
+    }
+  ]
+}

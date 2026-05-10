@@ -91,18 +91,27 @@ project/
       params.json
       part.py
       metadata.json
+      variants/
+        <variant>/
+          params.json
       outputs/
         precheck.json
         build.json
         geometry.json
         validation.json
+        validation-history/
+          <timestamp>.json
+        observability.json
         review.json
         deliverable.json
+        preview.html
         preview.{iso,front,top,side,back}.svg
         section.{x,y,z}{value}.svg
         debug.<check_id>.{x,y,z}{value}.svg
         <name>.step
         <name>.stl
+      outputs/<variant>/
+        (same structure, variant-specific)
 ```
 
 V0 intentionally avoids a project-root `outputs/` directory: each model
@@ -194,20 +203,23 @@ introduced only when repeated patterns justify it (V3+).
 ```bash
 agentcad init <workspace> [--model <model>]                          # scaffold workspace (and optional first model)
 agentcad new <model>                                      # add model in existing workspace
+agentcad new <model> --variant <name>                     # create variant (same part.py, different params)
 agentcad sync                                            # refresh templates
 agentcad precheck <model>                         # design-time solve
-agentcad build <model>                            # part.py -> STEP + STL
-agentcad measure <model>                          # mesh stats + structural facts
+agentcad build <model> [--variant <name>] [--force]       # part.py -> STEP + STL
+agentcad measure <model> [--variant <name>]               # mesh stats + structural facts
 agentcad render <model> --view iso                # iso/front/top/side/back
 agentcad render <model> --section-z|x|y <v>              # cross-section SVG + measurement JSON
+agentcad validate <model> [--variant <name>]              # full pipeline with fix suggestions
+agentcad diff <model> [--last]                             # compare validation runs
+agentcad review <model>                           # pre-delivery checklist
+agentcad deliver <model> [--variant <name>]               # delivery manifest
+agentcad preview <name> [--kind model|assembly] [--variant <name>]  # interactive HTML preview
 agentcad probe <model> --z|--x|--y <v>            # cross-section diameters + section analysis
 agentcad probe <model> --z <v> --line-u <u>       # active line measurement in section axes
 agentcad probe <model> --z <v> --point u,v        # nearest contour distance in section axes
 agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
 agentcad inspect <model>                          # three-axis scan + sections + suggested probes
-agentcad validate <model>                         # full pipeline
-agentcad review <model>                           # pre-delivery checklist
-agentcad deliver <model>                          # delivery manifest
 agentcad report <model>                                  # Markdown summary
 ```
 
@@ -332,6 +344,21 @@ loss of validation strength.
 - OCCT/MuJoCo remain optional external viewer runtimes; AgentCAD validation is
   decided by JSON contracts, measured geometry, STL evidence, and MJCF
   consistency
+
+### V4.5 — Iteration tooling
+
+- SVG dimension annotations on all preview SVGs: axis labels, dimension lines
+  with mm values, and scale bar. Applies to both model and assembly SVGs.
+- Validation run diff: `agentcad diff <model>` compares current vs previous
+  validation run, classifying checks as fixed/regressed/stable/new/removed with
+  geometry drift detection.
+- Model variants: `agentcad new <model> --variant <name>` creates a variant with
+  its own `params.json`; `--variant` flag on build/measure/validate/render/deliver/preview
+  routes to variant-specific output directories while sharing the same `part.py`
+  and `design.json`.
+- Fix suggestions: failing checks get `suggested_fix` objects with actionable
+  guidance. Checks with `param_ref` produce param-targeted fixes with confidence
+  levels; checks without get generic action strings.
 
 ### V5 — CAD CI
 

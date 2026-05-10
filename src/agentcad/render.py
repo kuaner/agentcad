@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .jsonio import read_json, write_json
 from .stl import Vec3, cross, dot, normalize, read_stl, sub, triangle_normal
-from .workspace import model_dir, outputs_dir
+from .workspace import model_dir, outputs_dir, outputs_dir_for_variant
 
 
 VIEW_DIRS: dict[str, Vec3] = {
@@ -20,7 +20,7 @@ VIEW_DIRS: dict[str, Vec3] = {
 }
 
 
-def render_models_multi(project: Path, name: str, views: list[str]) -> dict:
+def render_models_multi(project: Path, name: str, views: list[str], variant: str | None = None) -> dict:
     """Render multiple views and return a combined result dict.
 
     Returns ``ok=True`` only when every requested view succeeds. The ``artifacts``
@@ -29,7 +29,7 @@ def render_models_multi(project: Path, name: str, views: list[str]) -> dict:
     results = []
     artifacts: dict[str, str] = {}
     for v in views:
-        r = render_model(project, name, view=v)
+        r = render_model(project, name, view=v, variant=variant)
         results.append(r)
         if r.get("ok"):
             actual_view = v if v in VIEW_DIRS else "iso"
@@ -48,9 +48,9 @@ def render_models_multi(project: Path, name: str, views: list[str]) -> dict:
     }
 
 
-def render_model(project: Path, name: str, view: str = "iso") -> dict:
+def render_model(project: Path, name: str, view: str = "iso", variant: str | None = None) -> dict:
     actual_view = view if view in VIEW_DIRS else "iso"
-    out_dir = outputs_dir(project, name)
+    out_dir = outputs_dir_for_variant(project, name, variant)
     stl_path = out_dir / f"{name}.stl"
     svg_path = out_dir / f"preview.{actual_view}.svg"
     report_path = out_dir / f"render.{actual_view}.json"
@@ -66,7 +66,7 @@ def render_model(project: Path, name: str, view: str = "iso") -> dict:
 
     try:
         triangles = read_stl(stl_path)
-        geom = read_json(model_dir(project, name) / "outputs" / "geometry.json", default={}) or {}
+        geom = read_json(out_dir / "geometry.json", default={}) or {}
         bbox = (geom.get("geometry") or {}).get("bbox")
         svg = triangles_to_svg(triangles, title=f"{name} {actual_view}", view=actual_view, bbox=bbox)
         svg_path.write_text(svg, encoding="utf-8")

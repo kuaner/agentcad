@@ -20,7 +20,7 @@ from .render import render_models_multi
 from .runner import build_model, utc_now
 from .section import AXIS_Z, scan_profile, write_section_svg
 from .stl import read_stl
-from .workspace import model_dir, outputs_dir
+from .workspace import model_dir, outputs_dir, outputs_dir_for_variant
 
 _DEFAULT_VALIDATE_VIEWS = ["iso", "front", "top", "side", "back"]
 
@@ -34,24 +34,25 @@ def validate_model(
     name: str,
     render_view: str = "iso",
     render_views: list[str] | None = None,
+    variant: str | None = None,
 ) -> dict:
-    out_dir = outputs_dir(project, name)
+    out_dir = outputs_dir_for_variant(project, name, variant)
     out_dir.mkdir(parents=True, exist_ok=True)
     validation_path = out_dir / "validation.json"
     observability_path = out_dir / "observability.json"
 
-    build = build_model(project, name)
+    build = build_model(project, name, variant=variant)
     archive_validation(out_dir)
     if not build.get("ok"):
         payload = _validation_payload(name, [stage_check("build", False, build)], artifacts={"validation": str(validation_path)})
         write_json(validation_path, payload)
         return payload
 
-    measure = measure_model(project, name)
+    measure = measure_model(project, name, variant=variant)
     views = render_views if render_views is not None else _DEFAULT_VALIDATE_VIEWS
     if render_view != "iso" and render_view not in views:
         views = [render_view] + [v for v in views if v != render_view]
-    multi_render = render_models_multi(project, name, views)
+    multi_render = render_models_multi(project, name, views, variant=variant)
 
     checks = [
         stage_check("build", bool(build.get("ok")), build),
@@ -112,17 +113,17 @@ def validate_model(
     params = read_json(model_dir(project, name) / "params.json", default={}) or {}
     _attach_suggested_fixes(payload.get("checks", []), design, params)
     write_json(validation_path, payload)
-    preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure)
+    preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure, variant=variant)
     if preview.get("ok"):
         payload["artifacts"]["preview_page"] = (preview.get("artifacts") or {}).get("preview_page")
     write_json(validation_path, payload)
     return payload
 
 
-def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict:
-    out_dir = outputs_dir(project, name)
+def deliver_model(project: Path, name: str, run_validation: bool = True, variant: str | None = None) -> dict:
+    out_dir = outputs_dir_for_variant(project, name, variant)
     out_dir.mkdir(parents=True, exist_ok=True)
-    validation = validate_model(project, name) if run_validation else read_json(out_dir / "validation.json", default={"ok": False, "message": "validation report missing"})
+    validation = validate_model(project, name, variant=variant) if run_validation else read_json(out_dir / "validation.json", default={"ok": False, "message": "validation report missing"})
     deliver_path = out_dir / "deliverable.json"
     preview_candidates = {
         f"preview_{p.stem.split('.')[1]}": str(p)

@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "validate",
   "model": "bit_holder_lid",
-  "validatedAt": "2026-05-09T02:29:05.606443+00:00",
+  "validatedAt": "2026-05-10T04:56:40.665698+00:00",
   "checks": [
     {
       "name": "build",
@@ -320,7 +320,8 @@
     "preview_back": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.back.svg",
     "section_z6_50": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z6.50.svg",
     "section_z6_50_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z6.50.json",
-    "observability": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/observability.json"
+    "observability": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/observability.json",
+    "preview_page": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.html"
   },
   "message": "validation passed",
   "auto_scan": {

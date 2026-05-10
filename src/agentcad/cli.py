@@ -75,9 +75,11 @@ def build_parser() -> argparse.ArgumentParser:
                         help="render an X cross-section SVG (YZ plane) at this position (mm)")
     render.add_argument("--section-y", dest="section_y", type=float, default=None,
                         help="render a Y cross-section SVG (XZ plane) at this position (mm)")
+    render.add_argument("--variant", default=None, help="render variant output")
 
     preview = sub.add_parser("preview", help="generate an interactive local HTML preview for a model or assembly")
     preview.add_argument("target")
+    preview.add_argument("--variant", default=None, help="preview variant output")
     preview.add_argument(
         "--kind",
         choices=["auto", "model", "assembly"],
@@ -214,7 +216,7 @@ def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "build":
         return build_model(project, args.model, force=getattr(args, "force", False), variant=getattr(args, "variant", None))
     if args.command == "measure":
-        return measure_model(project, args.model)
+        return measure_model(project, args.model, variant=getattr(args, "variant", None))
     if args.command == "render":
         # Section SVG modes take priority over 3D view rendering.
         for attr, axis_int, axis_name in (
@@ -236,16 +238,16 @@ def dispatch(args: argparse.Namespace) -> dict:
         views_arg = getattr(args, "views", None)
         if views_arg:
             views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS]
-            return render_models_multi(project, args.model, views or [args.view])
-        return render_model(project, args.model, view=args.view)
+            return render_models_multi(project, args.model, views or [args.view], variant=getattr(args, "variant", None))
+        return render_model(project, args.model, view=args.view, variant=getattr(args, "variant", None))
     if args.command == "preview":
-        return _preview_target(project, args.target, kind=getattr(args, "kind", "auto"))
+        return _preview_target(project, args.target, kind=getattr(args, "kind", "auto"), variant=getattr(args, "variant", None))
     if args.command == "validate":
         views_arg = getattr(args, "views", None)
         render_views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS] if views_arg else None
-        return validate_model(project, args.model, render_view=args.view, render_views=render_views)
+        return validate_model(project, args.model, render_view=args.view, render_views=render_views, variant=getattr(args, "variant", None))
     if args.command == "deliver":
-        return deliver_model(project, args.model, run_validation=not args.no_validate)
+        return deliver_model(project, args.model, run_validation=not args.no_validate, variant=getattr(args, "variant", None))
     if args.command == "diff":
         return diff_model(project, args.model, last=getattr(args, "last", False))
     if args.command == "probe":
@@ -292,7 +294,7 @@ def dispatch(args: argparse.Namespace) -> dict:
     raise ValueError(f"unknown command: {args.command}")
 
 
-def _preview_target(project: Path, target: str, *, kind: str = "auto") -> dict:
+def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: str | None = None) -> dict:
     safe = normalize_model_name(target)
     has_model = model_dir(project, safe).exists()
     has_assembly = (assembly_dir(project, safe) / "assembly.json").exists()
@@ -300,7 +302,7 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto") -> dict:
     if kind == "model":
         if not has_model:
             return _preview_not_found(safe, kind="model")
-        return write_model_preview(project, safe)
+        return write_model_preview(project, safe, variant=variant)
     if kind == "assembly":
         if not has_assembly:
             return _preview_not_found(safe, kind="assembly")
@@ -316,7 +318,7 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto") -> dict:
             },
         }
     if has_model:
-        return write_model_preview(project, safe)
+        return write_model_preview(project, safe, variant=variant)
     if has_assembly:
         return write_assembly_preview(project, safe)
     return {
