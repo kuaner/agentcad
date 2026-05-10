@@ -129,7 +129,7 @@
       },
       "build": {
         "ok": true,
-        "sourceHash": "07aa9e9ccd242d63",
+        "sourceHash": "21b3a035f708c5ab",
         "skipped": true
       },
       "artifacts_exist": {
@@ -177,18 +177,18 @@
       },
       "local_bbox": {
         "min": [
-          -35.0,
-          -35.0,
+          -33.0,
+          -33.0,
           -7.4721175554671635e-16
         ],
         "max": [
-          35.0,
-          35.0,
+          33.0,
+          33.0,
           18.0
         ],
         "size": [
-          70.0,
-          70.0,
+          66.0,
+          66.0,
           18.0
         ],
         "center": [
@@ -199,18 +199,18 @@
       },
       "world_bbox": {
         "min": [
-          -35.0,
-          -35.0,
+          -33.0,
+          -33.0,
           69.0
         ],
         "max": [
-          35.0,
-          35.0,
+          33.0,
+          33.0,
           87.0
         ],
         "size": [
-          70.0,
-          70.0,
+          66.0,
+          66.0,
           18.0
         ],
         "center": [
@@ -220,13 +220,13 @@
         ]
       },
       "mesh": {
-        "triangles": 33884,
-        "vertices": 101652,
-        "unique_edges": 50826,
+        "triangles": 33452,
+        "vertices": 100356,
+        "unique_edges": 50178,
         "boundary_or_nonmanifold_edges": 0,
         "watertight": true
       },
-      "triangle_count": 33884
+      "triangle_count": 33452
     }
   },
   "references": {
@@ -446,20 +446,20 @@
       "component": "lid",
       "surface": "inner",
       "expected_radius_mm": 30.2,
-      "measured_radius_mm": 30.1960334006822,
-      "delta_mm": 0.00396659931779908,
+      "measured_radius_mm": 30.196022273659082,
+      "delta_mm": 0.003977726340917087,
       "tolerance_mm": 0.2,
       "section": {
         "ok": true,
         "z": 7.5,
-        "point_count": 2254,
+        "point_count": 2162,
         "radius_min": 30.194088277935464,
-        "radius_max": 35.00000161369146,
-        "radius_mean": 33.51069018612919,
-        "radius_outer_estimate": 35.00000086107583,
-        "radius_inner_estimate": 30.1960334006822,
-        "diameter_outer_estimate": 70.00000172215167,
-        "diameter_inner_estimate": 60.3920668013644
+        "radius_max": 33.0000016207012,
+        "radius_mean": 32.128949628373654,
+        "radius_outer_estimate": 33.00000067669569,
+        "radius_inner_estimate": 30.196022273659082,
+        "diameter_outer_estimate": 66.00000135339138,
+        "diameter_inner_estimate": 60.392044547318164
       }
     }
   ],
@@ -516,9 +516,9 @@
       "narrow_phase": {
         "ok": true,
         "broad_phase": "aabb_overlap",
-        "triangle_candidate_pairs": 379113,
+        "triangle_candidate_pairs": 385640,
         "triangle_intersection_count": 256,
-        "inside_sample_count": 13,
+        "inside_sample_count": 12,
         "sample_count": 768,
         "min_sample_distance_mm": 0.0,
         "max_penetration_mm": 0.1164906819661411,
@@ -537,21 +537,21 @@
   ],
   "assembly_geometry": {
     "component_count": 2,
-    "triangle_count": 94518,
+    "triangle_count": 94086,
     "bbox": {
       "min": [
-        -35.0,
-        -35.0,
+        -33.0,
+        -33.0,
         0.0
       ],
       "max": [
-        35.0,
-        35.0,
+        33.0,
+        33.0,
         87.0
       ],
       "size": [
-        70.0,
-        70.0,
+        66.0,
+        66.0,
         87.0
       ],
       "center": [

@@ -7,37 +7,37 @@
   "plane_label": "XY plane",
   "u_label": "X (mm)",
   "v_label": "Y (mm)",
-  "segment_count": 1386,
-  "point_count": 2772,
+  "segment_count": 1326,
+  "point_count": 2652,
   "bbox": {
-    "u_min": -34.998,
-    "u_max": 35.0,
-    "v_min": -34.9861,
-    "v_max": 35.0,
-    "u_size": 69.998,
-    "v_size": 69.9861
+    "u_min": -32.9979,
+    "u_max": 33.0,
+    "v_min": -33.0,
+    "v_max": 32.9856,
+    "u_size": 65.9979,
+    "v_size": 65.9856
   },
-  "total_segment_length_mm": 423.3247,
+  "total_segment_length_mm": 410.1735,
   "component_count": 2,
   "components": [
     {
       "index": 0,
-      "segment_count": 1025,
-      "point_count": 1025,
+      "segment_count": 965,
+      "point_count": 965,
       "bbox": {
-        "u_min": -34.998,
-        "u_max": 35.0,
-        "v_min": -34.9861,
-        "v_max": 35.0,
-        "u_size": 69.998,
-        "v_size": 69.9861
+        "u_min": -32.9979,
+        "u_max": 33.0,
+        "v_min": -33.0,
+        "v_max": 32.9856,
+        "u_size": 65.9979,
+        "v_size": 65.9856
       },
       "centroid": [
-        -0.2388,
-        -0.0289
+        -0.2396,
+        -0.0606
       ],
-      "total_segment_length_mm": 230.874,
-      "hull_area_estimate_mm2": 3847.5976,
+      "total_segment_length_mm": 217.7228,
+      "hull_area_estimate_mm2": 3420.3473,
       "closed_vertex_ratio": 1.0,
       "endpoint_count": 0,
       "branch_vertex_count": 0

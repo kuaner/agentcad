@@ -50,7 +50,7 @@
     {
       "id": "assembly_envelope",
       "type": "assembly_bbox_size",
-      "expected": [70, 70, 87],
+      "expected": [66, 66, 87],
       "tolerance_mm": 1.0
     }
   ],

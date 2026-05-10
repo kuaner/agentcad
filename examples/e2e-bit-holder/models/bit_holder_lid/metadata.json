@@ -13,11 +13,11 @@
     "radial_clearance_mm": 0.2
   },
   "lid": {
-    "outer_diameter_mm": 70.0,
+    "outer_diameter_mm": 66.0,
     "height_mm": 18.0,
     "top_thickness_mm": 3.0,
     "recess_depth_mm": 15.0,
-    "skirt_wall_mm": 4.8
+    "skirt_wall_mm": 2.8
   },
   "interfaces": {
     "recess": {
@@ -51,8 +51,8 @@
     }
   },
   "bbox_expected_mm": [
-    70.0,
-    70.0,
+    66.0,
+    66.0,
     18.0
   ]
 }

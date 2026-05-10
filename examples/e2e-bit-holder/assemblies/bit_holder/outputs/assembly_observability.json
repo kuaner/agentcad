@@ -12,21 +12,21 @@
   },
   "geometry": {
     "component_count": 2,
-    "triangle_count": 94518,
+    "triangle_count": 94086,
     "bbox": {
       "min": [
-        -35.0,
-        -35.0,
+        -33.0,
+        -33.0,
         0.0
       ],
       "max": [
-        35.0,
-        35.0,
+        33.0,
+        33.0,
         87.0
       ],
       "size": [
-        70.0,
-        70.0,
+        66.0,
+        66.0,
         87.0
       ],
       "center": [
@@ -160,7 +160,7 @@
       },
       "build": {
         "ok": true,
-        "sourceHash": "07aa9e9ccd242d63",
+        "sourceHash": "21b3a035f708c5ab",
         "skipped": true
       },
       "artifacts_exist": {
@@ -208,18 +208,18 @@
       },
       "local_bbox": {
         "min": [
-          -35.0,
-          -35.0,
+          -33.0,
+          -33.0,
           -7.4721175554671635e-16
         ],
         "max": [
-          35.0,
-          35.0,
+          33.0,
+          33.0,
           18.0
         ],
         "size": [
-          70.0,
-          70.0,
+          66.0,
+          66.0,
           18.0
         ],
         "center": [
@@ -230,18 +230,18 @@
       },
       "world_bbox": {
         "min": [
-          -35.0,
-          -35.0,
+          -33.0,
+          -33.0,
           69.0
         ],
         "max": [
-          35.0,
-          35.0,
+          33.0,
+          33.0,
           87.0
         ],
         "size": [
-          70.0,
-          70.0,
+          66.0,
+          66.0,
           18.0
         ],
         "center": [
@@ -251,13 +251,13 @@
         ]
       },
       "mesh": {
-        "triangles": 33884,
-        "vertices": 101652,
-        "unique_edges": 50826,
+        "triangles": 33452,
+        "vertices": 100356,
+        "unique_edges": 50178,
         "boundary_or_nonmanifold_edges": 0,
         "watertight": true
       },
-      "triangle_count": 33884
+      "triangle_count": 33452
     }
   },
   "references": {
@@ -497,9 +497,9 @@
       "narrow_phase": {
         "ok": true,
         "broad_phase": "aabb_overlap",
-        "triangle_candidate_pairs": 379113,
+        "triangle_candidate_pairs": 385640,
         "triangle_intersection_count": 256,
-        "inside_sample_count": 13,
+        "inside_sample_count": 12,
         "sample_count": 768,
         "min_sample_distance_mm": 0.0,
         "max_penetration_mm": 0.1164906819661411,

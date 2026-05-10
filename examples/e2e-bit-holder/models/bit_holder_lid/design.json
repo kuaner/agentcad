@@ -24,7 +24,7 @@
     {
       "id": "lid_bbox",
       "type": "bbox_size",
-      "expected": [70.0, 70.0, 18.0],
+      "expected": [66.0, 66.0, 18.0],
       "tolerance": 1.0
     },
     {
@@ -37,7 +37,7 @@
       "type": "outer_diameter_at_z",
       "z": 9.0,
       "center": [0.0, 0.0],
-      "expected": 70.0,
+      "expected": 66.0,
       "tolerance": 0.8
     },
     {
