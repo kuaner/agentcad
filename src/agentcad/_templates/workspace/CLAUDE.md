@@ -36,6 +36,62 @@ models using the `agentcad` CLI and build123d geometry library.
 
 Do not manually export STEP/STL from `part.py`. The runner owns all exports.
 
+## Iteration Loop
+
+When `agentcad validate` fails, use the iteration tools to converge:
+
+1. Read the `checks` array in the JSON output. Each failing check includes a
+   `suggested_fix` object with actionable guidance.
+2. If `suggested_fix.confidence` is `"high"` and a `param` key is provided,
+   update that param in `params.json` to the `suggested` value.
+3. If `suggested_fix.confidence` is `"low"`, the param may not directly control
+   the dimension. Inspect the check center/axis and the geometry before changing
+   params.
+4. Re-run `agentcad validate <name>`.
+5. Run `agentcad diff <name>` to see which checks were fixed, which regressed,
+   and whether geometry drifted between iterations.
+
+## Model Variants
+
+To create the same model with different dimensions (e.g., different sizes for
+different applications):
+
+1. Create a variant: `agentcad new <model> --variant <variant_name>`
+2. Edit `models/<model>/variants/<variant_name>/params.json` with variant-specific dimensions.
+3. Build the variant: `agentcad build <model> --variant <variant_name>`
+4. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
+
+Variants share the same `part.py`, `design.json`, and `metadata.json` from the
+base model. Only `params.json` differs per variant.
+
+## Fix Suggestions (param_ref)
+
+To get targeted fix suggestions on failing checks, add an optional `param_ref`
+field to checks in `design.json`:
+
+```json
+{
+  "id": "hole_diameter",
+  "type": "inner_diameter_at_z",
+  "z": 2.5,
+  "expected": 5.0,
+  "tolerance": 0.3,
+  "center": [0, 0],
+  "param_ref": "hole_diameter"
+}
+```
+
+When this check fails, `suggested_fix` will include the param name, its current
+value, and a suggested value. Without `param_ref`, the fix suggestion provides
+a generic action string with actual vs expected values.
+
+## SVG Previews
+
+SVG previews now include dimension annotations: axis labels, dimension lines
+with mm values, and a scale bar. The `preview.html` page shows SVG thumbnails
+in a grid — click any thumbnail to open it in a modal overlay for detailed
+inspection.
+
 ## Stage References
 
 Read only the references needed for the current stage.
@@ -90,20 +146,24 @@ models/<name>/
   params.json    Tunable dimensions
   part.py        build123d geometry (assign to `result`)
   metadata.json  (auto-generated if part.py defines `metadata`)
+  variants/<variant_name>/
+    params.json  Variant-specific parameters
   outputs/
     build.json          Build report
     geometry.json       STL measurement report
     validation.json     Validation results
+    validation-history/ Archived validation runs (for diff)
     observability.json  Aggregate previews, scans, and section measurements
     preview.html        Interactive local Three.js preview page
     precheck.json       Static contract report
     review.json         Pre-delivery review report
     deliverable.json    Delivery manifest
-    preview.iso.svg     SVG preview
+    preview.iso.svg     SVG preview (with dimension annotations)
     section.z10.00.svg  Section preview
     section.z10.00.json Section measurement sidecar
     <name>.step         STEP export
     <name>.stl          STL export
+  outputs/<variant>/    Variant-specific output directory
 
 assemblies/<name>/
   assembly.json          Optional multi-model fit/mate contract
@@ -121,20 +181,35 @@ assemblies/<name>/
 ## CLI Quick Reference
 
 ```bash
+# Workspace and model setup
 agentcad init <workspace> [--model <model>]
 agentcad new <model>
+agentcad new <model> --variant <name>
+
+# Build pipeline
 agentcad precheck <model>
 agentcad build <model>
 agentcad build <model> --force
+agentcad build <model> --variant <name>
 agentcad measure <model>
 agentcad render <model>
 agentcad render <model> --views iso,front,top,side,back
+agentcad validate <model>
+agentcad validate <model> --variant <name>
+
+# Iteration and review
+agentcad diff <model>
+agentcad diff <model> --last
+agentcad review <model>
+agentcad deliver <model>
+agentcad deliver <model> --variant <name>
+
+# Preview
 agentcad preview <name>
 agentcad preview <name> --kind model
 agentcad preview <name> --kind assembly
-agentcad validate <model>
-agentcad review <model>
-agentcad deliver <model>
+
+# Inspection
 agentcad probe <model> --z <z>
 agentcad probe <model> --z <z> "--center=cx,cy"
 agentcad probe <model> --z <z> --region x0,y0,x1,y1
@@ -152,6 +227,8 @@ agentcad render <model> --section-x <x>
 agentcad render <model> --section-y <y>
 agentcad inspect <model>
 agentcad report <model>
+
+# Assembly
 agentcad assembly init <assembly>
 agentcad assembly list
 agentcad assembly validate <assembly>
