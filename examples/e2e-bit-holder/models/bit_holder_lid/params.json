@@ -1,10 +1,18 @@
 {
   "body_outer_diameter": 66.0,
-  "body_neck_diameter": 62.0,
-  "body_neck_height": 5.0,
-  "fit_clearance_diameter": 0.7,
+  "body_thread_radius": 30.0,
+  "body_thread_amplitude": 1.12,
+  "thread_pitch": 9.0,
+  "thread_tooth_height": 2.6,
+  "thread_starts": 3,
+  "thread_engagement_height": 15.0,
+  "thread_clearance_diameter": 0.4,
   "lid_outer_diameter": 70.0,
-  "lid_height": 13.0,
-  "recess_depth": 6.3,
-  "bottom_chamfer": 0.4
+  "lid_height": 18.0,
+  "top_thickness": 3.0,
+  "knurl_enabled": true,
+  "knurl_angle": 35.0,
+  "knurl_depth": 0.4,
+  "knurl_width": 1.5,
+  "knurl_density": 0.8
 }

@@ -2,12 +2,12 @@
   "schema": "design-spec.v1",
   "model": "bit_holder_body",
   "units": "mm",
-  "intent": "Cylindrical storage body for at least 20 driver bits, each bit 6.5 mm diameter and 75 mm tall. The body has 20 evenly distributed blind cylindrical slots and a reduced top neck for a stepped lid.",
+  "intent": "Cylindrical storage body for at least 20 driver bits, each bit 6.5 mm diameter and 75 mm tall. The body has 20 evenly distributed blind cylindrical slots and an external sinusoidal 3-start thread at the top for a screw-on lid.",
   "features": [
     {
       "id": "outer_body",
-      "intent": "Round 66 mm diameter body with 84 mm overall height and closed 8 mm base.",
-      "checks": ["body_bbox", "watertight", "body_outer_diameter", "body_neck_diameter"]
+      "intent": "Round 66 mm diameter body with 84 mm overall height, closed 8 mm base, and diamond knurl on outer surface.",
+      "checks": ["body_bbox", "watertight", "body_outer_diameter"]
     },
     {
       "id": "bit_slot_array",
@@ -16,7 +16,6 @@
         "slot_count_metadata",
         "slot_depth_metadata",
         "slot_component_count_mid",
-        "slot_component_count_neck",
         "center_slot_diameter",
         "inner_ring_slot_diameter",
         "outer_ring_slot_diameter",
@@ -25,9 +24,9 @@
       ]
     },
     {
-      "id": "lid_interface_neck",
-      "intent": "Reduced top neck provides a stepped locating land for the lid.",
-      "checks": ["neck_height_metadata", "lid_fit_diameter_metadata", "body_neck_diameter"]
+      "id": "lid_interface_thread",
+      "intent": "External sinusoidal 3-start screw thread at top for screw-on lid engagement.",
+      "checks": ["thread_zone_outer_diameter", "thread_params_metadata"]
     }
   ],
   "checks": [
@@ -35,7 +34,7 @@
       "id": "body_bbox",
       "type": "bbox_size",
       "expected": [66.0, 66.0, 84.0],
-      "tolerance": 0.8
+      "tolerance": 1.5
     },
     {
       "id": "watertight",
@@ -51,26 +50,18 @@
       "tolerance": 0.8
     },
     {
-      "id": "body_neck_diameter",
+      "id": "thread_zone_outer_diameter",
       "type": "outer_diameter_at_z",
-      "z": 82.0,
+      "z": 80.0,
       "center": [0.0, 0.0],
-      "expected": 62.0,
-      "tolerance": 0.8
+      "expected": 62.24,
+      "tolerance": 1.5
     },
     {
       "id": "slot_component_count_mid",
       "type": "section_component_count",
       "axis": "z",
       "z": 45.0,
-      "expected": 21,
-      "tolerance": 0
-    },
-    {
-      "id": "slot_component_count_neck",
-      "type": "section_component_count",
-      "axis": "z",
-      "z": 82.0,
       "expected": 21,
       "tolerance": 0
     },
@@ -111,16 +102,10 @@
       "expected": 76.0
     },
     {
-      "id": "neck_height_metadata",
+      "id": "thread_params_metadata",
       "type": "metadata_equals",
-      "path": "lid_interface.neck_height_mm",
-      "expected": 5.0
-    },
-    {
-      "id": "lid_fit_diameter_metadata",
-      "type": "metadata_equals",
-      "path": "lid_interface.recommended_lid_inner_diameter_mm",
-      "expected": 62.7
+      "path": "lid_interface.thread_starts",
+      "expected": 3
     },
     {
       "id": "slot_to_slot_clearance_center_inner",

@@ -12,7 +12,17 @@
   "body_radius": 33.0,
   "body_height": 84.0,
   "base_thickness": 8.0,
-  "neck_radius": 31.0,
-  "neck_height": 5.0,
-  "lid_fit_clearance_diameter": 0.7
+  "thread_pitch": 9.0,
+  "thread_amplitude": 1.12,
+  "thread_tooth_height": 2.6,
+  "thread_starts": 3,
+  "thread_engagement_height": 15.0,
+  "thread_radius": 30.0,
+  "thread_clearance_diameter": 0.4,
+  "knurl_enabled": true,
+  "knurl_angle": 35.0,
+  "knurl_depth": 0.4,
+  "knurl_width": 1.5,
+  "knurl_density": 0.8,
+  "inner_cavity_radius": 29.5
 }

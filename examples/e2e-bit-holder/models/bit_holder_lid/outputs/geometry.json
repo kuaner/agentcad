@@ -7,35 +7,35 @@
     "bbox": {
       "min": [
         -35.0,
-        -34.98912048339844,
-        0.0
+        -35.0,
+        -7.4721175554671635e-16
       ],
       "max": [
         35.0,
-        34.98912048339844,
-        13.0
+        35.0,
+        18.0
       ],
       "size": [
         70.0,
-        69.97824096679688,
-        13.0
+        70.0,
+        18.0
       ],
       "center": [
         0.0,
         0.0,
-        6.5
+        9.0
       ]
     },
     "mesh": {
-      "triangles": 1256,
-      "vertices": 3768,
-      "unique_edges": 1884,
+      "triangles": 33884,
+      "vertices": 101652,
+      "unique_edges": 50826,
       "boundary_or_nonmanifold_edges": 0,
       "watertight": true
     },
     "mass_properties": {
-      "surface_area": 11752.380222971786,
-      "volume": 30552.490834862092
+      "surface_area": 16550.75167429857,
+      "volume": 25549.755295971874
     }
   },
   "structure": {
@@ -43,10 +43,87 @@
     "void_start_z": null,
     "step_changes": [
       {
-        "pos": 6.5,
+        "pos": 0.936,
         "delta_u": 0.0,
-        "delta_v": 0.0,
-        "delta_point_count": -504,
+        "delta_v": 0.003,
+        "delta_point_count": 390,
+        "hint": "more interior surfaces — inner cavity or new features begin here"
+      },
+      {
+        "pos": 3.24,
+        "delta_u": -0.001,
+        "delta_v": 0.001,
+        "delta_point_count": 388,
+        "hint": "more interior surfaces — inner cavity or new features begin here"
+      },
+      {
+        "pos": 4.392,
+        "delta_u": -0.001,
+        "delta_v": -0.001,
+        "delta_point_count": -532,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      },
+      {
+        "pos": 5.544,
+        "delta_u": -0.001,
+        "delta_v": -0.001,
+        "delta_point_count": 268,
+        "hint": "more interior surfaces — inner cavity or new features begin here"
+      },
+      {
+        "pos": 6.696,
+        "delta_u": 0.002,
+        "delta_v": 0.009,
+        "delta_point_count": -274,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      },
+      {
+        "pos": 7.848,
+        "delta_u": 0.0,
+        "delta_v": 0.001,
+        "delta_point_count": -296,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      },
+      {
+        "pos": 9.0,
+        "delta_u": 0.0,
+        "delta_v": 0.004,
+        "delta_point_count": 494,
+        "hint": "more interior surfaces — inner cavity or new features begin here"
+      },
+      {
+        "pos": 10.152,
+        "delta_u": -0.003,
+        "delta_v": -0.002,
+        "delta_point_count": -156,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      },
+      {
+        "pos": 11.304,
+        "delta_u": 0.003,
+        "delta_v": -0.001,
+        "delta_point_count": 126,
+        "hint": "more interior surfaces — inner cavity or new features begin here"
+      },
+      {
+        "pos": 12.456,
+        "delta_u": 0.0,
+        "delta_v": -0.003,
+        "delta_point_count": -392,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      },
+      {
+        "pos": 14.76,
+        "delta_u": 0.0,
+        "delta_v": -0.004,
+        "delta_point_count": -480,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      },
+      {
+        "pos": 15.912,
+        "delta_u": 0.0,
+        "delta_v": -0.004,
+        "delta_point_count": -228,
         "hint": "fewer interior surfaces — inner cavity or features end here"
       }
     ]

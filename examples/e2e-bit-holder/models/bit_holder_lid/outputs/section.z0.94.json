@@ -1,0 +1,71 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z0.94.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 0.936,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 1078,
+  "point_count": 2156,
+  "bbox": {
+    "u_min": -35.0,
+    "u_max": 35.0,
+    "v_min": -34.9885,
+    "v_max": 34.9923,
+    "u_size": 70.0,
+    "v_size": 69.9808
+  },
+  "total_segment_length_mm": 420.8057,
+  "component_count": 2,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 741,
+      "point_count": 741,
+      "bbox": {
+        "u_min": -35.0,
+        "u_max": 35.0,
+        "v_min": -34.9885,
+        "v_max": 34.9923,
+        "u_size": 70.0,
+        "v_size": 69.9808
+      },
+      "centroid": [
+        -0.1404,
+        -0.0311
+      ],
+      "total_segment_length_mm": 227.7818,
+      "hull_area_estimate_mm2": 3847.604,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 1,
+      "segment_count": 337,
+      "point_count": 337,
+      "bbox": {
+        "u_min": -31.4875,
+        "u_max": 30.2,
+        "v_min": -30.736,
+        "v_max": 30.1981,
+        "u_size": 61.6875,
+        "v_size": 60.9341
+      },
+      "centroid": [
+        -0.0712,
+        0.2185
+      ],
+      "total_segment_length_mm": 193.0239,
+      "hull_area_estimate_mm2": 2920.2491,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    }
+  ],
+  "warnings": [
+    "multiple_section_components"
+  ]
+}

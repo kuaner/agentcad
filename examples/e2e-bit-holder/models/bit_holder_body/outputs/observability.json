@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "observe",
   "model": "bit_holder_body",
-  "observedAt": "2026-05-10T04:56:40.488241+00:00",
+  "observedAt": "2026-05-10T13:04:04.914686+00:00",
   "geometry": {
     "ok": true,
     "stage": "measure",
@@ -12,53 +12,67 @@
       "bbox": {
         "min": [
           -33.0,
-          -32.989742279052734,
+          -33.0,
           0.0
         ],
         "max": [
           33.0,
-          32.989742279052734,
-          84.0
+          33.0,
+          84.52802276611328
         ],
         "size": [
           66.0,
-          65.97948455810547,
-          84.0
+          66.0,
+          84.52802276611328
         ],
         "center": [
           0.0,
           0.0,
-          42.0
+          42.26401138305664
         ]
       },
       "mesh": {
-        "triangles": 11084,
-        "vertices": 33252,
-        "unique_edges": 16626,
+        "triangles": 60634,
+        "vertices": 181902,
+        "unique_edges": 90951,
         "boundary_or_nonmanifold_edges": 0,
         "watertight": true
       },
       "mass_properties": {
-        "surface_area": 58660.4089627857,
-        "volume": 223227.443687654
+        "surface_area": 61520.37033312758,
+        "volume": 216895.41216538253
       }
     },
     "structure": {
       "has_internal_void": true,
-      "void_start_z": 79.632,
+      "void_start_z": 69.313,
       "step_changes": [
         {
-          "pos": 9.744,
+          "pos": 9.805,
           "delta_u": 0.0,
-          "delta_v": 0.0,
-          "delta_point_count": 10080,
+          "delta_v": 0.008,
+          "delta_point_count": 10142,
           "hint": "more interior surfaces — inner cavity or new features begin here"
         },
         {
-          "pos": 79.632,
-          "delta_u": -4.0,
-          "delta_v": -3.998,
-          "delta_point_count": 0,
+          "pos": 20.625,
+          "delta_u": 0.0,
+          "delta_v": 0.004,
+          "delta_point_count": 572,
+          "hint": "more interior surfaces — inner cavity or new features begin here"
+        },
+        {
+          "pos": 53.084,
+          "delta_u": 0.0,
+          "delta_v": -0.003,
+          "delta_point_count": -584,
+          "hint": "fewer interior surfaces — inner cavity or features end here"
+        },
+        {
+          "pos": 69.313,
+          "delta_u": -5.28,
+          "delta_v": -5.482,
+          "delta_point_count": -830,
           "hint": "section shrinks — possible cavity start or wall end"
         }
       ]
@@ -83,235 +97,253 @@
     "v_label": "Y (mm)",
     "pos_range": [
       0.0,
-      84.0
+      84.528
     ],
     "profile": [
       {
-        "pos": 1.68,
-        "point_count": 504,
+        "pos": 1.691,
+        "point_count": 1568,
         "u_size": 66.0,
-        "v_size": 65.979,
+        "v_size": 65.983,
         "u_min": -33.0,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -32.995,
+        "v_max": 32.988
       },
       {
-        "pos": 7.056,
-        "point_count": 504,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 7.1,
+        "point_count": 1442,
+        "u_size": 65.997,
+        "v_size": 65.992,
+        "u_min": -32.997,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 32.992
       },
       {
-        "pos": 12.432,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 12.51,
+        "point_count": 11584,
+        "u_size": 65.997,
+        "v_size": 66.0,
+        "u_min": -32.997,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 33.0
       },
       {
-        "pos": 17.808,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 17.92,
+        "point_count": 11248,
+        "u_size": 65.997,
+        "v_size": 65.996,
+        "u_min": -32.997,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 32.996
       },
       {
-        "pos": 23.184,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 23.33,
+        "point_count": 11820,
+        "u_size": 65.997,
+        "v_size": 66.0,
+        "u_min": -32.997,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 33.0
       },
       {
-        "pos": 28.56,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 28.74,
+        "point_count": 11706,
+        "u_size": 65.997,
+        "v_size": 66.0,
+        "u_min": -32.997,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 33.0
       },
       {
-        "pos": 33.936,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 34.149,
+        "point_count": 11706,
+        "u_size": 65.996,
+        "v_size": 66.0,
+        "u_min": -32.996,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 33.0
       },
       {
-        "pos": 39.312,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 39.559,
+        "point_count": 11704,
+        "u_size": 65.996,
+        "v_size": 66.0,
+        "u_min": -32.996,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 33.0
       },
       {
-        "pos": 44.688,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 44.969,
+        "point_count": 11570,
+        "u_size": 65.997,
+        "v_size": 66.0,
+        "u_min": -32.997,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 33.0
       },
       {
-        "pos": 50.064,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 50.379,
+        "point_count": 11808,
+        "u_size": 65.997,
+        "v_size": 66.0,
+        "u_min": -32.997,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 33.0
       },
       {
-        "pos": 55.44,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 55.788,
+        "point_count": 11224,
+        "u_size": 65.997,
+        "v_size": 65.997,
+        "u_min": -32.997,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 32.997
       },
       {
-        "pos": 60.816,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 61.198,
+        "point_count": 11592,
+        "u_size": 65.997,
+        "v_size": 66.0,
+        "u_min": -32.997,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -33.0,
+        "v_max": 33.0
       },
       {
-        "pos": 66.192,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
+        "pos": 66.608,
+        "point_count": 11682,
+        "u_size": 65.999,
+        "v_size": 65.99,
+        "u_min": -32.999,
         "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "v_min": -32.993,
+        "v_max": 32.997
       },
       {
-        "pos": 71.568,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
-        "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "pos": 72.018,
+        "point_count": 10852,
+        "u_size": 60.719,
+        "v_size": 60.508,
+        "u_min": -29.998,
+        "u_max": 30.721,
+        "v_min": -30.509,
+        "v_max": 30.0
       },
       {
-        "pos": 76.944,
-        "point_count": 10584,
-        "u_size": 66.0,
-        "v_size": 65.979,
-        "u_min": -33.0,
-        "u_max": 33.0,
-        "v_min": -32.99,
-        "v_max": 32.99
+        "pos": 77.428,
+        "point_count": 10824,
+        "u_size": 60.366,
+        "v_size": 60.697,
+        "u_min": -29.997,
+        "u_max": 30.369,
+        "v_min": -29.998,
+        "v_max": 30.699
       },
       {
-        "pos": 82.32,
-        "point_count": 10584,
-        "u_size": 62.0,
-        "v_size": 61.981,
-        "u_min": -31.0,
-        "u_max": 31.0,
-        "v_min": -30.99,
-        "v_max": 30.99
+        "pos": 82.837,
+        "point_count": 10796,
+        "u_size": 61.033,
+        "v_size": 60.516,
+        "u_min": -31.033,
+        "u_max": 30.0,
+        "v_min": -29.996,
+        "v_max": 30.52
       }
     ],
     "step_changes": [
       {
-        "pos": 9.744,
+        "pos": 9.805,
         "delta_u": 0.0,
-        "delta_v": 0.0,
-        "delta_point_count": 10080,
+        "delta_v": 0.008,
+        "delta_point_count": 10142,
         "hint": "more interior surfaces — inner cavity or new features begin here"
       },
       {
-        "pos": 79.632,
-        "delta_u": -4.0,
-        "delta_v": -3.998,
-        "delta_point_count": 0,
+        "pos": 20.625,
+        "delta_u": 0.0,
+        "delta_v": 0.004,
+        "delta_point_count": 572,
+        "hint": "more interior surfaces — inner cavity or new features begin here"
+      },
+      {
+        "pos": 53.084,
+        "delta_u": 0.0,
+        "delta_v": -0.003,
+        "delta_point_count": -584,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      },
+      {
+        "pos": 69.313,
+        "delta_u": -5.28,
+        "delta_v": -5.482,
+        "delta_point_count": -830,
         "hint": "section shrinks — possible cavity start or wall end"
       }
     ],
     "section_svgs": {
-      "section_z9_74": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.74.svg",
-      "section_z79_63": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z79.63.svg"
+      "section_z9_80": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.80.svg",
+      "section_z20_62": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z20.62.svg",
+      "section_z53_08": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z53.08.svg",
+      "section_z69_31": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z69.31.svg"
     },
     "section_analysis_json": {
-      "section_z9_74_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.74.json",
-      "section_z79_63_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z79.63.json"
+      "section_z9_80_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.80.json",
+      "section_z20_62_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z20.62.json",
+      "section_z53_08_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z53.08.json",
+      "section_z69_31_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z69.31.json"
     },
     "section_analyses": {
-      "section_z9_74": {
+      "section_z9_80": {
         "stage": "section_analysis",
-        "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.74.svg",
+        "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.80.svg",
         "ok": true,
         "axis": "Z",
-        "value": 9.744,
+        "value": 9.805,
         "plane_label": "XY plane",
         "u_label": "X (mm)",
         "v_label": "Y (mm)",
-        "segment_count": 5292,
-        "point_count": 10584,
+        "segment_count": 5730,
+        "point_count": 11460,
         "bbox": {
-          "u_min": -33.0,
+          "u_min": -32.9971,
           "u_max": 33.0,
-          "v_min": -32.9897,
-          "v_max": 32.9897,
-          "u_size": 66.0,
-          "v_size": 65.9795
+          "v_min": -33.0,
+          "v_max": 33.0,
+          "u_size": 65.9971,
+          "v_size": 66.0
         },
-        "total_segment_length_mm": 659.6661,
+        "total_segment_length_mm": 672.1215,
         "component_count": 21,
         "components": [
           {
             "index": 0,
-            "segment_count": 252,
-            "point_count": 252,
+            "segment_count": 690,
+            "point_count": 690,
             "bbox": {
-              "u_min": -33.0,
+              "u_min": -32.9971,
               "u_max": 33.0,
-              "v_min": -32.9897,
-              "v_max": 32.9897,
-              "u_size": 66.0,
-              "v_size": 65.9794
+              "v_min": -33.0,
+              "v_max": 33.0,
+              "u_size": 65.9971,
+              "v_size": 66.0
             },
             "centroid": [
-              -0.0092,
-              0.0111
+              0.3759,
+              -0.0578
             ],
-            "total_segment_length_mm": 207.3236,
-            "hull_area_estimate_mm2": 3419.7787,
+            "total_segment_length_mm": 219.7791,
+            "hull_area_estimate_mm2": 3420.6294,
             "closed_vertex_ratio": 1.0,
             "endpoint_count": 0,
             "branch_vertex_count": 0
@@ -323,14 +355,14 @@
             "bbox": {
               "u_min": 18.6163,
               "u_max": 25.8163,
-              "v_min": 2.354,
-              "v_max": 9.5517,
+              "v_min": -9.5517,
+              "v_max": -2.354,
               "u_size": 7.2,
               "v_size": 7.1977
             },
             "centroid": [
               22.214,
-              5.9535
+              -5.9521
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6985,
@@ -343,15 +375,15 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -25.8163,
-              "u_max": -18.6163,
+              "u_min": 18.6163,
+              "u_max": 25.8163,
               "v_min": 2.354,
               "v_max": 9.5517,
               "u_size": 7.2,
               "v_size": 7.1977
             },
             "centroid": [
-              -22.2186,
+              22.214,
               5.9535
             ],
             "total_segment_length_mm": 22.6171,
@@ -387,16 +419,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": 18.6163,
-              "u_max": 25.8163,
-              "v_min": -9.5517,
-              "v_max": -2.354,
+              "u_min": -25.8163,
+              "u_max": -18.6163,
+              "v_min": 2.354,
+              "v_max": 9.5517,
               "u_size": 7.2,
               "v_size": 7.1977
             },
             "centroid": [
-              22.214,
-              -5.9521
+              -22.2186,
+              5.9535
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6985,
@@ -409,16 +441,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": 3.2584,
-              "u_max": 10.4584,
-              "v_min": 5.0013,
-              "v_max": 12.199,
+              "u_min": -3.6,
+              "u_max": 3.6,
+              "v_min": -3.5989,
+              "v_max": 3.5989,
               "u_size": 7.2,
-              "v_size": 7.1977
+              "v_size": 7.1978
             },
             "centroid": [
-              6.8561,
-              8.6009
+              -0.0023,
+              0.0007
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6984,
@@ -443,7 +475,7 @@
               0.0007
             ],
             "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
+            "hull_area_estimate_mm2": 40.6984,
             "closed_vertex_ratio": 1.0,
             "endpoint_count": 0,
             "branch_vertex_count": 0
@@ -453,19 +485,19 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -19.8635,
-              "u_max": -12.6635,
-              "v_min": -19.8623,
-              "v_max": -12.6646,
+              "u_min": -13.5107,
+              "u_max": -6.3107,
+              "v_min": 1.1738,
+              "v_max": 8.3716,
               "u_size": 7.2,
-              "v_size": 7.1977
+              "v_size": 7.1978
             },
             "centroid": [
-              -16.2658,
-              -16.2627
+              -9.913,
+              4.7734
             ],
             "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
+            "hull_area_estimate_mm2": 40.6984,
             "closed_vertex_ratio": 1.0,
             "endpoint_count": 0,
             "branch_vertex_count": 0
@@ -475,47 +507,25 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": 12.6635,
-              "u_max": 19.8635,
-              "v_min": -19.8623,
-              "v_max": -12.6646,
+              "u_min": -13.5107,
+              "u_max": -6.3107,
+              "v_min": -8.3716,
+              "v_max": -1.1738,
               "u_size": 7.2,
-              "v_size": 7.1977
+              "v_size": 7.1978
             },
             "centroid": [
-              16.2611,
-              -16.2627
+              -9.913,
+              -4.772
             ],
             "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
+            "hull_area_estimate_mm2": 40.6984,
             "closed_vertex_ratio": 1.0,
             "endpoint_count": 0,
             "branch_vertex_count": 0
           },
           {
             "index": 9,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": -9.5528,
-              "u_max": -2.3528,
-              "v_min": -25.8152,
-              "v_max": -18.6174,
-              "u_size": 7.2,
-              "v_size": 7.1978
-            },
-            "centroid": [
-              -5.9552,
-              -22.2156
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 10,
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
@@ -537,20 +547,42 @@
             "branch_vertex_count": 0
           },
           {
+            "index": 10,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -19.8635,
+              "u_max": -12.6635,
+              "v_min": -19.8623,
+              "v_max": -12.6646,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -16.2658,
+              -16.2628
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
             "index": 11,
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -6.0477,
-              "u_max": 1.1523,
-              "v_min": -14.3231,
-              "v_max": -7.1253,
+              "u_min": 12.6635,
+              "u_max": 19.8635,
+              "v_min": -19.8623,
+              "v_max": -12.6646,
               "u_size": 7.2,
-              "v_size": 7.1978
+              "v_size": 7.1977
             },
             "centroid": [
-              -2.45,
-              -10.7235
+              16.2611,
+              -16.2628
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -560,138 +592,6 @@
           },
           {
             "index": 12,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": -3.6,
-              "u_max": 3.6,
-              "v_min": -3.5989,
-              "v_max": 3.5989,
-              "u_size": 7.2,
-              "v_size": 7.1978
-            },
-            "centroid": [
-              -0.0023,
-              0.0007
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 13,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": -13.5107,
-              "u_max": -6.3107,
-              "v_min": -8.3716,
-              "v_max": -1.1738,
-              "u_size": 7.2,
-              "v_size": 7.1978
-            },
-            "centroid": [
-              -9.913,
-              -4.772
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 14,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": 3.2584,
-              "u_max": 10.4584,
-              "v_min": -12.199,
-              "v_max": -5.0013,
-              "u_size": 7.2,
-              "v_size": 7.1977
-            },
-            "centroid": [
-              6.8561,
-              -8.5994
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 15,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": -19.8635,
-              "u_max": -12.6635,
-              "v_min": 12.6646,
-              "v_max": 19.8623,
-              "u_size": 7.2,
-              "v_size": 7.1977
-            },
-            "centroid": [
-              -16.2658,
-              16.2642
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 16,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": 2.3528,
-              "u_max": 9.5528,
-              "v_min": 18.6174,
-              "v_max": 25.8152,
-              "u_size": 7.2,
-              "v_size": 7.1978
-            },
-            "centroid": [
-              5.9505,
-              22.217
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 17,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": 2.3528,
-              "u_max": 9.5528,
-              "v_min": -25.8152,
-              "v_max": -18.6174,
-              "u_size": 7.2,
-              "v_size": 7.1978
-            },
-            "centroid": [
-              5.9505,
-              -22.2156
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6983,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 18,
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
@@ -713,20 +613,152 @@
             "branch_vertex_count": 0
           },
           {
-            "index": 19,
+            "index": 13,
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -13.5107,
-              "u_max": -6.3107,
-              "v_min": 1.1738,
-              "v_max": 8.3716,
+              "u_min": -9.5528,
+              "u_max": -2.3528,
+              "v_min": -25.8152,
+              "v_max": -18.6174,
               "u_size": 7.2,
               "v_size": 7.1978
             },
             "centroid": [
-              -9.913,
-              4.7734
+              -5.9551,
+              -22.2156
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 14,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -6.0477,
+              "u_max": 1.1523,
+              "v_min": -14.3231,
+              "v_max": -7.1253,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -2.45,
+              -10.7235
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 15,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 3.2584,
+              "u_max": 10.4584,
+              "v_min": -12.199,
+              "v_max": -5.0013,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              6.8561,
+              -8.5994
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 16,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -19.8635,
+              "u_max": -12.6635,
+              "v_min": 12.6646,
+              "v_max": 19.8623,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -16.2658,
+              16.2642
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 17,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 2.3528,
+              "u_max": 9.5528,
+              "v_min": 18.6174,
+              "v_max": 25.8152,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              5.9505,
+              22.217
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 18,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 2.3528,
+              "u_max": 9.5528,
+              "v_min": -25.8152,
+              "v_max": -18.6174,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              5.9505,
+              -22.2156
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 19,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -9.5528,
+              "u_max": -2.3528,
+              "v_min": 18.6174,
+              "v_max": 25.8152,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -5.9551,
+              22.217
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -739,16 +771,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -9.5528,
-              "u_max": -2.3528,
-              "v_min": 18.6174,
-              "v_max": 25.8152,
+              "u_min": 3.2584,
+              "u_max": 10.4584,
+              "v_min": 5.0013,
+              "v_max": 12.199,
               "u_size": 7.2,
-              "v_size": 7.1978
+              "v_size": 7.1977
             },
             "centroid": [
-              -5.9552,
-              22.217
+              6.8561,
+              8.6009
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -761,46 +793,46 @@
           "multiple_section_components"
         ]
       },
-      "section_z79_63": {
+      "section_z20_62": {
         "stage": "section_analysis",
-        "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z79.63.svg",
+        "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z20.62.svg",
         "ok": true,
         "axis": "Z",
-        "value": 79.632,
+        "value": 20.625,
         "plane_label": "XY plane",
         "u_label": "X (mm)",
         "v_label": "Y (mm)",
-        "segment_count": 5292,
-        "point_count": 10584,
+        "segment_count": 5853,
+        "point_count": 11706,
         "bbox": {
-          "u_min": -31.0,
-          "u_max": 31.0,
-          "v_min": -30.9904,
-          "v_max": 30.9904,
-          "u_size": 62.0,
-          "v_size": 61.9807
+          "u_min": -32.9964,
+          "u_max": 33.0,
+          "v_min": -33.0,
+          "v_max": 33.0,
+          "u_size": 65.9964,
+          "v_size": 66.0
         },
-        "total_segment_length_mm": 647.101,
+        "total_segment_length_mm": 674.9739,
         "component_count": 21,
         "components": [
           {
             "index": 0,
-            "segment_count": 252,
-            "point_count": 252,
+            "segment_count": 813,
+            "point_count": 813,
             "bbox": {
-              "u_min": -31.0,
-              "u_max": 31.0,
-              "v_min": -30.9904,
-              "v_max": 30.9904,
-              "u_size": 62.0,
-              "v_size": 61.9808
+              "u_min": -32.9964,
+              "u_max": 33.0,
+              "v_min": -33.0,
+              "v_max": 33.0,
+              "u_size": 65.9964,
+              "v_size": 66.0
             },
             "centroid": [
-              0.008,
-              -0.0056
+              0.2602,
+              0.0095
             ],
-            "total_segment_length_mm": 194.7586,
-            "hull_area_estimate_mm2": 3017.8223,
+            "total_segment_length_mm": 222.6314,
+            "hull_area_estimate_mm2": 3420.6319,
             "closed_vertex_ratio": 1.0,
             "endpoint_count": 0,
             "branch_vertex_count": 0
@@ -818,11 +850,11 @@
               "v_size": 7.1977
             },
             "centroid": [
-              22.2185,
-              5.9522
+              22.2147,
+              5.9533
             ],
             "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6986,
+            "hull_area_estimate_mm2": 40.6985,
             "closed_vertex_ratio": 1.0,
             "endpoint_count": 0,
             "branch_vertex_count": 0
@@ -834,14 +866,14 @@
             "bbox": {
               "u_min": -25.8163,
               "u_max": -18.6163,
-              "v_min": -9.5517,
-              "v_max": -2.354,
+              "v_min": 2.354,
+              "v_max": 9.5517,
               "u_size": 7.2,
               "v_size": 7.1977
             },
             "centroid": [
-              -22.2141,
-              -5.9535
+              -22.2179,
+              5.9533
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6985,
@@ -854,16 +886,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -25.8163,
-              "u_max": -18.6163,
-              "v_min": 2.354,
-              "v_max": 9.5517,
+              "u_min": 18.6163,
+              "u_max": 25.8163,
+              "v_min": -9.5517,
+              "v_max": -2.354,
               "u_size": 7.2,
               "v_size": 7.1977
             },
             "centroid": [
-              -22.2141,
-              5.9522
+              22.2147,
+              -5.9523
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6985,
@@ -876,16 +908,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": 18.6163,
-              "u_max": 25.8163,
+              "u_min": -25.8163,
+              "u_max": -18.6163,
               "v_min": -9.5517,
               "v_max": -2.354,
               "u_size": 7.2,
               "v_size": 7.1977
             },
             "centroid": [
-              22.2185,
-              -5.9535
+              -22.2179,
+              -5.9523
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6985,
@@ -906,83 +938,17 @@
               "v_size": 7.1978
             },
             "centroid": [
-              11.0022,
-              -0.0007
+              10.9984,
+              0.0005
             ],
             "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6984,
+            "hull_area_estimate_mm2": 40.6983,
             "closed_vertex_ratio": 1.0,
             "endpoint_count": 0,
             "branch_vertex_count": 0
           },
           {
             "index": 6,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": 3.2584,
-              "u_max": 10.4584,
-              "v_min": -12.199,
-              "v_max": -5.0013,
-              "u_size": 7.2,
-              "v_size": 7.1977
-            },
-            "centroid": [
-              6.8605,
-              -8.6008
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6984,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 7,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": -3.6,
-              "u_max": 3.6,
-              "v_min": -3.5989,
-              "v_max": 3.5989,
-              "u_size": 7.2,
-              "v_size": 7.1978
-            },
-            "centroid": [
-              0.0022,
-              -0.0007
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6984,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 8,
-            "segment_count": 252,
-            "point_count": 252,
-            "bbox": {
-              "u_min": 3.2584,
-              "u_max": 10.4584,
-              "v_min": 5.0013,
-              "v_max": 12.199,
-              "u_size": 7.2,
-              "v_size": 7.1977
-            },
-            "centroid": [
-              6.8605,
-              8.5995
-            ],
-            "total_segment_length_mm": 22.6171,
-            "hull_area_estimate_mm2": 40.6984,
-            "closed_vertex_ratio": 1.0,
-            "endpoint_count": 0,
-            "branch_vertex_count": 0
-          },
-          {
-            "index": 9,
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
@@ -994,8 +960,74 @@
               "v_size": 7.1977
             },
             "centroid": [
-              -16.2613,
-              -16.2641
+              -16.2651,
+              -16.263
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 7,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 12.6635,
+              "u_max": 19.8635,
+              "v_min": -19.8623,
+              "v_max": -12.6646,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              16.2618,
+              -16.263
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 8,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -9.5528,
+              "u_max": -2.3528,
+              "v_min": -25.8152,
+              "v_max": -18.6174,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -5.9545,
+              -22.2158
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 9,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -6.0477,
+              "u_max": 1.1523,
+              "v_min": -14.3231,
+              "v_max": -7.1253,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -2.4493,
+              -10.7237
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -1008,16 +1040,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": 12.6635,
-              "u_max": 19.8635,
-              "v_min": -19.8623,
-              "v_max": -12.6646,
+              "u_min": -13.5107,
+              "u_max": -6.3107,
+              "v_min": -8.3716,
+              "v_max": -1.1738,
               "u_size": 7.2,
-              "v_size": 7.1977
+              "v_size": 7.1978
             },
             "centroid": [
-              16.2656,
-              -16.2641
+              -9.9123,
+              -4.7722
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -1030,16 +1062,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -13.5107,
-              "u_max": -6.3107,
-              "v_min": 1.1738,
-              "v_max": 8.3716,
+              "u_min": -3.6,
+              "u_max": 3.6,
+              "v_min": -3.5989,
+              "v_max": 3.5989,
               "u_size": 7.2,
               "v_size": 7.1978
             },
             "centroid": [
-              -9.9085,
-              4.7721
+              -0.0016,
+              0.0005
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -1052,16 +1084,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -6.0477,
-              "u_max": 1.1523,
-              "v_min": -14.3231,
-              "v_max": -7.1253,
+              "u_min": 3.2584,
+              "u_max": 10.4584,
+              "v_min": -12.199,
+              "v_max": -5.0013,
               "u_size": 7.2,
-              "v_size": 7.1978
+              "v_size": 7.1977
             },
             "centroid": [
-              -2.4456,
-              -10.7249
+              6.8568,
+              -8.5997
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -1074,16 +1106,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -13.5107,
-              "u_max": -6.3107,
-              "v_min": -8.3716,
-              "v_max": -1.1738,
+              "u_min": 2.3528,
+              "u_max": 9.5528,
+              "v_min": -25.8152,
+              "v_max": -18.6174,
               "u_size": 7.2,
               "v_size": 7.1978
             },
             "centroid": [
-              -9.9085,
-              -4.7734
+              5.9512,
+              -22.2158
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -1096,16 +1128,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -6.0477,
-              "u_max": 1.1523,
-              "v_min": 7.1253,
-              "v_max": 14.3231,
+              "u_min": -19.8635,
+              "u_max": -12.6635,
+              "v_min": 12.6646,
+              "v_max": 19.8623,
               "u_size": 7.2,
-              "v_size": 7.1978
+              "v_size": 7.1977
             },
             "centroid": [
-              -2.4456,
-              10.7236
+              -16.2651,
+              16.2639
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -1118,16 +1150,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -19.8635,
-              "u_max": -12.6635,
+              "u_min": 12.6635,
+              "u_max": 19.8635,
               "v_min": 12.6646,
               "v_max": 19.8623,
               "u_size": 7.2,
               "v_size": 7.1977
             },
             "centroid": [
-              -16.2613,
-              16.2628
+              16.2618,
+              16.2639
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6983,
@@ -1148,8 +1180,497 @@
               "v_size": 7.1978
             },
             "centroid": [
-              5.955,
-              22.2156
+              5.9512,
+              22.2168
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 17,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -9.5528,
+              "u_max": -2.3528,
+              "v_min": 18.6174,
+              "v_max": 25.8152,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -5.9545,
+              22.2168
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 18,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 3.2584,
+              "u_max": 10.4584,
+              "v_min": 5.0013,
+              "v_max": 12.199,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              6.8568,
+              8.6006
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 19,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -13.5107,
+              "u_max": -6.3107,
+              "v_min": 1.1738,
+              "v_max": 8.3716,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -9.9123,
+              4.7732
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 20,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -6.0477,
+              "u_max": 1.1523,
+              "v_min": 7.1253,
+              "v_max": 14.3231,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -2.4493,
+              10.7247
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          }
+        ],
+        "warnings": [
+          "multiple_section_components"
+        ]
+      },
+      "section_z53_08": {
+        "stage": "section_analysis",
+        "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z53.08.svg",
+        "ok": true,
+        "axis": "Z",
+        "value": 53.084,
+        "plane_label": "XY plane",
+        "u_label": "X (mm)",
+        "v_label": "Y (mm)",
+        "segment_count": 5852,
+        "point_count": 11704,
+        "bbox": {
+          "u_min": -32.9963,
+          "u_max": 33.0,
+          "v_min": -33.0,
+          "v_max": 33.0,
+          "u_size": 65.9963,
+          "v_size": 66.0
+        },
+        "total_segment_length_mm": 676.9872,
+        "component_count": 21,
+        "components": [
+          {
+            "index": 0,
+            "segment_count": 812,
+            "point_count": 812,
+            "bbox": {
+              "u_min": -32.9963,
+              "u_max": 33.0,
+              "v_min": -33.0,
+              "v_max": 33.0,
+              "u_size": 65.9963,
+              "v_size": 66.0
+            },
+            "centroid": [
+              0.2028,
+              -0.0237
+            ],
+            "total_segment_length_mm": 224.6447,
+            "hull_area_estimate_mm2": 3420.6215,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 1,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 18.6163,
+              "u_max": 25.8163,
+              "v_min": 2.354,
+              "v_max": 9.5517,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              22.2168,
+              5.9527
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6985,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 2,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -25.8163,
+              "u_max": -18.6163,
+              "v_min": -9.5517,
+              "v_max": -2.354,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -22.2158,
+              -5.953
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6985,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 3,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 18.6163,
+              "u_max": 25.8163,
+              "v_min": -9.5517,
+              "v_max": -2.354,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              22.2168,
+              -5.953
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6985,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 4,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -25.8163,
+              "u_max": -18.6163,
+              "v_min": 2.354,
+              "v_max": 9.5517,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -22.2158,
+              5.9527
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6985,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 5,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 7.4,
+              "u_max": 14.6,
+              "v_min": -3.5989,
+              "v_max": 3.5989,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              11.0005,
+              -0.0001
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6984,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 6,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -3.6,
+              "u_max": 3.6,
+              "v_min": -3.5989,
+              "v_max": 3.5989,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              0.0005,
+              -0.0001
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6984,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 7,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 3.2584,
+              "u_max": 10.4584,
+              "v_min": -12.199,
+              "v_max": -5.0013,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              6.8588,
+              -8.6003
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6984,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 8,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 3.2584,
+              "u_max": 10.4584,
+              "v_min": 5.0013,
+              "v_max": 12.199,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              6.8588,
+              8.6
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6984,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 9,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -6.0477,
+              "u_max": 1.1523,
+              "v_min": -14.3231,
+              "v_max": -7.1253,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -2.4473,
+              -10.7243
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 10,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -13.5107,
+              "u_max": -6.3107,
+              "v_min": 1.1738,
+              "v_max": 8.3716,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -9.9102,
+              4.7726
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 11,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -6.0477,
+              "u_max": 1.1523,
+              "v_min": 7.1253,
+              "v_max": 14.3231,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -2.4473,
+              10.7241
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 12,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -13.5107,
+              "u_max": -6.3107,
+              "v_min": -8.3716,
+              "v_max": -1.1738,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -9.9102,
+              -4.7729
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 13,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -9.5528,
+              "u_max": -2.3528,
+              "v_min": 18.6174,
+              "v_max": 25.8152,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -5.9524,
+              22.2162
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6982,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 14,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -19.8635,
+              "u_max": -12.6635,
+              "v_min": -19.8623,
+              "v_max": -12.6646,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -16.263,
+              -16.2636
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6982,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 15,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 2.3528,
+              "u_max": 9.5528,
+              "v_min": -25.8152,
+              "v_max": -18.6174,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              5.9533,
+              -22.2164
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6982,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 16,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 12.6635,
+              "u_max": 19.8635,
+              "v_min": 12.6646,
+              "v_max": 19.8623,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              16.2639,
+              16.2633
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6982,
@@ -1162,16 +1683,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -9.5528,
-              "u_max": -2.3528,
-              "v_min": -25.8152,
-              "v_max": -18.6174,
+              "u_min": 12.6635,
+              "u_max": 19.8635,
+              "v_min": -19.8623,
+              "v_max": -12.6646,
               "u_size": 7.2,
-              "v_size": 7.1978
+              "v_size": 7.1977
             },
             "centroid": [
-              -5.9507,
-              -22.2169
+              16.2639,
+              -16.2636
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6982,
@@ -1184,6 +1705,407 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
+              "u_min": -9.5528,
+              "u_max": -2.3528,
+              "v_min": -25.8152,
+              "v_max": -18.6174,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -5.9524,
+              -22.2164
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6982,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 19,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -19.8635,
+              "u_max": -12.6635,
+              "v_min": 12.6646,
+              "v_max": 19.8623,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -16.263,
+              16.2633
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6982,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 20,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 2.3528,
+              "u_max": 9.5528,
+              "v_min": 18.6174,
+              "v_max": 25.8152,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              5.9533,
+              22.2162
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6982,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          }
+        ],
+        "warnings": [
+          "multiple_section_components"
+        ]
+      },
+      "section_z69_31": {
+        "stage": "section_analysis",
+        "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z69.31.svg",
+        "ok": true,
+        "axis": "Z",
+        "value": 69.313,
+        "plane_label": "XY plane",
+        "u_label": "X (mm)",
+        "v_label": "Y (mm)",
+        "segment_count": 5376,
+        "point_count": 10752,
+        "bbox": {
+          "u_min": -29.9928,
+          "u_max": 30.4292,
+          "v_min": -31.2557,
+          "v_max": 29.998,
+          "u_size": 60.422,
+          "v_size": 61.2537
+        },
+        "total_segment_length_mm": 645.6973,
+        "component_count": 21,
+        "components": [
+          {
+            "index": 0,
+            "segment_count": 336,
+            "point_count": 336,
+            "bbox": {
+              "u_min": -29.9928,
+              "u_max": 30.4292,
+              "v_min": -31.2557,
+              "v_max": 29.998,
+              "u_size": 60.422,
+              "v_size": 61.2537
+            },
+            "centroid": [
+              -0.0,
+              -0.0
+            ],
+            "total_segment_length_mm": 193.3549,
+            "hull_area_estimate_mm2": 2880.6741,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 1,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 18.6163,
+              "u_max": 25.8163,
+              "v_min": 2.354,
+              "v_max": 9.5517,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              22.2178,
+              5.9524
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6985,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 2,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -25.8163,
+              "u_max": -18.6163,
+              "v_min": -9.5517,
+              "v_max": -2.354,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -22.2148,
+              -5.9533
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6985,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 3,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 18.6163,
+              "u_max": 25.8163,
+              "v_min": -9.5517,
+              "v_max": -2.354,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              22.2178,
+              -5.9533
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6985,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 4,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -25.8163,
+              "u_max": -18.6163,
+              "v_min": 2.354,
+              "v_max": 9.5517,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -22.2148,
+              5.9524
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6985,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 5,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 7.4,
+              "u_max": 14.6,
+              "v_min": -3.5989,
+              "v_max": 3.5989,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              11.0015,
+              -0.0005
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6984,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 6,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -13.5107,
+              "u_max": -6.3107,
+              "v_min": 1.1738,
+              "v_max": 8.3716,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -9.9092,
+              4.7723
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6984,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 7,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -3.6,
+              "u_max": 3.6,
+              "v_min": -3.5989,
+              "v_max": 3.5989,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              0.0015,
+              -0.0005
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6984,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 8,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -19.8635,
+              "u_max": -12.6635,
+              "v_min": -19.8623,
+              "v_max": -12.6646,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -16.262,
+              -16.2639
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 9,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -9.5528,
+              "u_max": -2.3528,
+              "v_min": -25.8152,
+              "v_max": -18.6174,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -5.9513,
+              -22.2167
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 10,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -6.0477,
+              "u_max": 1.1523,
+              "v_min": -14.3231,
+              "v_max": -7.1253,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -2.4462,
+              -10.7247
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 11,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -6.0477,
+              "u_max": 1.1523,
+              "v_min": 7.1253,
+              "v_max": 14.3231,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -2.4462,
+              10.7238
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 12,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 3.2584,
+              "u_max": 10.4584,
+              "v_min": -12.199,
+              "v_max": -5.0013,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              6.8599,
+              -8.6006
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 13,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -13.5107,
+              "u_max": -6.3107,
+              "v_min": -8.3716,
+              "v_max": -1.1738,
+              "u_size": 7.2,
+              "v_size": 7.1978
+            },
+            "centroid": [
+              -9.9092,
+              -4.7732
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 14,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
               "u_min": 2.3528,
               "u_max": 9.5528,
               "v_min": -25.8152,
@@ -1192,8 +2114,96 @@
               "v_size": 7.1978
             },
             "centroid": [
-              5.955,
-              -22.2169
+              5.9543,
+              -22.2167
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 15,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 3.2584,
+              "u_max": 10.4584,
+              "v_min": 5.0013,
+              "v_max": 12.199,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              6.8599,
+              8.5997
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6983,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 16,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 12.6635,
+              "u_max": 19.8635,
+              "v_min": -19.8623,
+              "v_max": -12.6646,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              16.265,
+              -16.2639
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6982,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 17,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 12.6635,
+              "u_max": 19.8635,
+              "v_min": 12.6646,
+              "v_max": 19.8623,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              16.265,
+              16.263
+            ],
+            "total_segment_length_mm": 22.6171,
+            "hull_area_estimate_mm2": 40.6982,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 18,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -19.8635,
+              "u_max": -12.6635,
+              "v_min": 12.6646,
+              "v_max": 19.8623,
+              "u_size": 7.2,
+              "v_size": 7.1977
+            },
+            "centroid": [
+              -16.262,
+              16.263
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6982,
@@ -1214,8 +2224,8 @@
               "v_size": 7.1978
             },
             "centroid": [
-              -5.9507,
-              22.2156
+              -5.9513,
+              22.2158
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6982,
@@ -1228,16 +2238,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": 12.6635,
-              "u_max": 19.8635,
-              "v_min": 12.6646,
-              "v_max": 19.8623,
+              "u_min": 2.3528,
+              "u_max": 9.5528,
+              "v_min": 18.6174,
+              "v_max": 25.8152,
               "u_size": 7.2,
-              "v_size": 7.1977
+              "v_size": 7.1978
             },
             "centroid": [
-              16.2656,
-              16.2628
+              5.9543,
+              22.2158
             ],
             "total_segment_length_mm": 22.6171,
             "hull_area_estimate_mm2": 40.6982,
@@ -1254,60 +2264,108 @@
   },
   "section_summaries": [
     {
-      "key": "section_z9_74",
+      "key": "section_z9_80",
       "axis": "Z",
-      "value": 9.744,
+      "value": 9.805,
       "bbox": {
-        "u_min": -33.0,
+        "u_min": -32.9971,
         "u_max": 33.0,
-        "v_min": -32.9897,
-        "v_max": 32.9897,
-        "u_size": 66.0,
-        "v_size": 65.9795
+        "v_min": -33.0,
+        "v_max": 33.0,
+        "u_size": 65.9971,
+        "v_size": 66.0
       },
-      "segment_count": 5292,
+      "segment_count": 5730,
       "component_count": 21,
-      "total_segment_length_mm": 659.6661,
+      "total_segment_length_mm": 672.1215,
       "warnings": [
         "multiple_section_components"
       ]
     },
     {
-      "key": "section_z79_63",
+      "key": "section_z20_62",
       "axis": "Z",
-      "value": 79.632,
+      "value": 20.625,
       "bbox": {
-        "u_min": -31.0,
-        "u_max": 31.0,
-        "v_min": -30.9904,
-        "v_max": 30.9904,
-        "u_size": 62.0,
-        "v_size": 61.9807
+        "u_min": -32.9964,
+        "u_max": 33.0,
+        "v_min": -33.0,
+        "v_max": 33.0,
+        "u_size": 65.9964,
+        "v_size": 66.0
       },
-      "segment_count": 5292,
+      "segment_count": 5853,
       "component_count": 21,
-      "total_segment_length_mm": 647.101,
+      "total_segment_length_mm": 674.9739,
+      "warnings": [
+        "multiple_section_components"
+      ]
+    },
+    {
+      "key": "section_z53_08",
+      "axis": "Z",
+      "value": 53.084,
+      "bbox": {
+        "u_min": -32.9963,
+        "u_max": 33.0,
+        "v_min": -33.0,
+        "v_max": 33.0,
+        "u_size": 65.9963,
+        "v_size": 66.0
+      },
+      "segment_count": 5852,
+      "component_count": 21,
+      "total_segment_length_mm": 676.9872,
+      "warnings": [
+        "multiple_section_components"
+      ]
+    },
+    {
+      "key": "section_z69_31",
+      "axis": "Z",
+      "value": 69.313,
+      "bbox": {
+        "u_min": -29.9928,
+        "u_max": 30.4292,
+        "v_min": -31.2557,
+        "v_max": 29.998,
+        "u_size": 60.422,
+        "v_size": 61.2537
+      },
+      "segment_count": 5376,
+      "component_count": 21,
+      "total_segment_length_mm": 645.6973,
       "warnings": [
         "multiple_section_components"
       ]
     }
   ],
   "summary": {
-    "section_count": 2,
+    "section_count": 4,
     "max_component_count": 21,
     "multi_component_sections": [
-      "section_z9_74",
-      "section_z79_63"
+      "section_z9_80",
+      "section_z20_62",
+      "section_z53_08",
+      "section_z69_31"
     ],
-    "warning_count": 2
+    "warning_count": 4
   },
   "warnings": [
     {
-      "section": "section_z9_74",
+      "section": "section_z9_80",
       "warning": "multiple_section_components"
     },
     {
-      "section": "section_z79_63",
+      "section": "section_z20_62",
+      "warning": "multiple_section_components"
+    },
+    {
+      "section": "section_z53_08",
+      "warning": "multiple_section_components"
+    },
+    {
+      "section": "section_z69_31",
       "warning": "multiple_section_components"
     }
   ]

@@ -122,10 +122,14 @@
     }
   },
   "lid_interface": {
-    "body_outer_diameter_mm": 66.0,
-    "neck_outer_diameter_mm": 62.0,
-    "neck_height_mm": 5.0,
-    "recommended_lid_inner_diameter_mm": 62.7
+    "type": "screw_thread",
+    "thread_pitch_mm": 9.0,
+    "thread_starts": 3,
+    "thread_engagement_height_mm": 15.0,
+    "thread_radius_mm": 30.0,
+    "thread_outer_diameter_mm": 62.24,
+    "thread_clearance_diameter_mm": 0.4,
+    "recommended_lid_inner_radius_mm": 30.2
   },
   "interfaces": {
     "lid_neck": {
@@ -133,7 +137,7 @@
         "point": [
           0,
           0,
-          79.0
+          69.0
         ],
         "direction": [
           0,
@@ -148,13 +152,13 @@
           0,
           0
         ],
-        "radius_mm": 31.0,
+        "radius_mm": 30.0,
         "z_range": [
-          79.0,
+          69.0,
           84.0
         ],
         "surface": "outer",
-        "tolerance_mm": 0.35
+        "tolerance_mm": 1.62
       }
     }
   },

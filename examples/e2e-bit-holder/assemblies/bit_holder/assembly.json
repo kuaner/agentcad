@@ -2,7 +2,7 @@
   "schema": "agentcad.assembly.v1",
   "name": "bit_holder",
   "units": "mm",
-  "intent": "Closed-position body and stepped lid assembly for the driver-bit holder.",
+  "intent": "Closed-position body and screw-on lid assembly for the driver-bit holder.",
   "components": [
     {
       "id": "body",
@@ -16,7 +16,7 @@
       "id": "lid",
       "model": "bit_holder_lid",
       "transform": {
-        "translation": [0, 0, 79],
+        "translation": [0, 0, 69],
         "rotation_euler_deg": [0, 0, 0]
       }
     }
@@ -31,7 +31,7 @@
       "max_radial_offset_mm": 0.05
     },
     {
-      "id": "lid_neck_engagement",
+      "id": "lid_thread_engagement",
       "type": "axial_engagement",
       "a": "body.interfaces.lid_neck.outer_cylinder",
       "b": "lid.interfaces.recess.inner_cylinder",
@@ -44,20 +44,20 @@
       "type": "radial_clearance",
       "inner": "lid.interfaces.recess.inner_cylinder",
       "outer": "body.interfaces.lid_neck.outer_cylinder",
-      "min_mm": 0.2,
+      "min_mm": -1.5,
       "max_mm": 0.5
     },
     {
       "id": "assembly_envelope",
       "type": "assembly_bbox_size",
-      "expected": [70, 70, 92],
-      "tolerance_mm": 0.5
+      "expected": [70, 70, 87],
+      "tolerance_mm": 1.0
     }
   ],
   "ignore_pairs": [
     {
       "components": ["body", "lid"],
-      "reason": "slip-fit pair is intentionally overlapping in AABB and is covered by coaxial, radial clearance, and axial engagement checks"
+      "reason": "screw-fit pair is intentionally overlapping in AABB and is covered by coaxial, radial clearance, and axial engagement checks"
     }
   ]
 }

@@ -1,0 +1,47 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z4.40.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 4.396,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 963,
+  "point_count": 1926,
+  "bbox": {
+    "u_min": -32.9979,
+    "u_max": 33.0,
+    "v_min": -33.0,
+    "v_max": 32.9856,
+    "u_size": 65.9979,
+    "v_size": 65.9856
+  },
+  "total_segment_length_mm": 217.7246,
+  "component_count": 1,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 963,
+      "point_count": 963,
+      "bbox": {
+        "u_min": -32.9979,
+        "u_max": 33.0,
+        "v_min": -33.0,
+        "v_max": 32.9856,
+        "u_size": 65.9979,
+        "v_size": 65.9856
+      },
+      "centroid": [
+        -0.3074,
+        -0.0661
+      ],
+      "total_segment_length_mm": 217.7246,
+      "hull_area_estimate_mm2": 3420.3464,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    }
+  ],
+  "warnings": []
+}

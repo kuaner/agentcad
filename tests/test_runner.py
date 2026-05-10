@@ -142,13 +142,17 @@ def test_bit_holder_lid_rejects_recess_depth_at_or_above_lid_height(project):
         json.dumps(
             {
                 "body_outer_diameter": 48.0,
-                "body_neck_diameter": 40.0,
-                "body_neck_height": 6.0,
-                "fit_clearance_diameter": 0.4,
+                "body_thread_radius": 24.0,
+                "body_thread_amplitude": 1.12,
+                "thread_pitch": 9.0,
+                "thread_tooth_height": 2.6,
+                "thread_starts": 3,
+                "thread_engagement_height": 15.0,
+                "thread_clearance_diameter": 0.4,
                 "lid_outer_diameter": 50.0,
                 "lid_height": 12.0,
-                "recess_depth": 12.0,
-                "bottom_chamfer": 0.8,
+                "top_thickness": 3.0,
+                "knurl_enabled": False,
             },
             indent=2,
         ) + "\n",
@@ -158,4 +162,4 @@ def test_bit_holder_lid_rejects_recess_depth_at_or_above_lid_height(project):
     result = build_model(p, "bit_holder_lid_guard", force=True)
     assert result["ok"] is False
     assert result["error"]["type"] == "ValueError"
-    assert "recess depth must stay below lid height" in result["error"]["message"]
+    assert "lid wall too thin" in result["error"]["message"]
