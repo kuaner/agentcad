@@ -56,13 +56,17 @@ When `agentcad validate` fails, use the iteration tools to converge:
 To create the same model with different dimensions (e.g., different sizes for
 different applications):
 
-1. Create a variant: `agentcad new <model> --variant <variant_name>`
+1. Create a variant: `agentcad new <model>:<variant_name>`
 2. Edit `models/<model>/variants/<variant_name>/params.json` with variant-specific dimensions.
-3. Build the variant: `agentcad build <model> --variant <variant_name>`
+3. Build the variant: `agentcad build <model>:<variant_name>`
 4. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
 
 Variants share the same `part.py`, `design.json`, and `metadata.json` from the
 base model. Only `params.json` differs per variant.
+
+Use `model:variant` syntax with any command that accepts a model name:
+`agentcad validate bracket:small`, `agentcad preview bracket:small`,
+`agentcad deliver bracket:small`.
 
 ## Fix Suggestions (param_ref)
 
@@ -184,28 +188,29 @@ assemblies/<name>/
 # Workspace and model setup
 agentcad init <workspace> [--model <model>]
 agentcad new <model>
-agentcad new <model> --variant <name>
+agentcad new <model>:<variant>
 
 # Build pipeline
 agentcad precheck <model>
 agentcad build <model>
 agentcad build <model> --force
-agentcad build <model> --variant <name>
+agentcad build <model>:<variant>
 agentcad measure <model>
 agentcad render <model>
 agentcad render <model> --views iso,front,top,side,back
 agentcad validate <model>
-agentcad validate <model> --variant <name>
+agentcad validate <model>:<variant>
 
 # Iteration and review
 agentcad diff <model>
 agentcad diff <model> --last
 agentcad review <model>
 agentcad deliver <model>
-agentcad deliver <model> --variant <name>
+agentcad deliver <model>:<variant>
 
 # Preview
 agentcad preview <name>
+agentcad preview <name>:<variant>
 agentcad preview <name> --kind model
 agentcad preview <name> --kind assembly
 

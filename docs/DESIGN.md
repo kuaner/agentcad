@@ -203,18 +203,18 @@ introduced only when repeated patterns justify it (V3+).
 ```bash
 agentcad init <workspace> [--model <model>]                          # scaffold workspace (and optional first model)
 agentcad new <model>                                      # add model in existing workspace
-agentcad new <model> --variant <name>                     # create variant (same part.py, different params)
+agentcad new <model>:<variant>                            # create variant (same part.py, different params)
 agentcad sync                                            # refresh templates
 agentcad precheck <model>                         # design-time solve
-agentcad build <model> [--variant <name>] [--force]       # part.py -> STEP + STL
-agentcad measure <model> [--variant <name>]               # mesh stats + structural facts
+agentcad build <model>[:<variant>] [--force]              # part.py -> STEP + STL
+agentcad measure <model>[:<variant>]                      # mesh stats + structural facts
 agentcad render <model> --view iso                # iso/front/top/side/back
 agentcad render <model> --section-z|x|y <v>              # cross-section SVG + measurement JSON
-agentcad validate <model> [--variant <name>]              # full pipeline with fix suggestions
+agentcad validate <model>[:<variant>]                     # full pipeline with fix suggestions
 agentcad diff <model> [--last]                             # compare validation runs
 agentcad review <model>                           # pre-delivery checklist
-agentcad deliver <model> [--variant <name>]               # delivery manifest
-agentcad preview <name> [--kind model|assembly] [--variant <name>]  # interactive HTML preview
+agentcad deliver <model>[:<variant>]                      # delivery manifest
+agentcad preview <name>[:<variant>] [--kind model|assembly]  # interactive HTML preview
 agentcad probe <model> --z|--x|--y <v>            # cross-section diameters + section analysis
 agentcad probe <model> --z <v> --line-u <u>       # active line measurement in section axes
 agentcad probe <model> --z <v> --point u,v        # nearest contour distance in section axes

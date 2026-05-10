@@ -230,3 +230,66 @@ def test_preview_kind_disambiguates_assembly(monkeypatch, tmp_path):
 
     assert result == 0
     assert captured["target"] == "shared"
+
+
+def test_new_variant_with_colon_syntax(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main(["init", "project", "--model", "bracket"])
+    monkeypatch.chdir(tmp_path / "project")
+    result = main(["new", "bracket:small"])
+    assert result == 0
+    assert (tmp_path / "project" / "models" / "bracket" / "variants" / "small" / "params.json").exists()
+
+
+def test_build_variant_with_colon_syntax(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main(["init", "project", "--model", "box"])
+    monkeypatch.chdir(tmp_path / "project")
+    captured = {}
+
+    def fake_build(project, name, force=False, variant=None):
+        captured["name"] = name
+        captured["variant"] = variant
+        return {"ok": True, "stage": "build", "model": name}
+
+    monkeypatch.setattr(cli_mod, "build_model", fake_build)
+    result = main(["build", "box:large"])
+    assert result == 0
+    assert captured["name"] == "box"
+    assert captured["variant"] == "large"
+
+
+def test_build_without_variant(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main(["init", "project", "--model", "box"])
+    monkeypatch.chdir(tmp_path / "project")
+    captured = {}
+
+    def fake_build(project, name, force=False, variant=None):
+        captured["name"] = name
+        captured["variant"] = variant
+        return {"ok": True, "stage": "build", "model": name}
+
+    monkeypatch.setattr(cli_mod, "build_model", fake_build)
+    result = main(["build", "box"])
+    assert result == 0
+    assert captured["name"] == "box"
+    assert captured["variant"] is None
+
+
+def test_preview_variant_with_colon_syntax(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main(["init", "project", "--model", "box"])
+    monkeypatch.chdir(tmp_path / "project")
+    captured = {}
+
+    def fake_model_preview(project_path, target, **kwargs):
+        captured["target"] = target
+        captured["variant"] = kwargs.get("variant")
+        return {"ok": True, "stage": "preview", "kind": "model", "name": target}
+
+    monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
+    result = main(["preview", "box:small"])
+    assert result == 0
+    assert captured["target"] == "box"
+    assert captured["variant"] == "small"

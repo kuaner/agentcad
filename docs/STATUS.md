@@ -38,11 +38,11 @@ uv run agentcad --help
 ```bash
 agentcad init <workspace> [--model <model>]                          # scaffold workspace (and optional first model)
 agentcad new <model>                                      # add model in existing workspace
-agentcad new <model> --variant <name>                     # create variant (same part.py, different params)
+agentcad new <model>:<variant>                            # create variant (same part.py, different params)
 agentcad sync                                            # refresh workspace files from templates
 agentcad precheck <model>                         # design-time solve before code
-agentcad build <model> [--variant <name>] [--force]       # build123d -> STEP + STL (hash-cached)
-agentcad measure <model> [--variant <name>]               # mesh stats + structural facts
+agentcad build <model>[:<variant>] [--force]              # build123d -> STEP + STL (hash-cached)
+agentcad measure <model>[:<variant>]                      # mesh stats + structural facts
 agentcad render <model> --view iso                # iso/front/top/side/back SVG
 agentcad render <model> --section-z <z>                  # cross-section SVG + JSON sidecar (also --section-x, --section-y)
 agentcad probe <model> --z <z>                    # cross-section diameters / void / section analysis
@@ -50,11 +50,11 @@ agentcad probe <model> --z <z> --line-u <u>       # active line measurement
 agentcad probe <model> --z <z> --point u,v        # nearest contour distance
 agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
 agentcad inspect <model>                          # three-axis scan + auto sections + suggested probes
-agentcad validate <model> [--variant <name>]              # build + measure + render + design checks + fix suggestions
+agentcad validate <model>[:<variant>]                     # build + measure + render + design checks + fix suggestions
 agentcad diff <model> [--last]                             # compare validation runs
 agentcad review <model>                           # pre-delivery checklist + relations matrix
-agentcad deliver <model> [--variant <name>]               # delivery manifest
-agentcad preview <name> [--kind model|assembly] [--variant <name>]  # interactive HTML preview
+agentcad deliver <model>[:<variant>]                      # delivery manifest
+agentcad preview <name>[:<variant>] [--kind model|assembly]  # interactive HTML preview
 agentcad report <model>                                  # Markdown validation summary
 ```
 

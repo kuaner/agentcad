@@ -62,13 +62,16 @@ object:
 To test the same geometry with different dimensions:
 
 ```bash
-agentcad new <model> --variant small
+agentcad new <model>:small
 # Edit models/<model>/variants/small/params.json
-agentcad validate <model> --variant small
+agentcad validate <model>:small
 ```
 
 Variants share `part.py` and `design.json` with the base model. Only
 `params.json` differs. Variant outputs go to `models/<model>/outputs/<variant>/`.
+
+Use `model:variant` syntax with any command: `build`, `validate`, `preview`,
+`deliver`.
 
 ## Feature To Check Cheat Sheet
 

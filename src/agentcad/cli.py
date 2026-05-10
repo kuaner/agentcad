@@ -20,7 +20,17 @@ from .runner import build_model
 from .section import AXIS_X, AXIS_Y, AXIS_Z, write_section_svg
 from .stl import read_stl
 from .validate import deliver_model, validate_model
-from .workspace import find_project, init_workspace, model_dir, new_model, normalize_model_name, outputs_dir, sync_workspace
+from .workspace import find_project, init_workspace, model_dir, new_model, normalize_model_name, outputs_dir, outputs_dir_for_variant, sync_workspace
+
+
+def _parse_model_target(target: str) -> tuple[str, str | None]:
+    """Parse 'model' or 'model:variant' into (model, variant_or_None)."""
+    if ":" not in target:
+        return target, None
+    model, variant = target.rsplit(":", 1)
+    if not model or not variant:
+        raise ValueError(f"invalid target '{target}': both model and variant name required around ':'")
+    return model, variant
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -47,19 +57,16 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--model", default=None, help="create an initial model after workspace initialization")
     init.add_argument("--force", action="store_true")
 
-    new = sub.add_parser("new", help="create a new model (auto-initializes workspace)")
+    new = sub.add_parser("new", help="create a new model or variant (use model:variant)")
     new.add_argument("model")
     new.add_argument("--force", action="store_true")
-    new.add_argument("--variant", default=None, help="create a variant with this name instead of a new model")
 
     build = sub.add_parser("build", help="build a model and export STEP/STL")
     build.add_argument("model")
     build.add_argument("--force", action="store_true", help="force rebuild even if source is unchanged")
-    build.add_argument("--variant", default=None, help="build using a variant's params.json")
 
     measure = sub.add_parser("measure", help="measure generated STL geometry")
     measure.add_argument("model")
-    measure.add_argument("--variant", default=None, help="measure variant output")
 
     render = sub.add_parser("render", help="render an SVG preview from STL")
     render.add_argument("model")
@@ -75,11 +82,9 @@ def build_parser() -> argparse.ArgumentParser:
                         help="render an X cross-section SVG (YZ plane) at this position (mm)")
     render.add_argument("--section-y", dest="section_y", type=float, default=None,
                         help="render a Y cross-section SVG (XZ plane) at this position (mm)")
-    render.add_argument("--variant", default=None, help="render variant output")
 
     preview = sub.add_parser("preview", help="generate an interactive local HTML preview for a model or assembly")
     preview.add_argument("target")
-    preview.add_argument("--variant", default=None, help="preview variant output")
     preview.add_argument(
         "--kind",
         choices=["auto", "model", "assembly"],
@@ -95,12 +100,10 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="comma-separated list of views to render during validation (default: iso,front,top,side,back)",
     )
-    validate.add_argument("--variant", default=None, help="validate using a variant's params.json")
 
     deliver = sub.add_parser("deliver", help="write a delivery manifest")
     deliver.add_argument("model")
     deliver.add_argument("--no-validate", action="store_true")
-    deliver.add_argument("--variant", default=None, help="deliver variant output")
 
     diff = sub.add_parser("diff", help="compare current vs previous validation run")
     diff.add_argument("model")
@@ -164,8 +167,10 @@ def _resolve_project(args: argparse.Namespace) -> Path:
         if args.command == "new":
             # For `agentcad new <name>` in a plain directory, scaffold a
             # dedicated project folder named after the model by default.
+            model_target = getattr(args, "model", "")
+            model_name = model_target.rsplit(":", 1)[0] if ":" in model_target else model_target
             if project == Path("."):
-                target = (Path.cwd() / args.model).expanduser().resolve()
+                target = (Path.cwd() / model_name).expanduser().resolve()
             else:
                 target = project.expanduser().resolve()
             init_workspace(target)
@@ -209,15 +214,20 @@ def dispatch(args: argparse.Namespace) -> dict:
         if args.assembly_command == "review":
             return review_assembly(project, args.assembly)
     if args.command == "new":
-        if getattr(args, "variant", None):
+        model_name, variant_name = _parse_model_target(args.model)
+        if variant_name:
             from .workspace import new_variant
-            return new_variant(project, args.model, args.variant)
-        return new_model(project, args.model, force=args.force)
+            return new_variant(project, model_name, variant_name)
+        return new_model(project, model_name, force=args.force)
     if args.command == "build":
-        return build_model(project, args.model, force=getattr(args, "force", False), variant=getattr(args, "variant", None))
+        model_name, variant_name = _parse_model_target(args.model)
+        return build_model(project, model_name, force=getattr(args, "force", False), variant=variant_name)
     if args.command == "measure":
-        return measure_model(project, args.model, variant=getattr(args, "variant", None))
+        model_name, variant_name = _parse_model_target(args.model)
+        return measure_model(project, model_name, variant=variant_name)
     if args.command == "render":
+        model_name, variant_name = _parse_model_target(args.model)
+        out_dir = outputs_dir_for_variant(project, model_name, variant_name)
         # Section SVG modes take priority over 3D view rendering.
         for attr, axis_int, axis_name in (
             ("section_z", AXIS_Z, "z"),
@@ -226,30 +236,33 @@ def dispatch(args: argparse.Namespace) -> dict:
         ):
             val = getattr(args, attr, None)
             if val is not None:
-                stl_path = outputs_dir(project, args.model) / f"{args.model}.stl"
+                stl_path = out_dir / f"{model_name}.stl"
                 if not stl_path.exists():
-                    return {"ok": False, "stage": "render", "model": args.model,
+                    return {"ok": False, "stage": "render", "model": model_name,
                             "error": {"type": "STLMissing",
-                                      "message": f"STL not found, run 'agentcad build {args.model}' first"}}
+                                      "message": f"STL not found, run 'agentcad build {model_name}' first"}}
                 triangles = read_stl(stl_path)
-                out_dir = outputs_dir(project, args.model)
                 svg_path = out_dir / f"section.{axis_name}{val:.2f}.svg"
                 return write_section_svg(triangles, axis_int, val, svg_path)
         views_arg = getattr(args, "views", None)
         if views_arg:
             views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS]
-            return render_models_multi(project, args.model, views or [args.view], variant=getattr(args, "variant", None))
-        return render_model(project, args.model, view=args.view, variant=getattr(args, "variant", None))
+            return render_models_multi(project, model_name, views or [args.view], variant=variant_name)
+        return render_model(project, model_name, view=args.view, variant=variant_name)
     if args.command == "preview":
-        return _preview_target(project, args.target, kind=getattr(args, "kind", "auto"), variant=getattr(args, "variant", None))
+        target, variant_name = _parse_model_target(args.target)
+        return _preview_target(project, target, kind=getattr(args, "kind", "auto"), variant=variant_name)
     if args.command == "validate":
+        model_name, variant_name = _parse_model_target(args.model)
         views_arg = getattr(args, "views", None)
         render_views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS] if views_arg else None
-        return validate_model(project, args.model, render_view=args.view, render_views=render_views, variant=getattr(args, "variant", None))
+        return validate_model(project, model_name, render_view=args.view, render_views=render_views, variant=variant_name)
     if args.command == "deliver":
-        return deliver_model(project, args.model, run_validation=not args.no_validate, variant=getattr(args, "variant", None))
+        model_name, variant_name = _parse_model_target(args.model)
+        return deliver_model(project, model_name, run_validation=not args.no_validate, variant=variant_name)
     if args.command == "diff":
-        return diff_model(project, args.model, last=getattr(args, "last", False))
+        model_name, _ = _parse_model_target(args.model)
+        return diff_model(project, model_name, last=getattr(args, "last", False))
     if args.command == "probe":
         if args.scan:
             return probe_scan(project, args.model, axis=args.axis, samples=args.samples)
