@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import io
+import os
 import runpy
 import sys
 import traceback
@@ -11,14 +12,14 @@ from pathlib import Path
 from typing import Any
 
 from .jsonio import read_json, write_json
-from .workspace import model_dir, outputs_dir
+from .workspace import model_dir, outputs_dir_for_variant, variant_params_path
 
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _source_hash(root: Path) -> str:
+def _source_hash(root: Path, variant_params: Path | None = None) -> str:
     """Compute a short hash over part.py and params.json to detect source changes."""
     h = hashlib.sha256()
     for fname in ("part.py", "params.json"):
@@ -26,13 +27,16 @@ def _source_hash(root: Path) -> str:
         if p.exists():
             h.update(fname.encode())
             h.update(p.read_bytes())
+    if variant_params is not None and variant_params.exists():
+        h.update(b"variant_params")
+        h.update(variant_params.read_bytes())
     return h.hexdigest()[:16]
 
 
-def build_model(project: Path, name: str, force: bool = False) -> dict:
+def build_model(project: Path, name: str, force: bool = False, variant: str | None = None) -> dict:
     root = model_dir(project, name)
     source = root / "part.py"
-    out_dir = outputs_dir(project, name)
+    out_dir = outputs_dir_for_variant(project, name, variant)
     out_dir.mkdir(parents=True, exist_ok=True)
     build_report_path = out_dir / "build.json"
 
@@ -41,7 +45,8 @@ def build_model(project: Path, name: str, force: bool = False) -> dict:
         write_json(build_report_path, payload)
         return payload
 
-    source_hash = _source_hash(root)
+    v_params = variant_params_path(project, name, variant) if variant else None
+    source_hash = _source_hash(root, v_params)
 
     # Return cached build when source is unchanged and artifacts exist.
     if not force and build_report_path.exists():
@@ -60,6 +65,12 @@ def build_model(project: Path, name: str, force: bool = False) -> dict:
     stderr = io.StringIO()
     started_at = utc_now()
     old_path = list(sys.path)
+    prev_variant = os.environ.get("AGENTCAD_VARIANT")
+    prev_variant_params = os.environ.get("AGENTCAD_VARIANT_PARAMS")
+    if variant:
+        os.environ["AGENTCAD_VARIANT"] = variant
+        if v_params and v_params.exists():
+            os.environ["AGENTCAD_VARIANT_PARAMS"] = str(v_params)
     try:
         sys.path.insert(0, str(root))
         with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
@@ -78,6 +89,14 @@ def build_model(project: Path, name: str, force: bool = False) -> dict:
         return payload
     finally:
         sys.path[:] = old_path
+        if prev_variant is not None:
+            os.environ["AGENTCAD_VARIANT"] = prev_variant
+        else:
+            os.environ.pop("AGENTCAD_VARIANT", None)
+        if prev_variant_params is not None:
+            os.environ["AGENTCAD_VARIANT_PARAMS"] = prev_variant_params
+        else:
+            os.environ.pop("AGENTCAD_VARIANT_PARAMS", None)
 
     result = namespace.get("result")
     if result is None:
@@ -91,7 +110,7 @@ def build_model(project: Path, name: str, force: bool = False) -> dict:
 
     step_path = out_dir / f"{name}.step"
     stl_path = out_dir / f"{name}.stl"
-    metadata_path = root / "metadata.json"
+    metadata_path = out_dir / "metadata.json" if variant else root / "metadata.json"
     try:
         from build123d import export_step, export_stl  # type: ignore
 

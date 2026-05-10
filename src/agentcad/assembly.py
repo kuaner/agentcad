@@ -2062,14 +2062,15 @@ def _component_triangles_from_public_record(component: dict) -> list[Triangle]:
 
 def _render_assembly_previews(project: Path, name: str, geometry: dict) -> dict:
     out_dir = assembly_outputs_dir(project, name)
+    bbox = ((geometry.get("assembly_geometry") or {}).get("bbox"))
     try:
         combined = _assembly_triangles_from_geometry(geometry)
         combined_path = out_dir / "preview.combined.iso.svg"
-        combined_path.write_text(triangles_to_svg(combined, title=f"{name} combined iso", view="iso"), encoding="utf-8")
+        combined_path.write_text(triangles_to_svg(combined, title=f"{name} combined iso", view="iso", bbox=bbox), encoding="utf-8")
 
         exploded = _exploded_triangles_from_geometry(geometry)
         exploded_path = out_dir / "preview.exploded.iso.svg"
-        exploded_path.write_text(triangles_to_svg(exploded, title=f"{name} exploded iso", view="iso"), encoding="utf-8")
+        exploded_path.write_text(triangles_to_svg(exploded, title=f"{name} exploded iso", view="iso", bbox=bbox), encoding="utf-8")
 
         return {
             "ok": True,

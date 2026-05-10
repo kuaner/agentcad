@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "stage": "build",
+  "model": "l_bracket",
+  "sourceHash": "01f8a4ba6f2490b4",
+  "startedAt": "2026-05-10T04:36:02.543292+00:00",
+  "endedAt": "2026-05-10T04:36:03.872989+00:00",
+  "artifacts": {
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/large/l_bracket.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/large/l_bracket.stl",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/large/build.json",
+    "metadata": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/metadata.json"
+  },
+  "stdout": "",
+  "stderr": "",
+  "message": "model built"
+}

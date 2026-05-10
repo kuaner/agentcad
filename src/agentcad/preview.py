@@ -8,7 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 from . import templates
 from .jsonio import read_json
-from .workspace import model_dir, normalize_model_name, outputs_dir
+from .workspace import model_dir, normalize_model_name, outputs_dir, outputs_dir_for_variant
 
 THREE_VERSION = "0.164.1"
 
@@ -19,9 +19,10 @@ def write_model_preview(
     *,
     validation_payload: dict | None = None,
     geometry_payload: dict | None = None,
+    variant: str | None = None,
 ) -> dict:
     safe = normalize_model_name(name)
-    out_dir = outputs_dir(project, safe)
+    out_dir = outputs_dir_for_variant(project, safe, variant)
     preview_path = out_dir / "preview.html"
     stl_path = out_dir / f"{safe}.stl"
     if not stl_path.exists():

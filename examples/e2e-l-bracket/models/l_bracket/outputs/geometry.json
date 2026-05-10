@@ -1,0 +1,65 @@
+{
+  "ok": true,
+  "stage": "measure",
+  "model": "l_bracket",
+  "source": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/l_bracket.stl",
+  "geometry": {
+    "bbox": {
+      "min": [
+        -30.0,
+        -20.0,
+        -10.0
+      ],
+      "max": [
+        30.0,
+        20.0,
+        20.0
+      ],
+      "size": [
+        60.0,
+        40.0,
+        30.0
+      ],
+      "center": [
+        0.0,
+        0.0,
+        5.0
+      ]
+    },
+    "mesh": {
+      "triangles": 1044,
+      "vertices": 3132,
+      "unique_edges": 1566,
+      "boundary_or_nonmanifold_edges": 0,
+      "watertight": true
+    },
+    "mass_properties": {
+      "surface_area": 9128.556088038136,
+      "volume": 19303.731808618024
+    }
+  },
+  "structure": {
+    "has_internal_void": true,
+    "void_start_z": 5.0,
+    "step_changes": [
+      {
+        "pos": -0.76,
+        "delta_u": 0.0,
+        "delta_v": 35.0,
+        "delta_point_count": 1012,
+        "hint": "section grows — possible feature addition or flange"
+      },
+      {
+        "pos": 5.0,
+        "delta_u": 0.0,
+        "delta_v": -35.0,
+        "delta_point_count": -1016,
+        "hint": "section shrinks — possible cavity start or wall end"
+      }
+    ]
+  },
+  "artifacts": {
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/geometry.json"
+  },
+  "message": "model measured"
+}

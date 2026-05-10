@@ -44,6 +44,35 @@ Implement one feature at a time and rerun `agentcad validate` immediately.
 Watch the matching check flip from failing to passing. Do not batch multiple
 features before validating.
 
+## Iteration Loop with Fix Suggestions and Diff
+
+When `agentcad validate` fails, each failing check includes a `suggested_fix`
+object:
+
+1. If `suggested_fix.confidence` is `"high"` and a `param` key is provided,
+   update that param in `params.json` to the `suggested` value.
+2. If `suggested_fix.confidence` is `"low"`, the param may not directly control
+   the dimension. Inspect the geometry before changing params.
+3. Re-run `agentcad validate <model>`.
+4. Run `agentcad diff <model>` to see which checks were fixed, which regressed,
+   and whether geometry drifted between iterations.
+
+## Model Variants
+
+To test the same geometry with different dimensions:
+
+```bash
+agentcad new <model>:small
+# Edit models/<model>/variants/small/params.json
+agentcad validate <model>:small
+```
+
+Variants share `part.py` and `design.json` with the base model. Only
+`params.json` differs. Variant outputs go to `models/<model>/outputs/<variant>/`.
+
+Use `model:variant` syntax with any command: `build`, `validate`, `preview`,
+`deliver`.
+
 ## Feature To Check Cheat Sheet
 
 | Feature type | Check type | Z slice | Expected value | Tolerance |

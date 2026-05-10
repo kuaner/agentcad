@@ -13,13 +13,14 @@ from .contract import (
 )
 from .jsonio import read_json, write_json
 from .measure import measure_model
+from .diff import archive_validation
 from .payloads import stage_check
 from .preview import write_model_preview
 from .render import render_models_multi
 from .runner import build_model, utc_now
 from .section import AXIS_Z, scan_profile, write_section_svg
 from .stl import read_stl
-from .workspace import model_dir, outputs_dir
+from .workspace import model_dir, outputs_dir, outputs_dir_for_variant, variant_params_path
 
 _DEFAULT_VALIDATE_VIEWS = ["iso", "front", "top", "side", "back"]
 
@@ -33,23 +34,25 @@ def validate_model(
     name: str,
     render_view: str = "iso",
     render_views: list[str] | None = None,
+    variant: str | None = None,
 ) -> dict:
-    out_dir = outputs_dir(project, name)
+    out_dir = outputs_dir_for_variant(project, name, variant)
     out_dir.mkdir(parents=True, exist_ok=True)
     validation_path = out_dir / "validation.json"
     observability_path = out_dir / "observability.json"
 
-    build = build_model(project, name)
+    build = build_model(project, name, variant=variant)
+    archive_validation(out_dir)
     if not build.get("ok"):
         payload = _validation_payload(name, [stage_check("build", False, build)], artifacts={"validation": str(validation_path)})
         write_json(validation_path, payload)
         return payload
 
-    measure = measure_model(project, name)
+    measure = measure_model(project, name, variant=variant)
     views = render_views if render_views is not None else _DEFAULT_VALIDATE_VIEWS
     if render_view != "iso" and render_view not in views:
         views = [render_view] + [v for v in views if v != render_view]
-    multi_render = render_models_multi(project, name, views)
+    multi_render = render_models_multi(project, name, views, variant=variant)
 
     checks = [
         stage_check("build", bool(build.get("ok")), build),
@@ -65,7 +68,7 @@ def validate_model(
             checks.extend(schema_errors)
         else:
             checks.extend(evaluate_feature_coverage(project, name))
-            checks.extend(evaluate_design_checks(project, name, measure))
+            checks.extend(evaluate_design_checks(project, name, measure, variant=variant))
             warnings = evaluate_weak_check_warnings(project, name)
 
         stl_path = out_dir / f"{name}.stl"
@@ -106,18 +109,25 @@ def validate_model(
     if observability:
         artifacts["observability"] = str(observability_path)
     payload = _validation_payload(name, checks, artifacts=artifacts, warnings=warnings or None, auto_scan=auto_scan or None)
+    design = read_json(model_dir(project, name) / "design.json", default={}) or {}
+    if variant:
+        v_params_path = variant_params_path(project, name, variant)
+        params = read_json(v_params_path, default={}) or {} if v_params_path.exists() else read_json(model_dir(project, name) / "params.json", default={}) or {}
+    else:
+        params = read_json(model_dir(project, name) / "params.json", default={}) or {}
+    _attach_suggested_fixes(payload.get("checks", []), design, params)
     write_json(validation_path, payload)
-    preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure)
+    preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure, variant=variant)
     if preview.get("ok"):
         payload["artifacts"]["preview_page"] = (preview.get("artifacts") or {}).get("preview_page")
     write_json(validation_path, payload)
     return payload
 
 
-def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict:
-    out_dir = outputs_dir(project, name)
+def deliver_model(project: Path, name: str, run_validation: bool = True, variant: str | None = None) -> dict:
+    out_dir = outputs_dir_for_variant(project, name, variant)
     out_dir.mkdir(parents=True, exist_ok=True)
-    validation = validate_model(project, name) if run_validation else read_json(out_dir / "validation.json", default={"ok": False, "message": "validation report missing"})
+    validation = validate_model(project, name, variant=variant) if run_validation else read_json(out_dir / "validation.json", default={"ok": False, "message": "validation report missing"})
     deliver_path = out_dir / "deliverable.json"
     preview_candidates = {
         f"preview_{p.stem.split('.')[1]}": str(p)
@@ -151,9 +161,10 @@ def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict
     return payload
 
 
-def evaluate_design_checks(project: Path, name: str, measure_payload: dict) -> list[dict]:
-    design = read_json(outputs_dir(project, name).parent / "design.json", default={}) or {}
-    stl_path = outputs_dir(project, name) / f"{name}.stl"
+def evaluate_design_checks(project: Path, name: str, measure_payload: dict, variant: str | None = None) -> list[dict]:
+    out_dir = outputs_dir_for_variant(project, name, variant)
+    design = read_json(model_dir(project, name) / "design.json", default={}) or {}
+    stl_path = out_dir / f"{name}.stl"
     cache: list | None = None
 
     def get_triangles() -> list:
@@ -162,7 +173,7 @@ def evaluate_design_checks(project: Path, name: str, measure_payload: dict) -> l
             cache = read_stl(stl_path)
         return cache
 
-    ctx = CheckContext(project=project, name=name, measure=measure_payload, get_triangles=get_triangles, out_dir=outputs_dir(project, name))
+    ctx = CheckContext(project=project, name=name, measure=measure_payload, get_triangles=get_triangles, out_dir=out_dir)
     results: list[dict] = []
     for index, check in enumerate(design.get("checks") or []):
         if not isinstance(check, dict):
@@ -286,6 +297,70 @@ def _observability_payload(
     }
 
 
+def _attach_suggested_fixes(checks: list[dict], design: dict, params: dict) -> None:
+    check_defs = {str(c.get("id", "")): c for c in (design.get("checks") or []) if isinstance(c, dict)}
+    for check in checks:
+        if check.get("ok", True):
+            continue
+        check_id = str(check.get("name", ""))
+        check_def = check_defs.get(check_id, {})
+        param_ref = check_def.get("param_ref")
+        if param_ref and param_ref in params:
+            check["suggested_fix"] = _param_fix(check, param_ref, params[param_ref])
+        else:
+            check["suggested_fix"] = _generic_fix(check)
+
+
+def _param_fix(check: dict, param_key: str, current_value) -> dict:
+    expected = check.get("expected")
+    actual = check.get("actual")
+    if expected is not None and actual is not None:
+        try:
+            delta = float(expected) - float(actual)
+            if isinstance(current_value, (int, float)):
+                suggested = round(current_value + delta, 4)
+                if suggested <= 0 or abs(delta) > abs(current_value) * 2:
+                    return {
+                        "param": param_key,
+                        "current": current_value,
+                        "suggested": float(expected),
+                        "confidence": "low",
+                        "reason": f"{check.get('type', 'check')} actual={actual} target={expected}; param '{param_key}' may not control this dimension directly, using target as suggested value",
+                    }
+                return {
+                    "param": param_key,
+                    "current": current_value,
+                    "suggested": suggested,
+                    "confidence": "high",
+                    "reason": f"{check.get('type', 'check')} actual={actual} target={expected} delta={delta:.3f}",
+                }
+        except (TypeError, ValueError):
+            pass
+    return {
+        "param": param_key,
+        "current": current_value,
+        "reason": f"{check.get('type', 'check')} failed; review param '{param_key}'",
+    }
+
+
+def _generic_fix(check: dict) -> dict:
+    check_type = check.get("type", "")
+    parts = [f"fix {check_type} check '{check.get('name', '')}'"]
+    actual = check.get("actual")
+    expected = check.get("expected")
+    if actual is not None:
+        parts.append(f"actual: {actual}")
+    if expected is not None:
+        parts.append(f"target: {expected}")
+    hint = check.get("hint")
+    if hint:
+        parts.append(hint)
+    return {
+        "action": "; ".join(parts),
+        "evidence": {"type": check_type, "actual": actual, "expected": expected},
+    }
+
+
 __all__ = [
     "validate_model",
     "deliver_model",
@@ -299,4 +374,5 @@ __all__ = [
     "_get_path",
     "_VALID_CHECK_TYPES",
     "_GEOMETRY_CHECK_TYPES",
+    "_attach_suggested_fixes",
 ]

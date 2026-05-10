@@ -1,6 +1,6 @@
 # AgentCAD Current Status
 
-Last updated: 2026-05-08
+Last updated: 2026-05-10
 
 ## Project Goal
 
@@ -38,10 +38,11 @@ uv run agentcad --help
 ```bash
 agentcad init <workspace> [--model <model>]                          # scaffold workspace (and optional first model)
 agentcad new <model>                                      # add model in existing workspace
+agentcad new <model>:<variant>                            # create variant (same part.py, different params)
 agentcad sync                                            # refresh workspace files from templates
 agentcad precheck <model>                         # design-time solve before code
-agentcad build <model>                            # build123d -> STEP + STL (hash-cached)
-agentcad measure <model>                          # mesh stats + structural facts
+agentcad build <model>[:<variant>] [--force]              # build123d -> STEP + STL (hash-cached)
+agentcad measure <model>[:<variant>]                      # mesh stats + structural facts
 agentcad render <model> --view iso                # iso/front/top/side/back SVG
 agentcad render <model> --section-z <z>                  # cross-section SVG + JSON sidecar (also --section-x, --section-y)
 agentcad probe <model> --z <z>                    # cross-section diameters / void / section analysis
@@ -49,9 +50,11 @@ agentcad probe <model> --z <z> --line-u <u>       # active line measurement
 agentcad probe <model> --z <z> --point u,v        # nearest contour distance
 agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
 agentcad inspect <model>                          # three-axis scan + auto sections + suggested probes
-agentcad validate <model>                         # build + measure + render + design checks
+agentcad validate <model>[:<variant>]                     # build + measure + render + design checks + fix suggestions
+agentcad diff <model> [--last]                             # compare validation runs
 agentcad review <model>                           # pre-delivery checklist + relations matrix
-agentcad deliver <model>                          # delivery manifest
+agentcad deliver <model>[:<variant>]                      # delivery manifest
+agentcad preview <name>[:<variant>] [--kind model|assembly]  # interactive HTML preview
 agentcad report <model>                                  # Markdown validation summary
 ```
 
@@ -80,20 +83,28 @@ project/
       params.json
       part.py
       metadata.json
+      variants/
+        <variant>/
+          params.json
       outputs/
         precheck.json
         build.json
         geometry.json
         validation.json
+        validation-history/
+          <timestamp>.json
         observability.json
         review.json
         deliverable.json
+        preview.html
         preview.{iso,front,top,side,back}.svg
         section.{x,y,z}{value}.svg
-        section.{x,y,z}{value}.json              # measured sidecar for each section SVG
-        debug.<check_id>.{x,y,z}{value}.svg     # auto on failed section checks
+        section.{x,y,z}{value}.json
+        debug.<check_id>.{x,y,z}{value}.svg
         <model>.step
         <model>.stl
+      outputs/<variant>/
+        (same structure, variant-specific)
 ```
 
 ## Design Contract
@@ -270,7 +281,7 @@ Both are documented in `references/build123d-guide.md`.
 
 ## Tests
 
-`uv run pytest -v` — currently 168 tests across:
+`uv run pytest -v` — currently 192 tests across:
 
 - `test_cli.py` — CLI dispatch
 - `test_workspace.py` — init / new / sync / discovery
@@ -278,7 +289,9 @@ Both are documented in `references/build123d-guide.md`.
 - `test_stl.py` — pure-Python STL reader and analysis
 - `test_render.py`, `test_section.py` — SVG rendering and section extraction
 - `test_preview.py` — local interactive HTML preview generation
-- `test_validate.py`, `test_weak_check.py` — post-build validation + weak-check warnings
+- `test_validate.py`, `test_weak_check.py` — post-build validation + weak-check warnings + fix suggestions
+- `test_diff.py` — validation history archiving and run diff
+- `test_variant.py` — model variant creation and variant-aware build
 - `test_probe.py` — probe + scan
 - `test_geometry.py` — pure shape primitives (AABB, clearance, accessibility, wall thickness)
 - `test_assembly.py` — assembly contracts, transform bans, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, SVG/STL/MJCF artifacts
@@ -294,6 +307,7 @@ Both are documented in `references/build123d-guide.md`.
 | V2 — design spec standardization | ✅ delivered | check IDs, schema validation, weak-check warnings, Markdown report (`agentcad report`) |
 | V2.5 — design-time observability | ✅ delivered (new) | `agentcad precheck`, `agentcad review`, four geometric relation checks, common-error catalog, mandatory TDD prompt |
 | V2.6 — design-thinking prompts | ✅ delivered (new) | split references, Discovery Gate, Concept Gate, Design Quality Review, real cable-hook e2e |
-| V4 — assembly validation | ✅ delivered (new) | `agentcad assembly init/list/validate/review`, rigid transforms, metadata interface measurement, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, combined/exploded SVG, combined STL, top-level interactive preview, mandatory MJCF round-trip |
+| V4 — assembly validation | ✅ delivered | `agentcad assembly init/list/validate/review`, rigid transforms, metadata interface measurement, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, combined/exploded SVG, combined STL, top-level interactive preview, mandatory MJCF round-trip |
+| V4.5 — iteration tooling | ✅ delivered | SVG dimension annotations, validation run diff, model variants, fix suggestions |
 
 Next milestones (V3+) are tracked in [`DESIGN.md`](DESIGN.md).

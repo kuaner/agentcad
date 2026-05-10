@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "stage": "render",
+  "model": "l_bracket",
+  "view": "side",
+  "artifacts": {
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/preview.side.svg",
+    "render": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/render.side.json"
+  },
+  "message": "preview rendered"
+}

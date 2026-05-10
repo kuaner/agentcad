@@ -5,7 +5,7 @@ from pathlib import Path
 from .jsonio import write_json
 from .section import AXIS_Z, scan_profile
 from .stl import mesh_report, read_stl
-from .workspace import outputs_dir
+from .workspace import outputs_dir, outputs_dir_for_variant
 
 
 def _structure_from_scan(triangles: list, report: dict) -> dict:
@@ -34,8 +34,8 @@ def _structure_from_scan(triangles: list, report: dict) -> dict:
     }
 
 
-def measure_model(project: Path, name: str) -> dict:
-    out_dir = outputs_dir(project, name)
+def measure_model(project: Path, name: str, variant: str | None = None) -> dict:
+    out_dir = outputs_dir_for_variant(project, name, variant)
     stl_path = out_dir / f"{name}.stl"
     report_path = out_dir / "geometry.json"
     if not stl_path.exists():

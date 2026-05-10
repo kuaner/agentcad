@@ -65,17 +65,19 @@ All commands auto-detect the workspace by walking up from cwd.
 ```bash
 agentcad init <workspace> [--model <model>]                          # Initialize workspace (optionally create first model)
 agentcad new <model>                                      # Create model inside an existing workspace
+agentcad new <model>:<variant>                            # Create variant (same part.py, different params)
 agentcad sync                                           # Update workspace scaffold files from templates
 agentcad precheck <model>                        # Static design solve before writing part.py
-agentcad build <model>                           # Build + export STEP/STL
-agentcad measure <model>                         # Measure STL geometry
+agentcad build <model>[:<variant>]                       # Build + export STEP/STL
+agentcad measure <model>[:<variant>]                     # Measure STL geometry
 agentcad render <model>                          # SVG preview from STL
-agentcad preview <name>                          # Interactive HTML preview for model or assembly
+agentcad preview <name>[:<variant>]                      # Interactive HTML preview for model or assembly
 agentcad preview <name> --kind assembly          # Disambiguate if a model and assembly share a name
 agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
-agentcad validate <model>                        # Full validation pipeline
+agentcad validate <model>[:<variant>]                    # Full validation pipeline
+agentcad diff <model> [--last]                   # Compare validation runs
 agentcad review <model>                          # Pre-delivery checklist + relations matrix
-agentcad deliver <model>                         # Delivery manifest
+agentcad deliver <model>[:<variant>]                     # Delivery manifest
 agentcad probe <model> --scan --axis z|x|y       # Profile scan for step changes / void detection
 agentcad inspect <model>                         # Three-axis scan + section SVGs + suggested probes
 agentcad report <model>                                 # Markdown validation report

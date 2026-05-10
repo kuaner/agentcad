@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "validate",
   "model": "bit_holder_body",
-  "validatedAt": "2026-05-09T02:29:05.474406+00:00",
+  "validatedAt": "2026-05-10T04:56:40.489039+00:00",
   "checks": [
     {
       "name": "build",
@@ -1289,7 +1289,8 @@
     "section_z79_63": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z79.63.svg",
     "section_z9_74_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z9.74.json",
     "section_z79_63_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/section.z79.63.json",
-    "observability": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/observability.json"
+    "observability": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/observability.json",
+    "preview_page": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_body/outputs/preview.html"
   },
   "message": "validation passed",
   "auto_scan": {

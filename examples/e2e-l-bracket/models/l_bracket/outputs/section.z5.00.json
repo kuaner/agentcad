@@ -1,0 +1,49 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/section.z5.00.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 5.0,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 518,
+  "point_count": 1036,
+  "bbox": {
+    "u_min": -30.0,
+    "u_max": 30.0,
+    "v_min": -20.0,
+    "v_max": 20.0,
+    "u_size": 60.0,
+    "v_size": 40.0
+  },
+  "total_segment_length_mm": 4965.4065,
+  "component_count": 1,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 518,
+      "point_count": 259,
+      "bbox": {
+        "u_min": -30.0,
+        "u_max": 30.0,
+        "v_min": -20.0,
+        "v_max": 20.0,
+        "u_size": 60.0,
+        "v_size": 40.0
+      },
+      "centroid": [
+        0.0,
+        0.1931
+      ],
+      "total_segment_length_mm": 4965.4065,
+      "hull_area_estimate_mm2": 2400.0,
+      "closed_vertex_ratio": 0.2819,
+      "endpoint_count": 0,
+      "branch_vertex_count": 186
+    }
+  ],
+  "warnings": [
+    "open_section_component"
+  ]
+}

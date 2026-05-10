@@ -1,0 +1,93 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/debug.right_hole_dia.z2.50.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 2.5,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 516,
+  "point_count": 1032,
+  "bbox": {
+    "u_min": -30.0,
+    "u_max": 30.0,
+    "v_min": -20.0,
+    "v_max": 20.0,
+    "u_size": 60.0,
+    "v_size": 40.0
+  },
+  "total_segment_length_mm": 225.1301,
+  "component_count": 3,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 12,
+      "point_count": 12,
+      "bbox": {
+        "u_min": -30.0,
+        "u_max": 30.0,
+        "v_min": -20.0,
+        "v_max": 20.0,
+        "u_size": 60.0,
+        "v_size": 40.0
+      },
+      "centroid": [
+        0.4167,
+        4.7222
+      ],
+      "total_segment_length_mm": 200.0,
+      "hull_area_estimate_mm2": 2400.0,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 1,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": -22.0,
+        "u_max": -18.0,
+        "v_min": -1.9994,
+        "v_max": 1.9994,
+        "u_size": 4.0,
+        "v_size": 3.9988
+      },
+      "centroid": [
+        -20.0,
+        0.0
+      ],
+      "total_segment_length_mm": 12.5651,
+      "hull_area_estimate_mm2": 12.5613,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 2,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": 18.0,
+        "u_max": 22.0,
+        "v_min": -1.9994,
+        "v_max": 1.9994,
+        "u_size": 4.0,
+        "v_size": 3.9988
+      },
+      "centroid": [
+        20.0,
+        0.0
+      ],
+      "total_segment_length_mm": 12.5651,
+      "hull_area_estimate_mm2": 12.5613,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    }
+  ],
+  "warnings": [
+    "multiple_section_components"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "schema": "design-spec.v1",
+  "model": "l_bracket",
+  "units": "mm",
+  "intent": "L-shaped mounting bracket with two M5 through-holes on the base",
+  "assumptions": [
+    "Base sits on XY plane at Z=0",
+    "Flange rises in +Z from the back edge (+Y side)",
+    "Holes are centered along Y, spaced symmetrically on X"
+  ],
+  "features": [
+    {
+      "id": "base_plate",
+      "intent": "flat rectangular base plate for mounting",
+      "checks": ["base_bbox", "watertight"]
+    },
+    {
+      "id": "vertical_flange",
+      "intent": "vertical flange rising from back edge",
+      "checks": ["flange_bbox"]
+    },
+    {
+      "id": "mounting_holes",
+      "intent": "two M5 through-holes on the base",
+      "checks": ["left_hole_dia", "right_hole_dia"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "base_bbox",
+      "type": "bbox_size",
+      "expected": [60.0, 40.0, 30.0],
+      "tolerance": 1.0
+    },
+    {
+      "id": "flange_bbox",
+      "type": "bbox_size",
+      "expected": [60.0, 40.0, 30.0],
+      "tolerance": 1.0
+    },
+    {
+      "id": "watertight",
+      "type": "watertight"
+    },
+    {
+      "id": "min_tri",
+      "type": "min_triangles",
+      "min": 100
+    },
+    {
+      "id": "left_hole_dia",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "expected": 5.0,
+      "tolerance": 0.3,
+      "center": [-20.0, 0.0],
+      "param_ref": "hole_diameter"
+    },
+    {
+      "id": "right_hole_dia",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "expected": 5.0,
+      "tolerance": 0.3,
+      "center": [20.0, 0.0],
+      "param_ref": "hole_diameter"
+    }
+  ]
+}

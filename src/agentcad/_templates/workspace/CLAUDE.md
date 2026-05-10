@@ -36,6 +36,52 @@ models using the `agentcad` CLI and build123d geometry library.
 
 Do not manually export STEP/STL from `part.py`. The runner owns all exports.
 
+## Iteration Loop
+
+When `agentcad validate` fails, use the iteration tools to converge:
+
+1. Read the `checks` array in the JSON output. Each failing check includes a
+   `suggested_fix` object with actionable guidance.
+2. If `suggested_fix.confidence` is `"high"` and a `param` key is provided,
+   update that param in `params.json` to the `suggested` value.
+3. If `suggested_fix.confidence` is `"low"`, the param may not directly control
+   the dimension. Inspect the check center/axis and the geometry before changing
+   params.
+4. Re-run `agentcad validate <name>`.
+5. Run `agentcad diff <name>` to see which checks were fixed, which regressed,
+   and whether geometry drifted between iterations.
+
+## Model Variants
+
+To create the same model with different dimensions:
+
+1. Create a variant: `agentcad new <model>:<variant_name>`
+2. Edit `models/<model>/variants/<variant_name>/params.json` with variant-specific dimensions.
+3. Run any command with `<model>:<variant_name>` instead of `<model>`.
+
+Variants share `part.py`, `design.json`, and `metadata.json`. Only `params.json`
+differs. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
+
+## Fix Suggestions (param_ref)
+
+Add an optional `param_ref` field to checks in `design.json` to get targeted
+fix suggestions when the check fails:
+
+```json
+{
+  "id": "hole_diameter",
+  "type": "inner_diameter_at_z",
+  "z": 2.5,
+  "expected": 5.0,
+  "tolerance": 0.3,
+  "center": [0, 0],
+  "param_ref": "hole_diameter"
+}
+```
+
+Without `param_ref`, failing checks still get fix suggestions — but they are
+generic action strings instead of param-targeted values.
+
 ## Stage References
 
 Read only the references needed for the current stage.
@@ -90,10 +136,13 @@ models/<name>/
   params.json    Tunable dimensions
   part.py        build123d geometry (assign to `result`)
   metadata.json  (auto-generated if part.py defines `metadata`)
+  variants/<variant_name>/
+    params.json  Variant-specific parameters
   outputs/
     build.json          Build report
     geometry.json       STL measurement report
     validation.json     Validation results
+    validation-history/ Archived validation runs (for diff)
     observability.json  Aggregate previews, scans, and section measurements
     preview.html        Interactive local Three.js preview page
     precheck.json       Static contract report
@@ -104,6 +153,7 @@ models/<name>/
     section.z10.00.json Section measurement sidecar
     <name>.step         STEP export
     <name>.stl          STL export
+  outputs/<variant>/    Variant-specific output directory
 
 assemblies/<name>/
   assembly.json          Optional multi-model fit/mate contract
@@ -120,21 +170,35 @@ assemblies/<name>/
 
 ## CLI Quick Reference
 
+Append `:<variant>` to any model name to operate on a variant.
+
 ```bash
+# Workspace and model setup
 agentcad init <workspace> [--model <model>]
 agentcad new <model>
+agentcad new <model>:<variant>
+
+# Build pipeline
 agentcad precheck <model>
 agentcad build <model>
 agentcad build <model> --force
 agentcad measure <model>
 agentcad render <model>
 agentcad render <model> --views iso,front,top,side,back
+agentcad validate <model>
+
+# Iteration and review
+agentcad diff <model>
+agentcad diff <model> --last
+agentcad review <model>
+agentcad deliver <model>
+
+# Preview
 agentcad preview <name>
 agentcad preview <name> --kind model
 agentcad preview <name> --kind assembly
-agentcad validate <model>
-agentcad review <model>
-agentcad deliver <model>
+
+# Inspection
 agentcad probe <model> --z <z>
 agentcad probe <model> --z <z> "--center=cx,cy"
 agentcad probe <model> --z <z> --region x0,y0,x1,y1
@@ -152,6 +216,8 @@ agentcad render <model> --section-x <x>
 agentcad render <model> --section-y <y>
 agentcad inspect <model>
 agentcad report <model>
+
+# Assembly
 agentcad assembly init <assembly>
 agentcad assembly list
 agentcad assembly validate <assembly>
