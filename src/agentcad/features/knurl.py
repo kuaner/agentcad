@@ -116,7 +116,7 @@ def _build_groove_set(
             with BuildSketch(Plane(origin=path.line @ 0, z_dir=path.line % 0)):
                 _groove_profile(depth, width, shape)
             sweep()
-    except Exception:
+    except (ValueError, RuntimeError):
         return
 
     base = single.part

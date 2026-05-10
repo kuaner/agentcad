@@ -40,8 +40,6 @@ outer_radius = lid_outer_diameter / 2
 inner_radius = body_thread_radius + thread_clearance_diameter / 2
 recess_depth = lid_height - top_thickness
 
-thread_inner_radius = body_thread_radius + thread_clearance_diameter / 2
-
 
 def build():
     if inner_radius >= outer_radius - 2.0:
@@ -68,7 +66,7 @@ def build():
 
         # Internal thread (subtracted from inner wall)
         thread = sinusoidal_thread(
-            radius=thread_inner_radius,
+            radius=inner_radius,
             pitch=thread_pitch,
             height=thread_engagement_height,
             amplitude=body_thread_amplitude,
@@ -105,7 +103,7 @@ metadata = {
         "body_outer_diameter_mm": body_outer_diameter,
         "thread_pitch_mm": thread_pitch,
         "thread_starts": thread_starts,
-        "thread_inner_radius_mm": round(thread_inner_radius, 3),
+        "thread_inner_radius_mm": round(inner_radius, 3),
         "thread_engagement_height_mm": thread_engagement_height,
         "diametral_clearance_mm": thread_clearance_diameter,
         "radial_clearance_mm": round(thread_clearance_diameter / 2, 3),

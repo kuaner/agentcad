@@ -1,151 +1,330 @@
 {
   "ok": true,
-  "stage": "observe",
+  "stage": "validate",
   "model": "bit_holder_lid",
-  "observedAt": "2026-05-10T13:25:40.508361+00:00",
-  "geometry": {
-    "ok": true,
-    "stage": "measure",
-    "model": "bit_holder_lid",
-    "source": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.stl",
-    "geometry": {
-      "bbox": {
-        "min": [
-          -33.0,
-          -33.0,
-          -7.4721175554671635e-16
-        ],
-        "max": [
-          33.0,
-          33.0,
-          18.0
-        ],
-        "size": [
-          66.0,
-          66.0,
-          18.0
-        ],
-        "center": [
-          0.0,
-          0.0,
-          9.0
-        ]
-      },
-      "mesh": {
-        "triangles": 33452,
-        "vertices": 100356,
-        "unique_edges": 50178,
-        "boundary_or_nonmanifold_edges": 0,
-        "watertight": true
-      },
-      "mass_properties": {
-        "surface_area": 15459.500297032178,
-        "volume": 17862.375857391013
-      }
+  "validatedAt": "2026-05-10T13:15:15.532649+00:00",
+  "checks": [
+    {
+      "name": "build",
+      "type": "stage",
+      "ok": true
     },
-    "structure": {
-      "has_internal_void": false,
-      "void_start_z": null,
-      "step_changes": [
-        {
-          "pos": 0.936,
-          "delta_u": 0.0,
-          "delta_v": 0.003,
-          "delta_point_count": 368,
-          "hint": "more interior surfaces — inner cavity or new features begin here"
-        },
-        {
-          "pos": 3.24,
-          "delta_u": -0.001,
-          "delta_v": 0.0,
-          "delta_point_count": 366,
-          "hint": "more interior surfaces — inner cavity or new features begin here"
-        },
-        {
-          "pos": 4.392,
-          "delta_u": -0.001,
-          "delta_v": -0.001,
-          "delta_point_count": -500,
-          "hint": "fewer interior surfaces — inner cavity or features end here"
-        },
-        {
-          "pos": 5.544,
-          "delta_u": -0.001,
-          "delta_v": -0.001,
-          "delta_point_count": 244,
-          "hint": "more interior surfaces — inner cavity or new features begin here"
-        },
-        {
-          "pos": 6.696,
-          "delta_u": 0.001,
-          "delta_v": 0.01,
-          "delta_point_count": -254,
-          "hint": "fewer interior surfaces — inner cavity or features end here"
-        },
-        {
-          "pos": 7.848,
-          "delta_u": 0.0,
-          "delta_v": 0.001,
-          "delta_point_count": -274,
-          "hint": "fewer interior surfaces — inner cavity or features end here"
-        },
-        {
-          "pos": 9.0,
-          "delta_u": 0.0,
-          "delta_v": 0.004,
-          "delta_point_count": 466,
-          "hint": "more interior surfaces — inner cavity or new features begin here"
-        },
-        {
-          "pos": 10.152,
-          "delta_u": -0.003,
-          "delta_v": -0.001,
-          "delta_point_count": -142,
-          "hint": "fewer interior surfaces — inner cavity or features end here"
-        },
-        {
-          "pos": 11.304,
-          "delta_u": 0.004,
-          "delta_v": -0.002,
-          "delta_point_count": 126,
-          "hint": "more interior surfaces — inner cavity or new features begin here"
-        },
-        {
-          "pos": 12.456,
-          "delta_u": 0.0,
-          "delta_v": -0.002,
-          "delta_point_count": -366,
-          "hint": "fewer interior surfaces — inner cavity or features end here"
-        },
-        {
-          "pos": 14.76,
-          "delta_u": 0.001,
-          "delta_v": -0.003,
-          "delta_point_count": -480,
-          "hint": "fewer interior surfaces — inner cavity or features end here"
-        },
-        {
-          "pos": 15.912,
-          "delta_u": 0.0,
-          "delta_v": -0.004,
-          "delta_point_count": -228,
-          "hint": "fewer interior surfaces — inner cavity or features end here"
-        }
+    {
+      "name": "measure",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "render",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "feature_coverage:outer_lid",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "outer_lid",
+      "checks": [
+        "lid_bbox",
+        "watertight",
+        "lid_outer_diameter",
+        "top_component_count"
+      ],
+      "matchedChecks": [
+        "lid_bbox",
+        "watertight",
+        "lid_outer_diameter",
+        "top_component_count"
       ]
     },
-    "artifacts": {
-      "geometry": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/geometry.json"
+    {
+      "name": "feature_coverage:threaded_inner_interface",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "threaded_inner_interface",
+      "checks": [
+        "recess_inner_diameter",
+        "recess_component_count",
+        "thread_inner_radius_metadata",
+        "thread_clearance_metadata"
+      ],
+      "matchedChecks": [
+        "recess_inner_diameter",
+        "recess_component_count",
+        "thread_inner_radius_metadata",
+        "thread_clearance_metadata"
+      ]
     },
-    "message": "model measured"
-  },
-  "previews": {
+    {
+      "name": "lid_bbox",
+      "type": "bbox_size",
+      "ok": true,
+      "expected": [
+        66.0,
+        66.0,
+        18.0
+      ],
+      "actual": [
+        66.0,
+        66.0,
+        18.0
+      ],
+      "tolerance": 1.0
+    },
+    {
+      "name": "watertight",
+      "type": "watertight",
+      "ok": true,
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "lid_outer_diameter",
+      "type": "outer_diameter_at_z",
+      "ok": true,
+      "z": 9.0,
+      "expected": 66.0,
+      "actual": 66.00000112005131,
+      "tolerance": 0.8,
+      "section": {
+        "ok": true,
+        "z": 9.0,
+        "point_count": 2354,
+        "radius_min": 30.194091015027972,
+        "radius_max": 33.00000174229223,
+        "radius_mean": 32.19633848832305,
+        "radius_outer_estimate": 33.000000560025654,
+        "radius_inner_estimate": 30.195802162190514,
+        "diameter_outer_estimate": 66.00000112005131,
+        "diameter_inner_estimate": 60.39160432438103
+      }
+    },
+    {
+      "name": "recess_inner_diameter",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 5.0,
+      "expected": 60.4,
+      "actual": 60.39086474162194,
+      "tolerance": 1.0,
+      "section": {
+        "ok": true,
+        "z": 5.0,
+        "point_count": 2182,
+        "radius_min": 30.194356689070478,
+        "radius_max": 33.000001539009446,
+        "radius_mean": 32.13475022036532,
+        "radius_outer_estimate": 32.99999983566521,
+        "radius_inner_estimate": 30.19543237081097,
+        "diameter_outer_estimate": 65.99999967133041,
+        "diameter_inner_estimate": 60.39086474162194
+      }
+    },
+    {
+      "name": "recess_component_count",
+      "type": "section_component_count",
+      "ok": true,
+      "axis": "z",
+      "position": 5.0,
+      "expected": 2,
+      "actual": 2,
+      "tolerance": 0,
+      "analysis": {
+        "ok": true,
+        "axis": "Z",
+        "value": 5.0,
+        "plane_label": "XY plane",
+        "u_label": "X (mm)",
+        "v_label": "Y (mm)",
+        "segment_count": 1091,
+        "point_count": 2182,
+        "bbox": {
+          "u_min": -32.9973,
+          "u_max": 33.0,
+          "v_min": -33.0,
+          "v_max": 32.985,
+          "u_size": 65.9973,
+          "v_size": 65.985
+        },
+        "total_segment_length_mm": 410.4176,
+        "component_count": 2,
+        "components": [
+          {
+            "index": 0,
+            "segment_count": 727,
+            "point_count": 727,
+            "bbox": {
+              "u_min": -32.9973,
+              "u_max": 33.0,
+              "v_min": -33.0,
+              "v_max": 32.985,
+              "u_size": 65.9973,
+              "v_size": 65.985
+            },
+            "centroid": [
+              0.1346,
+              -0.0746
+            ],
+            "total_segment_length_mm": 217.8701,
+            "hull_area_estimate_mm2": 3420.2819,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 1,
+            "segment_count": 364,
+            "point_count": 364,
+            "bbox": {
+              "u_min": -30.4416,
+              "u_max": 30.2,
+              "v_min": -30.1997,
+              "v_max": 31.5517,
+              "u_size": 60.6416,
+              "v_size": 61.7514
+            },
+            "centroid": [
+              0.0585,
+              0.0618
+            ],
+            "total_segment_length_mm": 192.5474,
+            "hull_area_estimate_mm2": 2913.363,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          }
+        ],
+        "warnings": [
+          "multiple_section_components"
+        ]
+      }
+    },
+    {
+      "name": "top_component_count",
+      "type": "section_component_count",
+      "ok": true,
+      "axis": "z",
+      "position": 16.0,
+      "expected": 1,
+      "actual": 1,
+      "tolerance": 0,
+      "analysis": {
+        "ok": true,
+        "axis": "Z",
+        "value": 16.0,
+        "plane_label": "XY plane",
+        "u_label": "X (mm)",
+        "v_label": "Y (mm)",
+        "segment_count": 650,
+        "point_count": 1300,
+        "bbox": {
+          "u_min": -32.9992,
+          "u_max": 33.0,
+          "v_min": -32.9938,
+          "v_max": 32.9919,
+          "u_size": 65.9992,
+          "v_size": 65.9857
+        },
+        "total_segment_length_mm": 207.3288,
+        "component_count": 1,
+        "components": [
+          {
+            "index": 0,
+            "segment_count": 650,
+            "point_count": 650,
+            "bbox": {
+              "u_min": -32.9992,
+              "u_max": 33.0,
+              "v_min": -32.9938,
+              "v_max": 32.9919,
+              "u_size": 65.9992,
+              "v_size": 65.9857
+            },
+            "centroid": [
+              -0.1555,
+              -0.0054
+            ],
+            "total_segment_length_mm": 207.3288,
+            "hull_area_estimate_mm2": 3420.2812,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          }
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "name": "thread_inner_radius_metadata",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "fit.thread_inner_radius_mm",
+      "expected": 30.2,
+      "actual": 30.2,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/metadata.json"
+    },
+    {
+      "name": "thread_clearance_metadata",
+      "type": "metadata_equals",
+      "ok": true,
+      "path": "fit.diametral_clearance_mm",
+      "expected": 0.4,
+      "actual": 0.4,
+      "source": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/metadata.json"
+    },
+    {
+      "name": "step_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.step"
+    },
+    {
+      "name": "stl_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.stl"
+    }
+  ],
+  "artifacts": {
+    "validation": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/validation.json",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/build.json",
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/geometry.json",
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/bit_holder_lid.stl",
     "preview_iso": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.iso.svg",
     "preview_front": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.front.svg",
     "preview_top": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.top.svg",
     "preview_side": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.side.svg",
-    "preview_back": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.back.svg"
+    "preview_back": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.back.svg",
+    "section_z0_94": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z0.94.svg",
+    "section_z3_24": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z3.24.svg",
+    "section_z4_39": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z4.39.svg",
+    "section_z5_54": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z5.54.svg",
+    "section_z6_70": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z6.70.svg",
+    "section_z7_85": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z7.85.svg",
+    "section_z9_00": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z9.00.svg",
+    "section_z10_15": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z10.15.svg",
+    "section_z11_30": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z11.30.svg",
+    "section_z12_46": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z12.46.svg",
+    "section_z14_76": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z14.76.svg",
+    "section_z15_91": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z15.91.svg",
+    "section_z0_94_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z0.94.json",
+    "section_z3_24_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z3.24.json",
+    "section_z4_39_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z4.39.json",
+    "section_z5_54_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z5.54.json",
+    "section_z6_70_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z6.70.json",
+    "section_z7_85_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z7.85.json",
+    "section_z9_00_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z9.00.json",
+    "section_z10_15_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z10.15.json",
+    "section_z11_30_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z11.30.json",
+    "section_z12_46_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z12.46.json",
+    "section_z14_76_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z14.76.json",
+    "section_z15_91_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/section.z15.91.json",
+    "observability": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/observability.json",
+    "preview_page": "/Users/kuaner/Documents/code/agentcad/examples/e2e-bit-holder/models/bit_holder_lid/outputs/preview.html"
   },
-  "scan": {
+  "message": "validation passed",
+  "auto_scan": {
     "ok": true,
     "axis": "Z",
     "plane_label": "XY plane",
@@ -1261,297 +1440,5 @@
         "warnings": []
       }
     }
-  },
-  "section_summaries": [
-    {
-      "key": "section_z0_94",
-      "axis": "Z",
-      "value": 0.936,
-      "bbox": {
-        "u_min": -33.0,
-        "u_max": 33.0,
-        "v_min": -32.9926,
-        "v_max": 32.9889,
-        "u_size": 66.0,
-        "v_size": 65.9815
-      },
-      "segment_count": 1041,
-      "component_count": 2,
-      "total_segment_length_mm": 407.7596,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z3_24",
-      "axis": "Z",
-      "value": 3.24,
-      "bbox": {
-        "u_min": -32.9986,
-        "u_max": 33.0,
-        "v_min": -32.9977,
-        "v_max": 32.9867,
-        "u_size": 65.9986,
-        "v_size": 65.9844
-      },
-      "segment_count": 1097,
-      "component_count": 2,
-      "total_segment_length_mm": 406.8516,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z4_39",
-      "axis": "Z",
-      "value": 4.392,
-      "bbox": {
-        "u_min": -32.9979,
-        "u_max": 33.0,
-        "v_min": -33.0,
-        "v_max": 32.9856,
-        "u_size": 65.9979,
-        "v_size": 65.9856
-      },
-      "segment_count": 1326,
-      "component_count": 2,
-      "total_segment_length_mm": 410.1735,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z5_54",
-      "axis": "Z",
-      "value": 5.544,
-      "bbox": {
-        "u_min": -32.9959,
-        "u_max": 33.0,
-        "v_min": -33.0,
-        "v_max": 32.9845,
-        "u_size": 65.9959,
-        "v_size": 65.9845
-      },
-      "segment_count": 1198,
-      "component_count": 2,
-      "total_segment_length_mm": 410.8966,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z6_70",
-      "axis": "Z",
-      "value": 6.696,
-      "bbox": {
-        "u_min": -32.9974,
-        "u_max": 33.0,
-        "v_min": -33.0,
-        "v_max": 32.9873,
-        "u_size": 65.9974,
-        "v_size": 65.9873
-      },
-      "segment_count": 1144,
-      "component_count": 2,
-      "total_segment_length_mm": 411.7121,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z7_85",
-      "axis": "Z",
-      "value": 7.848,
-      "bbox": {
-        "u_min": -32.9974,
-        "u_max": 33.0,
-        "v_min": -33.0,
-        "v_max": 33.0,
-        "u_size": 65.9974,
-        "v_size": 66.0
-      },
-      "segment_count": 1087,
-      "component_count": 2,
-      "total_segment_length_mm": 412.6513,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z9_00",
-      "axis": "Z",
-      "value": 9.0,
-      "bbox": {
-        "u_min": -32.9974,
-        "u_max": 33.0,
-        "v_min": -33.0,
-        "v_max": 32.9994,
-        "u_size": 65.9974,
-        "v_size": 65.9994
-      },
-      "segment_count": 1177,
-      "component_count": 2,
-      "total_segment_length_mm": 413.4268,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z10_15",
-      "axis": "Z",
-      "value": 10.152,
-      "bbox": {
-        "u_min": -32.9963,
-        "u_max": 33.0,
-        "v_min": -33.0,
-        "v_max": 32.9982,
-        "u_size": 65.9963,
-        "v_size": 65.9982
-      },
-      "segment_count": 1099,
-      "component_count": 2,
-      "total_segment_length_mm": 414.2968,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z11_30",
-      "axis": "Z",
-      "value": 11.304,
-      "bbox": {
-        "u_min": -32.997,
-        "u_max": 33.0,
-        "v_min": -33.0,
-        "v_max": 32.997,
-        "u_size": 65.997,
-        "v_size": 65.997
-      },
-      "segment_count": 999,
-      "component_count": 2,
-      "total_segment_length_mm": 415.1024,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z12_46",
-      "axis": "Z",
-      "value": 12.456,
-      "bbox": {
-        "u_min": -32.9977,
-        "u_max": 33.0,
-        "v_min": -33.0,
-        "v_max": 32.9957,
-        "u_size": 65.9977,
-        "v_size": 65.9957
-      },
-      "segment_count": 1175,
-      "component_count": 2,
-      "total_segment_length_mm": 416.3643,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z14_76",
-      "axis": "Z",
-      "value": 14.76,
-      "bbox": {
-        "u_min": -32.9987,
-        "u_max": 33.0,
-        "v_min": -32.9964,
-        "v_max": 32.9932,
-        "u_size": 65.9987,
-        "v_size": 65.9896
-      },
-      "segment_count": 1035,
-      "component_count": 2,
-      "total_segment_length_mm": 406.3875,
-      "warnings": [
-        "multiple_section_components"
-      ]
-    },
-    {
-      "key": "section_z15_91",
-      "axis": "Z",
-      "value": 15.912,
-      "bbox": {
-        "u_min": -32.9991,
-        "u_max": 33.0,
-        "v_min": -32.994,
-        "v_max": 32.992,
-        "u_size": 65.9991,
-        "v_size": 65.986
-      },
-      "segment_count": 650,
-      "component_count": 1,
-      "total_segment_length_mm": 207.329,
-      "warnings": []
-    }
-  ],
-  "summary": {
-    "section_count": 12,
-    "max_component_count": 2,
-    "multi_component_sections": [
-      "section_z0_94",
-      "section_z3_24",
-      "section_z4_39",
-      "section_z5_54",
-      "section_z6_70",
-      "section_z7_85",
-      "section_z9_00",
-      "section_z10_15",
-      "section_z11_30",
-      "section_z12_46",
-      "section_z14_76"
-    ],
-    "warning_count": 11
-  },
-  "warnings": [
-    {
-      "section": "section_z0_94",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z3_24",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z4_39",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z5_54",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z6_70",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z7_85",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z9_00",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z10_15",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z11_30",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z12_46",
-      "warning": "multiple_section_components"
-    },
-    {
-      "section": "section_z14_76",
-      "warning": "multiple_section_components"
-    }
-  ]
+  }
 }

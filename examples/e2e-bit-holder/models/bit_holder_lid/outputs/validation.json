@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "validate",
   "model": "bit_holder_lid",
-  "validatedAt": "2026-05-10T13:15:15.532649+00:00",
+  "validatedAt": "2026-05-10T13:25:40.509200+00:00",
   "checks": [
     {
       "name": "build",

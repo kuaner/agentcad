@@ -6,7 +6,7 @@
   "features": [
     {
       "id": "outer_lid",
-      "intent": "Round 70 mm diameter x 18 mm tall cap with closed top and diamond knurl on outer surface.",
+      "intent": "Round 66 mm diameter x 18 mm tall cap with closed top and diamond knurl on outer surface.",
       "checks": ["lid_bbox", "watertight", "lid_outer_diameter", "top_component_count"]
     },
     {

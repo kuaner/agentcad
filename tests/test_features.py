@@ -41,7 +41,7 @@ def test_thread_external_body_union():
 def test_thread_internal_lid_subtract():
     with BuildPart() as lid:
         Cylinder(radius=25.0, height=12.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        inner = Cylinder(radius=20.2, height=10.0, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
+        Cylinder(radius=20.2, height=10.0, align=(Align.CENTER, Align.CENTER, Align.MIN), mode=Mode.SUBTRACT)
         thread = sinusoidal_thread(radius=20.0, pitch=9.0, height=10.0, n_starts=3)
         add(thread, mode=Mode.SUBTRACT)
     part = lid.part
@@ -55,6 +55,10 @@ def test_thread_invalid_params():
         sinusoidal_thread(radius=20.0, pitch=0, height=10.0)
     with pytest.raises(ValueError):
         sinusoidal_thread(radius=20.0, pitch=9.0, height=-5.0)
+    with pytest.raises(ValueError):
+        sinusoidal_thread(radius=20.0, pitch=9.0, height=10.0, n_starts=0)
+    with pytest.raises(ValueError):
+        sinusoidal_thread(radius=20.0, pitch=9.0, height=10.0, n_starts=1.5)
 
 
 def test_knurl_single_direction():

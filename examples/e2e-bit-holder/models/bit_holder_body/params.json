@@ -23,6 +23,5 @@
   "knurl_angle": 35.0,
   "knurl_depth": 0.4,
   "knurl_width": 1.5,
-  "knurl_density": 0.8,
-  "inner_cavity_radius": 29.5
+  "knurl_density": 0.8
 }

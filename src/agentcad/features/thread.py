@@ -52,6 +52,8 @@ def sinusoidal_thread(
     Part
         A solid containing all thread starts fused together.
     """
+    if not isinstance(n_starts, int) or n_starts < 1:
+        raise ValueError("n_starts must be a positive integer")
     if amplitude <= 0 or tooth_height <= 0 or height <= 0 or pitch <= 0:
         raise ValueError("amplitude, tooth_height, height, and pitch must be positive")
     if radius <= 0:
