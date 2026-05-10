@@ -53,25 +53,19 @@ When `agentcad validate` fails, use the iteration tools to converge:
 
 ## Model Variants
 
-To create the same model with different dimensions (e.g., different sizes for
-different applications):
+To create the same model with different dimensions:
 
 1. Create a variant: `agentcad new <model>:<variant_name>`
 2. Edit `models/<model>/variants/<variant_name>/params.json` with variant-specific dimensions.
-3. Build the variant: `agentcad build <model>:<variant_name>`
-4. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
+3. Run any command with `<model>:<variant_name>` instead of `<model>`.
 
-Variants share the same `part.py`, `design.json`, and `metadata.json` from the
-base model. Only `params.json` differs per variant.
-
-Use `model:variant` syntax with any command that accepts a model name:
-`agentcad validate bracket:small`, `agentcad preview bracket:small`,
-`agentcad deliver bracket:small`.
+Variants share `part.py`, `design.json`, and `metadata.json`. Only `params.json`
+differs. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
 
 ## Fix Suggestions (param_ref)
 
-To get targeted fix suggestions on failing checks, add an optional `param_ref`
-field to checks in `design.json`:
+Add an optional `param_ref` field to checks in `design.json` to get targeted
+fix suggestions when the check fails:
 
 ```json
 {
@@ -85,16 +79,8 @@ field to checks in `design.json`:
 }
 ```
 
-When this check fails, `suggested_fix` will include the param name, its current
-value, and a suggested value. Without `param_ref`, the fix suggestion provides
-a generic action string with actual vs expected values.
-
-## SVG Previews
-
-SVG previews now include dimension annotations: axis labels, dimension lines
-with mm values, and a scale bar. The `preview.html` page shows SVG thumbnails
-in a grid — click any thumbnail to open it in a modal overlay for detailed
-inspection.
+Without `param_ref`, failing checks still get fix suggestions — but they are
+generic action strings instead of param-targeted values.
 
 ## Stage References
 
@@ -162,7 +148,7 @@ models/<name>/
     precheck.json       Static contract report
     review.json         Pre-delivery review report
     deliverable.json    Delivery manifest
-    preview.iso.svg     SVG preview (with dimension annotations)
+    preview.iso.svg     SVG preview
     section.z10.00.svg  Section preview
     section.z10.00.json Section measurement sidecar
     <name>.step         STEP export
@@ -184,6 +170,8 @@ assemblies/<name>/
 
 ## CLI Quick Reference
 
+Append `:<variant>` to any model name to operate on a variant.
+
 ```bash
 # Workspace and model setup
 agentcad init <workspace> [--model <model>]
@@ -194,23 +182,19 @@ agentcad new <model>:<variant>
 agentcad precheck <model>
 agentcad build <model>
 agentcad build <model> --force
-agentcad build <model>:<variant>
 agentcad measure <model>
 agentcad render <model>
 agentcad render <model> --views iso,front,top,side,back
 agentcad validate <model>
-agentcad validate <model>:<variant>
 
 # Iteration and review
 agentcad diff <model>
 agentcad diff <model> --last
 agentcad review <model>
 agentcad deliver <model>
-agentcad deliver <model>:<variant>
 
 # Preview
 agentcad preview <name>
-agentcad preview <name>:<variant>
 agentcad preview <name> --kind model
 agentcad preview <name> --kind assembly
 
