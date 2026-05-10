@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 *.egg-info/
 .DS_Store
+
+# Generated preview pages (contain embedded base64 SVGs)
+examples/**/outputs/preview.html
