@@ -68,7 +68,6 @@ def test_build_with_variant(tmp_path):
     init_workspace(tmp_path)
     new_model(tmp_path, "cube")
     model_root = tmp_path / "models" / "cube"
-    model_root / "part.py".lstrip("/").rstrip("/")
 
     # Write a simple part.py that uses params
     (model_root / "part.py").write_text(

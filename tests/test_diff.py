@@ -85,3 +85,27 @@ def test_validate_archives_before_overwrite(tmp_path):
     assert hist.is_dir()
     archives = list(hist.glob("*.json"))
     assert len(archives) >= 1
+
+
+def test_diff_compares_with_most_recent_archive(tmp_path):
+    """Three validate runs: diff should compare current vs most recent archive."""
+    init_workspace(tmp_path)
+    new_model(tmp_path, "dm")
+    root = tmp_path / "models" / "dm"
+    root.joinpath("part.py").write_text("import build123d as b\nresult = b.Box(10,10,10)\n")
+    root.joinpath("params.json").write_text("{}")
+    root.joinpath("design.json").write_text(json.dumps({"intent": "dm", "features": [], "checks": []}))
+
+    # Run validate 3 times → 2 archives
+    validate_model(tmp_path, "dm")
+    validate_model(tmp_path, "dm")
+    validate_model(tmp_path, "dm")
+
+    hist = tmp_path / "models" / "dm" / "outputs" / "validation-history"
+    archives = sorted(hist.glob("*.json"), reverse=True)
+    assert len(archives) >= 2
+
+    result = diff_model(tmp_path, "dm")
+    assert result["ok"] is True
+    # Should compare against archives[0] (most recent previous run)
+    assert archives[0].name in result["compared_with"]

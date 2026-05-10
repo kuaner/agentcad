@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from .jsonio import read_json, write_json
-from .workspace import model_dir, outputs_dir, outputs_dir_for_variant, variant_params_path
+from .workspace import model_dir, outputs_dir_for_variant, variant_params_path
 
 
 def utc_now() -> str:
@@ -65,6 +65,8 @@ def build_model(project: Path, name: str, force: bool = False, variant: str | No
     stderr = io.StringIO()
     started_at = utc_now()
     old_path = list(sys.path)
+    prev_variant = os.environ.get("AGENTCAD_VARIANT")
+    prev_variant_params = os.environ.get("AGENTCAD_VARIANT_PARAMS")
     if variant:
         os.environ["AGENTCAD_VARIANT"] = variant
         if v_params and v_params.exists():
@@ -87,8 +89,14 @@ def build_model(project: Path, name: str, force: bool = False, variant: str | No
         return payload
     finally:
         sys.path[:] = old_path
-        os.environ.pop("AGENTCAD_VARIANT", None)
-        os.environ.pop("AGENTCAD_VARIANT_PARAMS", None)
+        if prev_variant is not None:
+            os.environ["AGENTCAD_VARIANT"] = prev_variant
+        else:
+            os.environ.pop("AGENTCAD_VARIANT", None)
+        if prev_variant_params is not None:
+            os.environ["AGENTCAD_VARIANT_PARAMS"] = prev_variant_params
+        else:
+            os.environ.pop("AGENTCAD_VARIANT_PARAMS", None)
 
     result = namespace.get("result")
     if result is None:
@@ -102,7 +110,7 @@ def build_model(project: Path, name: str, force: bool = False, variant: str | No
 
     step_path = out_dir / f"{name}.step"
     stl_path = out_dir / f"{name}.stl"
-    metadata_path = root / "metadata.json"
+    metadata_path = out_dir / "metadata.json" if variant else root / "metadata.json"
     try:
         from build123d import export_step, export_stl  # type: ignore
 

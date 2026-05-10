@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .jsonio import read_json, write_json
 from .stl import Vec3, cross, dot, normalize, read_stl, sub, triangle_normal
-from .workspace import model_dir, outputs_dir, outputs_dir_for_variant
+from .workspace import outputs_dir_for_variant
 
 
 VIEW_DIRS: dict[str, Vec3] = {

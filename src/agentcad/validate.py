@@ -20,7 +20,7 @@ from .render import render_models_multi
 from .runner import build_model, utc_now
 from .section import AXIS_Z, scan_profile, write_section_svg
 from .stl import read_stl
-from .workspace import model_dir, outputs_dir, outputs_dir_for_variant
+from .workspace import model_dir, outputs_dir, outputs_dir_for_variant, variant_params_path
 
 _DEFAULT_VALIDATE_VIEWS = ["iso", "front", "top", "side", "back"]
 
@@ -110,7 +110,11 @@ def validate_model(
         artifacts["observability"] = str(observability_path)
     payload = _validation_payload(name, checks, artifacts=artifacts, warnings=warnings or None, auto_scan=auto_scan or None)
     design = read_json(model_dir(project, name) / "design.json", default={}) or {}
-    params = read_json(model_dir(project, name) / "params.json", default={}) or {}
+    if variant:
+        v_params_path = variant_params_path(project, name, variant)
+        params = read_json(v_params_path, default={}) or {} if v_params_path.exists() else read_json(model_dir(project, name) / "params.json", default={}) or {}
+    else:
+        params = read_json(model_dir(project, name) / "params.json", default={}) or {}
     _attach_suggested_fixes(payload.get("checks", []), design, params)
     write_json(validation_path, payload)
     preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure, variant=variant)

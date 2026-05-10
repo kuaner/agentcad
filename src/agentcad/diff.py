@@ -4,7 +4,7 @@ import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .jsonio import read_json, write_json
+from .jsonio import read_json
 from .workspace import normalize_model_name, outputs_dir
 
 
@@ -14,7 +14,7 @@ def archive_validation(out_dir: Path) -> Path | None:
         return None
     history_dir = out_dir / "validation-history"
     history_dir.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     dest = history_dir / f"{ts}.json"
     shutil.copy2(validation_path, dest)
     return dest
@@ -31,7 +31,7 @@ def diff_validations(current: dict, previous: dict) -> dict:
     stable_fail = []
     stable_pass = []
 
-    for name in cur_names & prev_names:
+    for name in sorted(cur_names & prev_names):
         cc = cur_checks[name]
         pc = prev_checks[name]
         c_ok = cc.get("ok", False)
@@ -106,7 +106,10 @@ def diff_model(project: Path, name: str, *, last: bool = False) -> dict:
     if not archives:
         return {"ok": False, "stage": "diff", "error": {"type": "NoHistory", "message": "no validation history; run validate at least twice"}}
 
-    target = archives[0] if last else (archives[1] if len(archives) > 1 else archives[0])
+    # archives[0] is the most recent previous run (last archived).
+    # Default: compare current vs most recent previous run.
+    # --last is a no-op alias kept for backward compatibility.
+    target = archives[0]
     previous = read_json(target, default={})
     result = diff_validations(current, previous)
     result["model"] = safe

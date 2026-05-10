@@ -193,8 +193,9 @@ def outputs_dir_for_variant(project: Path, name: str, variant: str | None = None
 
 
 def new_variant(project: Path, name: str, variant: str, params: dict | None = None) -> dict:
+    safe = normalize_model_name(name)
     safe_variant = normalize_model_name(variant)
-    v_dir = variant_dir(project, name, safe_variant)
+    v_dir = variant_dir(project, safe, safe_variant)
     if v_dir.exists():
         return {"ok": False, "stage": "new_variant", "error": {"type": "VariantExists", "message": f"variant already exists: {safe_variant}"}}
     v_dir.mkdir(parents=True, exist_ok=True)
