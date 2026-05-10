@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>{{title}}</title>
+  <style>
+    :root {
+      color-scheme: light;
+      /* Tinted neutrals — slate/blue cast, brand hue ~250 */
+      --bg: oklch(96.5% 0.005 250);
+      --panel: oklch(99% 0.003 250);
+      --panel-2: oklch(97% 0.005 250);
+      --stage: oklch(98% 0.004 250);
+      --stage-grid: oklch(89% 0.008 250);
+      --ink: oklch(22% 0.018 250);
+      --ink-2: oklch(36% 0.014 250);
+      --muted: oklch(54% 0.015 250);
+      --quiet: oklch(68% 0.012 250);
+      --line: oklch(91% 0.008 250);
+      --line-2: oklch(85% 0.01 250);
+      --chrome: oklch(28% 0.022 250);
+      --chrome-2: oklch(36% 0.022 250);
+      --chrome-ink: oklch(96% 0.005 250);
+      --chrome-quiet: oklch(74% 0.013 250);
+      --accent: oklch(54% 0.16 248);
+      --accent-strong: oklch(46% 0.18 248);
+      --accent-soft: oklch(95% 0.025 248);
+      --ok: oklch(48% 0.13 152);
+      --ok-soft: oklch(95% 0.038 152);
+      --fail: oklch(54% 0.19 27);
+      --fail-soft: oklch(95% 0.04 27);
+      --warn: oklch(64% 0.13 75);
+      --code-bg: oklch(22% 0.018 250);
+      --code-ink: oklch(94% 0.008 250);
+      --r-sm: 6px;
+      --r-md: 8px;
+      --r-lg: 12px;
+      --shadow-sm: 0 1px 2px oklch(22% 0.02 250 / 0.06);
+      --shadow-md: 0 6px 18px oklch(22% 0.02 250 / 0.08), 0 1px 2px oklch(22% 0.02 250 / 0.06);
+      --shadow-lg: 0 14px 32px oklch(22% 0.02 250 / 0.12), 0 2px 4px oklch(22% 0.02 250 / 0.06);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font: 13px/1.5 "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; }
+
+    .app { height: 100vh; display: grid; grid-template-rows: 52px minmax(0, 1fr); }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 18px;
+      background: var(--chrome);
+      color: var(--chrome-ink);
+      border-bottom: 1px solid oklch(18% 0.018 250);
+    }
+    .brand { display: flex; align-items: baseline; gap: 12px; min-width: 0; flex: 0 0 auto; }
+    .brand strong {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .16em; text-transform: uppercase;
+      color: var(--chrome-quiet);
+    }
+    .brand span {
+      font-size: 15px; font-weight: 600;
+      letter-spacing: -0.005em;
+      color: var(--chrome-ink);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .topbar .spacer { flex: 1; }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      height: 26px; padding: 0 11px;
+      border-radius: 999px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      background: oklch(40% 0.02 250); color: var(--chrome-ink);
+    }
+    .status-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--chrome-quiet); }
+    .status-pill.ok { background: oklch(28% 0.06 152); color: oklch(92% 0.07 152); }
+    .status-pill.ok::before { background: oklch(70% 0.16 152); }
+    .status-pill.fail { background: oklch(30% 0.09 27); color: oklch(94% 0.04 27); }
+    .status-pill.fail::before { background: oklch(70% 0.18 27); }
+    .download-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+    .download-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 28px; padding: 0 12px;
+      border-radius: var(--r-sm);
+      background: oklch(40% 0.022 250); color: var(--chrome-ink);
+      font-size: 12px; font-weight: 600;
+      border: 1px solid oklch(48% 0.022 250);
+      transition: background 120ms ease-out;
+    }
+    .download-link:hover { background: oklch(48% 0.022 250); text-decoration: none; }
+    .download-link.primary { background: var(--accent); border-color: var(--accent); }
+    .download-link.primary:hover { background: var(--accent-strong); }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr) 340px;
+      min-height: 0;
+    }
+    aside {
+      min-height: 0;
+      overflow: auto;
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+    }
+    aside.left { border-right: 1px solid var(--line); }
+    aside.right { border-left: 1px solid var(--line); }
+
+    .stage {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      background:
+        radial-gradient(circle at 1px 1px, var(--stage-grid) 1px, transparent 1.5px) 0 0 / 22px 22px,
+        var(--stage);
+      display: flex;
+      flex-direction: column;
+    }
+    .stage::after {
+      content: "";
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 50%, oklch(22% 0.018 250 / 0.05) 100%);
+    }
+    #viewer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #viewer canvas { display: block; width: 100% !important; height: 100% !important; }
+
+    .hud {
+      position: absolute;
+      z-index: 5;
+      pointer-events: none;
+    }
+    .hud > * { pointer-events: auto; }
+    .hud-top-left { top: 14px; left: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .hud-top-right { top: 14px; right: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .hud-bottom-left { bottom: 14px; left: 14px; }
+    .hud-bottom-right { bottom: 14px; right: 14px; display: flex; align-items: center; gap: 10px; }
+
+    .seg {
+      display: inline-flex;
+      padding: 3px;
+      background: var(--panel);
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-md);
+    }
+    .seg-btn {
+      height: 28px;
+      padding: 0 11px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--ink-2);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      transition: background 120ms ease-out, color 120ms ease-out;
+    }
+    .seg-btn:hover { color: var(--ink); background: var(--panel-2); }
+    .seg-btn.active, .seg-btn[aria-pressed="true"] {
+      background: var(--accent);
+      color: var(--chrome-ink);
+    }
+    .seg-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    .hud-card {
+      background: var(--panel);
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-md);
+      color: var(--ink-2);
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+    .hud-stats {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .hud-stats b { color: var(--ink); font-weight: 700; }
+    .hud-stats .sep { width: 1px; height: 11px; background: var(--line-2); }
+
+    .explode {
+      display: flex; align-items: center; gap: 12px;
+      padding: 6px 14px;
+      min-width: 240px;
+    }
+    .explode label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+    .explode input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+      min-width: 120px;
+    }
+    .explode .pct { width: 36px; text-align: right; color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; font-size: 12px; }
+
+    /* Sidebar sections */
+    .section {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section:last-child { border-bottom: 0; }
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section h2 .count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 20px; height: 18px; padding: 0 6px;
+      border-radius: 999px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0;
+      text-transform: none;
+      font-size: 11px;
+      background: var(--panel-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kv { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 7px 12px; font-size: 12px; }
+    .kv > div:nth-child(odd) { color: var(--muted); font-size: 11px; }
+    .kv > div:nth-child(even) { color: var(--ink); overflow-wrap: anywhere; font-weight: 500; }
+
+    .check-list { display: grid; gap: 6px; }
+    .check {
+      padding: 9px 11px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+    }
+    .check.ok { background: var(--ok-soft); border-color: oklch(85% 0.07 152); }
+    .check.fail { background: var(--fail-soft); border-color: oklch(82% 0.09 27); }
+    .check-name {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      font-weight: 600; font-size: 12px; color: var(--ink);
+    }
+    .check-name span:first-child { min-width: 0; overflow-wrap: anywhere; }
+    .check-result {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .check-result::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--quiet);
+    }
+    .check.ok .check-result { color: var(--ok); }
+    .check.ok .check-result::before { background: var(--ok); }
+    .check.fail .check-result { color: var(--fail); }
+    .check.fail .check-result::before { background: var(--fail); }
+    .check-type { margin-top: 4px; color: var(--muted); font-size: 11px; }
+
+    .components { display: grid; gap: 3px; }
+    .component-row {
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      padding: 7px 9px;
+      border-radius: var(--r-sm);
+      border: 1px solid transparent;
+      cursor: default;
+      transition: background 120ms ease-out;
+    }
+    .component-row:hover { background: var(--panel-2); }
+    .component-row.selected { background: var(--accent-soft); border-color: oklch(82% 0.07 248); }
+    .component-row.hidden { opacity: .42; }
+    .component-row input[type="checkbox"] { width: 13px; height: 13px; accent-color: var(--accent); margin: 0; }
+    .swatch { width: 11px; height: 11px; border-radius: 3px; box-shadow: inset 0 0 0 1px oklch(22% 0.02 250 / 0.12); }
+    .component-main { min-width: 0; }
+    .component-title { display: block; font-size: 12px; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .component-meta { display: block; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .component-actions { display: flex; gap: 4px; }
+    .mini-btn {
+      height: 22px;
+      padding: 0 8px;
+      border: 1px solid var(--line-2);
+      border-radius: 4px;
+      background: var(--panel);
+      color: var(--ink-2);
+      font-size: 11px;
+      font-weight: 600;
+      transition: border-color 120ms, color 120ms;
+    }
+    .mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .mini-btn.active, .mini-btn[aria-pressed="true"] { background: var(--accent); color: var(--chrome-ink); border-color: var(--accent); }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .metric {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 10px 11px;
+      min-width: 0;
+    }
+    .metric b {
+      display: block;
+      font-size: 15px; font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    .svg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .svg-card {
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--panel-2);
+      padding: 7px;
+      display: grid;
+      gap: 5px;
+      transition: border-color 120ms;
+    }
+    .svg-card:hover { border-color: var(--line-2); }
+    .svg-card a {
+      font-size: 11px; color: var(--muted); font-weight: 500;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .svg-card img {
+      display: block; width: 100%; height: 110px;
+      object-fit: contain;
+      background: var(--panel); border-radius: 3px;
+    }
+
+    /* Artifact list with inline JSON content */
+    .artifact-list { display: grid; gap: 6px; }
+    .artifact {
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--panel-2);
+      overflow: hidden;
+    }
+    .artifact-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 11px;
+      font-size: 12px;
+    }
+    .artifact-head .label {
+      font-weight: 600; color: var(--ink);
+      flex: 0 0 auto;
+    }
+    .artifact-head .path {
+      flex: 1; min-width: 0;
+      color: var(--muted);
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 11px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .artifact-head .ext {
+      flex: 0 0 auto;
+      padding: 1px 6px; border-radius: 3px;
+      font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      background: var(--panel); color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .artifact-head .download {
+      flex: 0 0 auto;
+      font-size: 11px; font-weight: 600;
+      color: var(--accent);
+    }
+    details.artifact > summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 11px;
+      font-size: 12px;
+    }
+    details.artifact > summary::-webkit-details-marker { display: none; }
+    details.artifact > summary::before {
+      content: "";
+      width: 0; height: 0;
+      border-left: 4px solid var(--quiet);
+      border-top: 3px solid transparent;
+      border-bottom: 3px solid transparent;
+      transition: transform 120ms ease-out;
+      flex: 0 0 auto;
+    }
+    details.artifact[open] > summary::before { transform: rotate(90deg); }
+    details.artifact > summary .label { font-weight: 600; color: var(--ink); flex: 0 0 auto; }
+    details.artifact > summary .path {
+      flex: 1; min-width: 0;
+      color: var(--muted);
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 11px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    details.artifact > summary .ext {
+      flex: 0 0 auto;
+      padding: 1px 6px; border-radius: 3px;
+      font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      background: var(--panel); color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .artifact-body {
+      border-top: 1px solid var(--line);
+      max-height: 320px;
+      overflow: auto;
+      background: var(--code-bg);
+    }
+    .artifact-body pre {
+      margin: 0;
+      padding: 10px 12px;
+      color: var(--code-ink);
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.55;
+      white-space: pre;
+    }
+    .json-key { color: oklch(78% 0.11 248); }
+    .json-string { color: oklch(80% 0.11 142); }
+    .json-number { color: oklch(82% 0.13 75); }
+    .json-boolean { color: oklch(78% 0.13 28); font-weight: 600; }
+    .json-null { color: oklch(70% 0.04 250); font-style: italic; }
+
+    pre.raw {
+      margin: 0;
+      max-height: 240px;
+      overflow: auto;
+      padding: 11px 13px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .empty { color: var(--quiet); font-size: 12px; font-style: italic; }
+
+    @media (max-width: 1280px) {
+      .shell { grid-template-columns: 260px minmax(0, 1fr) 300px; }
+    }
+    @media (max-width: 1080px) {
+      .shell { grid-template-columns: 240px minmax(0, 1fr); }
+      aside.right { display: none; }
+    }
+    @media (max-width: 820px) {
+      html, body { overflow: auto; }
+      .app { height: auto; min-height: 100vh; }
+      .shell { grid-template-columns: 1fr; grid-template-rows: 60vh auto; }
+      aside.left { border-right: 0; border-top: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><strong>AgentCAD</strong><span id="title"></span></div>
+      <div class="spacer"></div>
+      <nav id="quick-downloads" class="download-strip" aria-label="Downloads"></nav>
+      <div id="status" class="status-pill"></div>
+    </header>
+    <main class="shell">
+      <aside class="left">
+        <section class="section">
+          <h2>Summary</h2>
+          <div id="summary" class="kv"></div>
+        </section>
+        <section class="section">
+          <h2>Components <span class="count" id="component-count"></span></h2>
+          <div id="components" class="components"></div>
+        </section>
+        <section class="section">
+          <h2>Checks <span class="count" id="check-count"></span></h2>
+          <div id="checks" class="check-list"></div>
+        </section>
+        <section class="section">
+          <h2>Relations</h2>
+          <div id="relations" class="check-list"></div>
+        </section>
+      </aside>
+      <section class="stage">
+        <div id="viewer"></div>
+        <div class="hud hud-top-left">
+          <div class="seg" role="group" aria-label="Camera view">
+            <button class="seg-btn active" data-view="iso" type="button" aria-pressed="true">Iso</button>
+            <button class="seg-btn" data-view="top" type="button" aria-pressed="false">Top</button>
+            <button class="seg-btn" data-view="front" type="button" aria-pressed="false">Front</button>
+            <button class="seg-btn" data-view="side" type="button" aria-pressed="false">Side</button>
+            <button class="seg-btn" data-view="back" type="button" aria-pressed="false">Back</button>
+          </div>
+          <div class="seg" role="group" aria-label="Render mode">
+            <button class="seg-btn active" data-mode="solid" type="button" aria-pressed="true">Solid</button>
+            <button class="seg-btn" data-mode="xray" type="button" aria-pressed="false">X-Ray</button>
+            <button class="seg-btn" data-mode="wire" type="button" aria-pressed="false">Wire</button>
+          </div>
+        </div>
+        <div class="hud hud-top-right">
+          <div class="seg" role="group" aria-label="Camera actions">
+            <button class="seg-btn" id="fit" type="button">Fit</button>
+            <button class="seg-btn" id="show-all" type="button">All</button>
+            <button class="seg-btn" id="prev-part" type="button" title="Previous part">&lsaquo;</button>
+            <button class="seg-btn" id="next-part" type="button" title="Next part">&rsaquo;</button>
+          </div>
+        </div>
+        <div class="hud hud-bottom-left">
+          <div class="hud-card hud-stats" id="view-hud"></div>
+        </div>
+        <div class="hud hud-bottom-right">
+          <div class="hud-card explode" id="explode-card">
+            <label for="explode">Explode</label>
+            <input id="explode" type="range" min="0" max="1" value="0" step="0.01">
+            <span class="pct" id="explode-pct">0%</span>
+          </div>
+        </div>
+      </section>
+      <aside class="right">
+        <section class="section">
+          <h2>Envelope</h2>
+          <div id="metrics" class="metric-grid"></div>
+        </section>
+        <section class="section">
+          <h2>SVG views <span class="count" id="svg-count"></span></h2>
+          <div id="svgs" class="svg-grid"></div>
+        </section>
+        <section class="section">
+          <h2>Artifacts <span class="count" id="artifact-count"></span></h2>
+          <div id="links" class="artifact-list"></div>
+        </section>
+      </aside>
+    </main>
+  </div>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@{{three_version}}/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@{{three_version}}/examples/jsm/"
+      }
+    }
+  </script>
+  <script>window.AGENTCAD_PREVIEW = {{payload}};</script>
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { STLLoader } from "three/addons/loaders/STLLoader.js";
+
+    const data = window.AGENTCAD_PREVIEW;
+    const colors = [0x3a6ea5, 0xa85d2b, 0x4e8e52, 0x7a5ca8, 0xa84a4a, 0x5c7590, 0x8b7a3e];
+    const host = document.getElementById("viewer");
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf6f7f9);
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 10000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    host.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    const root = new THREE.Group();
+    scene.add(root);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xc8cdd6, 2.0));
+    const key = new THREE.DirectionalLight(0xffffff, 2.2);
+    key.position.set(90, -120, 170);
+    key.castShadow = true;
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xe6eef7, 1.1);
+    fill.position.set(-140, 90, 80);
+    scene.add(fill);
+    const grid = new THREE.GridHelper(160, 32, 0xc7ccd6, 0xdde0e6);
+    grid.rotation.x = Math.PI / 2;
+    scene.add(grid);
+    scene.add(new THREE.AxesHelper(36));
+
+    const loader = new STLLoader();
+    const entries = [];
+    let currentMode = "solid";
+    let activeView = "iso";
+    let activeSoloId = null;
+    let activeFocusId = null;
+
+    function decodeBase64(b64) {
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes.buffer;
+    }
+    function matrixFromRows(rows) {
+      const m = new THREE.Matrix4();
+      const r = rows || [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
+      m.set(r[0][0], r[0][1], r[0][2], r[0][3], r[1][0], r[1][1], r[1][2], r[1][3], r[2][0], r[2][1], r[2][2], r[2][3], r[3][0], r[3][1], r[3][2], r[3][3]);
+      return m;
+    }
+    function bboxCenter(bbox) {
+      const c = bbox && bbox.center ? bbox.center : [0, 0, 0];
+      return new THREE.Vector3(c[0], c[1], c[2]);
+    }
+    function materialFor(index) {
+      return new THREE.MeshStandardMaterial({
+        color: colors[index % colors.length],
+        metalness: 0.08,
+        roughness: 0.58,
+        transparent: false,
+        opacity: 1,
+        side: THREE.DoubleSide
+      });
+    }
+    function buildScene() {
+      const assemblyCenter = bboxCenter((data.geometry || {}).bbox || data.geometry);
+      data.components.forEach((component, index) => {
+        const geometry = loader.parse(decodeBase64(component.stlBase64));
+        geometry.computeVertexNormals();
+        const mesh = new THREE.Mesh(geometry, materialFor(index));
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.applyMatrix4(matrixFromRows(component.matrix));
+        const group = new THREE.Group();
+        group.name = component.id;
+        group.add(mesh);
+        const center = bboxCenter(component.worldBbox);
+        let dir = center.clone().sub(assemblyCenter);
+        if (dir.length() < 0.001) dir = new THREE.Vector3(Math.cos(index * 2.399), Math.sin(index * 2.399), 0.25);
+        dir.normalize();
+        group.userData.explodeDir = dir;
+        group.userData.baseVisible = true;
+        root.add(group);
+        entries.push({ component, group, mesh, material: mesh.material, color: colors[index % colors.length] });
+      });
+    }
+    function setMode(mode) {
+      currentMode = mode;
+      entries.forEach((entry) => {
+        entry.material.wireframe = mode === "wire";
+        entry.material.transparent = mode === "xray";
+        entry.material.opacity = mode === "xray" ? 0.38 : 1;
+        entry.material.depthWrite = mode !== "xray";
+      });
+      document.querySelectorAll("[data-mode]").forEach((btn) => {
+        const active = btn.dataset.mode === mode;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-pressed", String(active));
+      });
+      updateHud();
+    }
+    function setExplode(value) {
+      const box = new THREE.Box3().setFromObject(root);
+      const size = box.getSize(new THREE.Vector3()).length() || 1;
+      entries.forEach((entry) => entry.group.position.copy(entry.group.userData.explodeDir.clone().multiplyScalar(value * size * 0.42)));
+      const pct = document.getElementById("explode-pct");
+      if (pct) pct.textContent = `${Math.round(value * 100)}%`;
+      updateHud();
+    }
+    function visibleBox() {
+      const box = new THREE.Box3();
+      let hasVisible = false;
+      entries.forEach((entry) => {
+        if (!entry.group.visible) return;
+        const entryBox = new THREE.Box3().setFromObject(entry.group);
+        if (!entryBox.isEmpty()) {
+          box.union(entryBox);
+          hasVisible = true;
+        }
+      });
+      return hasVisible ? box : new THREE.Box3().setFromObject(root);
+    }
+    function fitCamera(view = "iso", object = null, options = {}) {
+      const box = object ? new THREE.Box3().setFromObject(object) : visibleBox();
+      if (box.isEmpty()) return;
+      const center = box.getCenter(new THREE.Vector3());
+      const sphere = box.getBoundingSphere(new THREE.Sphere());
+      const radius = Math.max(sphere.radius, 1);
+      const dirs = {
+        iso: new THREE.Vector3(1.2, -1.4, 0.9),
+        top: new THREE.Vector3(0, 0, 1),
+        front: new THREE.Vector3(0, -1, 0.1),
+        side: new THREE.Vector3(1, 0, 0.1),
+        back: new THREE.Vector3(0, 1, 0.1)
+      };
+      const dir = (dirs[view] || dirs.iso).clone().normalize();
+      camera.position.copy(center.clone().add(dir.multiplyScalar(radius * 2.6)));
+      camera.near = Math.max(0.01, radius / 1000);
+      camera.far = Math.max(1000, radius * 12);
+      camera.updateProjectionMatrix();
+      controls.target.copy(center);
+      controls.update();
+      if (!options.preserveViewState) setActiveView(view);
+      if (options.markFit) markFitActive();
+    }
+    function setActiveView(view) {
+      activeView = view;
+      document.querySelectorAll("[data-view]").forEach((btn) => {
+        const active = btn.dataset.view === view;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-pressed", String(active));
+      });
+      updateHud();
+    }
+    function markFitActive() {
+      const btn = document.getElementById("fit");
+      btn.classList.add("active");
+      window.clearTimeout(btn._fitTimer);
+      btn._fitTimer = window.setTimeout(() => btn.classList.remove("active"), 800);
+    }
+    function syncComponentControls() {
+      entries.forEach((entry) => {
+        if (entry.checkbox) entry.checkbox.checked = entry.group.visible;
+        if (entry.row) {
+          entry.row.classList.toggle("selected", activeSoloId === entry.component.id || activeFocusId === entry.component.id);
+          entry.row.classList.toggle("hidden", !entry.group.visible);
+        }
+        if (entry.soloButton) {
+          const active = activeSoloId === entry.component.id;
+          entry.soloButton.classList.toggle("active", active);
+          entry.soloButton.setAttribute("aria-pressed", String(active));
+        }
+        if (entry.focusButton) {
+          const active = activeFocusId === entry.component.id;
+          entry.focusButton.classList.toggle("active", active);
+          entry.focusButton.setAttribute("aria-pressed", String(active));
+        }
+      });
+      updateHud();
+    }
+    function showAllParts() {
+      activeSoloId = null;
+      activeFocusId = null;
+      entries.forEach((entry) => { entry.group.visible = true; });
+      syncComponentControls();
+      fitCamera("iso");
+    }
+    function soloComponent(entry) {
+      activeSoloId = entry.component.id;
+      activeFocusId = entry.component.id;
+      entries.forEach((candidate) => { candidate.group.visible = candidate === entry; });
+      syncComponentControls();
+      fitCamera("iso", entry.group);
+    }
+    function soloByOffset(delta) {
+      if (!entries.length) return;
+      let index = entries.findIndex((entry) => entry.component.id === activeSoloId);
+      if (index < 0) index = delta >= 0 ? -1 : 0;
+      const next = (index + delta + entries.length) % entries.length;
+      soloComponent(entries[next]);
+    }
+    function focusComponent(entry) {
+      activeFocusId = entry.component.id;
+      syncComponentControls();
+      fitCamera(activeView, entry.group, { preserveViewState: true });
+    }
+    function updateHud() {
+      const visible = entries.filter((entry) => entry.group.visible).length;
+      const target = activeFocusId || activeSoloId || "all";
+      const explode = Number(document.getElementById("explode")?.value || 0);
+      const hud = document.getElementById("view-hud");
+      if (hud) {
+        hud.innerHTML = `<span><b>${activeView.toUpperCase()}</b></span><span class="sep"></span><span>${currentMode}</span><span class="sep"></span><span><b>${visible}</b>/${entries.length} parts</span><span class="sep"></span><span>focus: <b>${target}</b></span><span class="sep"></span><span>explode <b>${Math.round(explode * 100)}%</b></span>`;
+      }
+    }
+    function resize() {
+      const rect = host.getBoundingClientRect();
+      const width = Math.min(Math.max(Math.floor(rect.width || host.clientWidth || 1), 1), 4096);
+      const height = Math.min(Math.max(Math.floor(rect.height || host.clientHeight || 1), 1), 4096);
+      renderer.setSize(width, height, false);
+      renderer.domElement.style.width = "100%";
+      renderer.domElement.style.height = "100%";
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+    function renderLoop() {
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(renderLoop);
+    }
+
+    function text(value) { return value === undefined || value === null ? "n/a" : String(value); }
+    function mm(value) { return Number.isFinite(Number(value)) ? `${Number(value).toFixed(2)} mm` : "n/a"; }
+    function addKv(host, key, value) {
+      const k = document.createElement("div");
+      const v = document.createElement("div");
+      k.textContent = key;
+      v.textContent = value;
+      v.className = "mono";
+      host.append(k, v);
+    }
+    function emptyNode(message) {
+      const node = document.createElement("div");
+      node.className = "empty";
+      node.textContent = message;
+      return node;
+    }
+    function metricNode(value, label) {
+      const node = document.createElement("div");
+      node.className = "metric";
+      const strong = document.createElement("b");
+      strong.textContent = value;
+      const caption = document.createElement("span");
+      caption.textContent = label;
+      node.append(strong, caption);
+      return node;
+    }
+    function linkNode(href, label) {
+      const a = document.createElement("a");
+      a.href = href || "#";
+      a.textContent = label;
+      return a;
+    }
+    function downloadNode(href, label, primary = false) {
+      const a = document.createElement("a");
+      a.href = href || "#";
+      a.download = href ? href.split("/").pop() : "";
+      a.textContent = label;
+      a.className = primary ? "download-link primary" : "download-link";
+      if (!href) {
+        a.setAttribute("aria-disabled", "true");
+        a.tabIndex = -1;
+      }
+      return a;
+    }
+    function artifactLabel(key) {
+      const labels = {
+        step: "STEP",
+        stl: "STL",
+        assembly_stl: "Assembly STL",
+        mjcf: "MJCF",
+        design: "design.json",
+        metadata: "metadata.json",
+        build: "build.json",
+        geometry: "geometry.json",
+        validation: "validation.json",
+        observability: "observability.json",
+        review: "review.json",
+        assembly: "assembly.json"
+      };
+      return labels[key] || key;
+    }
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    }
+    function highlightJson(json) {
+      const escaped = escapeHtml(json);
+      return escaped.replace(/("(?:\\\\.|[^"\\\\])*"\\s*:)|("(?:\\\\.|[^"\\\\])*")|(-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)|(true|false)|(null)/g, (m, key, str, num, bool, nul) => {
+        if (key) return `<span class="json-key">${key}</span>`;
+        if (str) return `<span class="json-string">${str}</span>`;
+        if (num) return `<span class="json-number">${num}</span>`;
+        if (bool) return `<span class="json-boolean">${bool}</span>`;
+        if (nul) return `<span class="json-null">${nul}</span>`;
+        return m;
+      });
+    }
+    function renderUi() {
+      document.getElementById("title").textContent = `${data.kind} · ${data.title}`;
+      const status = document.getElementById("status");
+      status.textContent = data.status.ok ? "Pass" : "Fail";
+      status.classList.add(data.status.ok ? "ok" : "fail");
+      const quickDownloads = document.getElementById("quick-downloads");
+      const artifacts = data.artifacts || {};
+      const primary = artifacts.step || artifacts.assembly_stl || artifacts.stl;
+      if (primary) quickDownloads.append(downloadNode(primary, artifacts.step ? "STEP" : "STL", true));
+      if (artifacts.stl && artifacts.stl !== primary) quickDownloads.append(downloadNode(artifacts.stl, "STL"));
+      const summary = document.getElementById("summary");
+      addKv(summary, "Kind", data.kind);
+      addKv(summary, "Units", data.units || "mm");
+      addKv(summary, "Components", text(data.components.length));
+      addKv(summary, "Checks", text((data.checks || []).length));
+      if (data.intent) addKv(summary, "Intent", data.intent);
+      document.getElementById("component-count").textContent = String(data.components.length);
+
+      const components = document.getElementById("components");
+      entries.forEach((entry) => {
+        const row = document.createElement("div");
+        row.className = "component-row";
+        entry.row = row;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = true;
+        checkbox.addEventListener("change", () => {
+          activeSoloId = null;
+          activeFocusId = null;
+          entry.group.visible = checkbox.checked;
+          syncComponentControls();
+        });
+        entry.checkbox = checkbox;
+        const swatch = document.createElement("span");
+        swatch.className = "swatch";
+        swatch.style.background = `#${entry.color.toString(16).padStart(6, "0")}`;
+        const main = document.createElement("div");
+        main.className = "component-main";
+        const name = document.createElement("span");
+        name.className = "component-title";
+        name.textContent = entry.component.id;
+        const meta = document.createElement("span");
+        meta.className = "component-meta mono";
+        const mesh = entry.component.mesh || {};
+        meta.textContent = mesh.triangles ? `${mesh.triangles} tri` : (entry.component.model || "");
+        main.append(name, meta);
+        const actions = document.createElement("div");
+        actions.className = "component-actions";
+        const focus = document.createElement("button");
+        focus.type = "button";
+        focus.className = "mini-btn";
+        focus.textContent = "Focus";
+        focus.addEventListener("click", () => focusComponent(entry));
+        entry.focusButton = focus;
+        const solo = document.createElement("button");
+        solo.type = "button";
+        solo.className = "mini-btn";
+        solo.textContent = "Solo";
+        solo.addEventListener("click", () => soloComponent(entry));
+        entry.soloButton = solo;
+        actions.append(focus, solo);
+        row.append(checkbox, swatch, main, actions);
+        components.append(row);
+      });
+
+      const checks = document.getElementById("checks");
+      const orderedChecks = [...(data.checks || [])].sort((a, b) => Number(Boolean(a.ok)) - Number(Boolean(b.ok)));
+      document.getElementById("check-count").textContent = String(orderedChecks.length);
+      if (!orderedChecks.length) checks.append(emptyNode("No checks."));
+      orderedChecks.forEach((check) => {
+        const row = document.createElement("div");
+        row.className = `check ${check.ok ? "ok" : "fail"}`;
+        const head = document.createElement("div");
+        head.className = "check-name";
+        const name = document.createElement("span");
+        name.textContent = check.name || check.id || "check";
+        const result = document.createElement("span");
+        result.textContent = check.ok ? "ok" : "fail";
+        result.className = "check-result";
+        head.append(name, result);
+        const type = document.createElement("div");
+        type.className = "check-type";
+        const actual = check.actual_mm !== undefined ? ` / actual ${mm(check.actual_mm)}` : "";
+        type.textContent = `${check.type || "check"}${actual}`;
+        row.append(head, type);
+        checks.append(row);
+      });
+
+      const metrics = document.getElementById("metrics");
+      const bbox = (data.geometry || {}).bbox || data.geometry || {};
+      const size = bbox.size || [];
+      [["X", size[0]], ["Y", size[1]], ["Z", size[2]]].forEach(([label, value]) => {
+        metrics.append(metricNode(mm(value), `${label} envelope`));
+      });
+      const mesh = (data.geometry || {}).mesh || {};
+      if (mesh.triangles) {
+        metrics.append(metricNode(text(mesh.triangles), "triangles"));
+      }
+      if ((data.geometry || {}).triangle_count) {
+        metrics.append(metricNode(text(data.geometry.triangle_count), "triangles"));
+      }
+
+      const relations = document.getElementById("relations");
+      const relRows = [...(data.mates || []), ...(data.pairwise || []), ...((data.review || {}).relations || [])];
+      if (!relRows.length) relations.append(emptyNode("No mate or pair rows."));
+      relRows.forEach((row) => {
+        const box = document.createElement("div");
+        box.className = `check ${row.ok === false || row.interferes ? "fail" : "ok"}`;
+        const comps = row.components ? row.components.join(" + ") : [row.a, row.b].filter(Boolean).join(" + ");
+        const details = [];
+        if (row.angle_deg !== undefined) details.push(`angle ${Number(row.angle_deg).toFixed(4)} deg`);
+        if (row.radial_offset_mm !== undefined) details.push(`offset ${mm(row.radial_offset_mm)}`);
+        if (row.actual_mm !== undefined) details.push(`actual ${mm(row.actual_mm)}`);
+        if (row.aabb_clearance_mm !== undefined) details.push(`AABB clearance ${mm(row.aabb_clearance_mm)}`);
+        const head = document.createElement("div");
+        head.className = "check-name";
+        const name = document.createElement("span");
+        name.textContent = row.name || row.type || comps || "relation";
+        const result = document.createElement("span");
+        result.textContent = row.ok === false || row.interferes ? "fail" : "ok";
+        result.className = "check-result";
+        head.append(name, result);
+        const type = document.createElement("div");
+        type.className = "check-type";
+        type.textContent = [comps, details.join(" / ")].filter(Boolean).join(" ");
+        box.append(head, type);
+        relations.append(box);
+      });
+
+      const svgs = document.getElementById("svgs");
+      if (!(data.svgs || []).length) svgs.append(emptyNode("No SVG evidence found."));
+      document.getElementById("svg-count").textContent = String((data.svgs || []).length);
+      (data.svgs || []).forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "svg-card";
+        const a = linkNode(item.path, item.label || item.path || "svg");
+        const img = document.createElement("img");
+        img.src = `data:image/svg+xml;base64,${item.svgBase64 || ""}`;
+        img.alt = item.label || "";
+        card.append(a, img);
+        svgs.append(card);
+      });
+
+      const links = document.getElementById("links");
+      const artifactRows = Object.entries(data.artifacts || {});
+      const artifactContent = data.artifactsContent || {};
+      document.getElementById("artifact-count").textContent = String(artifactRows.length);
+      artifactRows.forEach(([key, value]) => {
+        const ext = (value || "").split(".").pop().toLowerCase();
+        const inlineData = artifactContent[key];
+        if (inlineData) {
+          const details = document.createElement("details");
+          details.className = "artifact";
+          const summary = document.createElement("summary");
+          const label = document.createElement("span");
+          label.className = "label";
+          label.textContent = artifactLabel(key);
+          const path = document.createElement("span");
+          path.className = "path";
+          path.textContent = value;
+          const extTag = document.createElement("span");
+          extTag.className = "ext";
+          extTag.textContent = ext;
+          const dl = document.createElement("a");
+          dl.href = value;
+          dl.textContent = "Open";
+          dl.className = "download";
+          dl.addEventListener("click", (e) => e.stopPropagation());
+          summary.append(label, path, extTag, dl);
+          const body = document.createElement("div");
+          body.className = "artifact-body";
+          const pre = document.createElement("pre");
+          if (inlineData.format === "json") {
+            pre.innerHTML = highlightJson(JSON.stringify(inlineData.data, null, 2));
+          } else {
+            pre.textContent = inlineData.text || "";
+          }
+          body.append(pre);
+          details.append(summary, body);
+          links.append(details);
+        } else {
+          const row = document.createElement("div");
+          row.className = "artifact artifact-head";
+          const label = document.createElement("span");
+          label.className = "label";
+          label.textContent = artifactLabel(key);
+          const path = document.createElement("span");
+          path.className = "path";
+          path.textContent = value;
+          const extTag = document.createElement("span");
+          extTag.className = "ext";
+          extTag.textContent = ext;
+          const dl = document.createElement("a");
+          dl.href = value;
+          dl.textContent = "Download";
+          dl.className = "download";
+          row.append(label, path, extTag, dl);
+          links.append(row);
+        }
+      });
+      if (!links.children.length) links.append(emptyNode("No artifact links."));
+    }
+
+    buildScene();
+    renderUi();
+    setMode("solid");
+    resize();
+    fitCamera("iso");
+    renderLoop();
+    new ResizeObserver(() => { resize(); }).observe(host);
+    document.querySelectorAll("[data-mode]").forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.mode)));
+    document.getElementById("explode").addEventListener("input", (event) => setExplode(Number(event.target.value)));
+    document.getElementById("fit").addEventListener("click", () => fitCamera(activeView, null, { preserveViewState: true, markFit: true }));
+    document.querySelectorAll("[data-view]").forEach((btn) => btn.addEventListener("click", () => fitCamera(btn.dataset.view)));
+    document.getElementById("show-all").addEventListener("click", () => showAllParts());
+    document.getElementById("prev-part").addEventListener("click", () => soloByOffset(-1));
+    document.getElementById("next-part").addEventListener("click", () => soloByOffset(1));
+  </script>
+</body>
+</html>

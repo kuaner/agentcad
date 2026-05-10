@@ -21,7 +21,7 @@ def test_validate_writes_interactive_model_preview(tmp_path):
     assert '"kind": "model"' in html
     assert '"stlBase64"' in html
     assert '"validation": "validation.json"' in html
-    assert 'id="exploded"' in html
+    assert 'id="explode"' in html
     assert 'id="next-part"' in html
     assert "soloComponent" in html
 
