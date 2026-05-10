@@ -144,6 +144,17 @@ Existing: `bbox_size`, `watertight`, `min_triangles`, `artifact_exists`, `metada
 
 Section checks use STL triangle-plane intersections for validating ducts, tapers, sockets, and chamfers. `min_clearance` is a pure-shape check evaluated at design time before any code is written, catching the most common interference bugs (hole edge under a wall, hole-to-edge break, hole-to-hole pitch too tight).
 
+## Release Process
+
+The publish workflow is triggered by pushing a git tag (`vX.Y.Z`). **Never create a GitHub release manually** — the workflow handles PyPI upload and GitHub Release creation. Manual release creation causes a 422 conflict.
+
+Steps to release:
+1. Bump `version` in `pyproject.toml`
+2. Commit with message `Release X.Y.Z`
+3. Tag: `git tag vX.Y.Z`
+4. Push: `git push && git push --tags`
+5. Wait for the GitHub Actions workflow to complete — it will publish to PyPI and create the GitHub Release
+
 ## Running Tests
 
 ```bash
