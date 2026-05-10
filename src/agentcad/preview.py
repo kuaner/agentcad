@@ -6,8 +6,6 @@ import json
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
-
 from . import templates
 from .jsonio import read_json
 from .workspace import model_dir, normalize_model_name, outputs_dir
@@ -246,8 +244,8 @@ def _assembly_artifact_paths(root: Path, out_dir: Path) -> dict[str, Path]:
     return {key: path for key, path in candidates.items() if path.exists()}
 
 
-def _artifact_contents(paths: dict[str, Path]) -> dict[str, Any]:
-    out: dict[str, Any] = {}
+def _artifact_contents(paths: dict[str, Path]) -> dict:
+    out: dict = {}
     for key, path in paths.items():
         suffix = path.suffix.lower()
         if suffix == ".json":
