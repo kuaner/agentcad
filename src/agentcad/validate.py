@@ -13,6 +13,7 @@ from .contract import (
 )
 from .jsonio import read_json, write_json
 from .measure import measure_model
+from .diff import archive_validation
 from .payloads import stage_check
 from .preview import write_model_preview
 from .render import render_models_multi
@@ -40,6 +41,7 @@ def validate_model(
     observability_path = out_dir / "observability.json"
 
     build = build_model(project, name)
+    archive_validation(out_dir)
     if not build.get("ok"):
         payload = _validation_payload(name, [stage_check("build", False, build)], artifacts={"validation": str(validation_path)})
         write_json(validation_path, payload)
@@ -106,6 +108,9 @@ def validate_model(
     if observability:
         artifacts["observability"] = str(observability_path)
     payload = _validation_payload(name, checks, artifacts=artifacts, warnings=warnings or None, auto_scan=auto_scan or None)
+    design = read_json(model_dir(project, name) / "design.json", default={}) or {}
+    params = read_json(model_dir(project, name) / "params.json", default={}) or {}
+    _attach_suggested_fixes(payload.get("checks", []), design, params)
     write_json(validation_path, payload)
     preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure)
     if preview.get("ok"):
@@ -286,6 +291,60 @@ def _observability_payload(
     }
 
 
+def _attach_suggested_fixes(checks: list[dict], design: dict, params: dict) -> None:
+    check_defs = {str(c.get("id", "")): c for c in (design.get("checks") or []) if isinstance(c, dict)}
+    for check in checks:
+        if check.get("ok", True):
+            continue
+        check_id = str(check.get("name", ""))
+        check_def = check_defs.get(check_id, {})
+        param_ref = check_def.get("param_ref")
+        if param_ref and param_ref in params:
+            check["suggested_fix"] = _param_fix(check, param_ref, params[param_ref])
+        else:
+            check["suggested_fix"] = _generic_fix(check)
+
+
+def _param_fix(check: dict, param_key: str, current_value) -> dict:
+    expected = check.get("expected")
+    actual = check.get("actual")
+    if expected is not None and actual is not None:
+        try:
+            delta = float(expected) - float(actual)
+            if isinstance(current_value, (int, float)):
+                return {
+                    "param": param_key,
+                    "current": current_value,
+                    "suggested": round(current_value + delta, 4),
+                    "reason": f"{check.get('type', 'check')} actual={actual} target={expected} delta={delta:.3f}",
+                }
+        except (TypeError, ValueError):
+            pass
+    return {
+        "param": param_key,
+        "current": current_value,
+        "reason": f"{check.get('type', 'check')} failed; review param '{param_key}'",
+    }
+
+
+def _generic_fix(check: dict) -> dict:
+    check_type = check.get("type", "")
+    parts = [f"fix {check_type} check '{check.get('name', '')}'"]
+    actual = check.get("actual")
+    expected = check.get("expected")
+    if actual is not None:
+        parts.append(f"actual: {actual}")
+    if expected is not None:
+        parts.append(f"target: {expected}")
+    hint = check.get("hint")
+    if hint:
+        parts.append(hint)
+    return {
+        "action": "; ".join(parts),
+        "evidence": {"type": check_type, "actual": actual, "expected": expected},
+    }
+
+
 __all__ = [
     "validate_model",
     "deliver_model",
@@ -299,4 +358,5 @@ __all__ = [
     "_get_path",
     "_VALID_CHECK_TYPES",
     "_GEOMETRY_CHECK_TYPES",
+    "_attach_suggested_fixes",
 ]

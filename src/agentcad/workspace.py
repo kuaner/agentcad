@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
 import shutil
 from pathlib import Path
 
 from . import templates
+from .jsonio import write_json
 
 PROJECT_FILE = "cadproject.json"
 
@@ -171,3 +173,36 @@ def normalize_model_name(name: str) -> str:
     if not value:
         raise ValueError("model name is required")
     return value
+
+
+def variant_dir(project: Path, name: str, variant: str) -> Path:
+    safe_variant = normalize_model_name(variant)
+    return model_dir(project, name) / "variants" / safe_variant
+
+
+def variant_params_path(project: Path, name: str, variant: str) -> Path:
+    return variant_dir(project, name, variant) / "params.json"
+
+
+def outputs_dir_for_variant(project: Path, name: str, variant: str | None = None) -> Path:
+    base = outputs_dir(project, name)
+    if variant is None:
+        return base
+    safe_variant = normalize_model_name(variant)
+    return base / safe_variant
+
+
+def new_variant(project: Path, name: str, variant: str, params: dict | None = None) -> dict:
+    safe_variant = normalize_model_name(variant)
+    v_dir = variant_dir(project, name, safe_variant)
+    if v_dir.exists():
+        return {"ok": False, "stage": "new_variant", "error": {"type": "VariantExists", "message": f"variant already exists: {safe_variant}"}}
+    v_dir.mkdir(parents=True, exist_ok=True)
+    if params is None:
+        source_params = model_dir(project, name) / "params.json"
+        if source_params.exists():
+            params = json.loads(source_params.read_text(encoding="utf-8"))
+        else:
+            params = {}
+    write_json(v_dir / "params.json", params)
+    return {"ok": True, "message": "variant created", "model": name, "variant": safe_variant, "path": str(v_dir)}

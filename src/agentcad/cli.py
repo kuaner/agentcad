@@ -6,6 +6,7 @@ from pathlib import Path
 
 from . import __version__
 from .assembly import assembly_dir, init_assembly, list_assemblies, review_assembly, validate_assembly
+from .diff import diff_model
 from .inspect import inspect_model
 from .jsonio import print_payload
 from .measure import measure_model
@@ -49,13 +50,16 @@ def build_parser() -> argparse.ArgumentParser:
     new = sub.add_parser("new", help="create a new model (auto-initializes workspace)")
     new.add_argument("model")
     new.add_argument("--force", action="store_true")
+    new.add_argument("--variant", default=None, help="create a variant with this name instead of a new model")
 
     build = sub.add_parser("build", help="build a model and export STEP/STL")
     build.add_argument("model")
     build.add_argument("--force", action="store_true", help="force rebuild even if source is unchanged")
+    build.add_argument("--variant", default=None, help="build using a variant's params.json")
 
     measure = sub.add_parser("measure", help="measure generated STL geometry")
     measure.add_argument("model")
+    measure.add_argument("--variant", default=None, help="measure variant output")
 
     render = sub.add_parser("render", help="render an SVG preview from STL")
     render.add_argument("model")
@@ -89,10 +93,16 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="comma-separated list of views to render during validation (default: iso,front,top,side,back)",
     )
+    validate.add_argument("--variant", default=None, help="validate using a variant's params.json")
 
     deliver = sub.add_parser("deliver", help="write a delivery manifest")
     deliver.add_argument("model")
     deliver.add_argument("--no-validate", action="store_true")
+    deliver.add_argument("--variant", default=None, help="deliver variant output")
+
+    diff = sub.add_parser("diff", help="compare current vs previous validation run")
+    diff.add_argument("model")
+    diff.add_argument("--last", action="store_true", help="compare with last archived run")
 
     probe = sub.add_parser("probe", help="probe STL cross-section to get geometry values for design.json")
     probe.add_argument("model")
@@ -197,9 +207,12 @@ def dispatch(args: argparse.Namespace) -> dict:
         if args.assembly_command == "review":
             return review_assembly(project, args.assembly)
     if args.command == "new":
+        if getattr(args, "variant", None):
+            from .workspace import new_variant
+            return new_variant(project, args.model, args.variant)
         return new_model(project, args.model, force=args.force)
     if args.command == "build":
-        return build_model(project, args.model, force=getattr(args, "force", False))
+        return build_model(project, args.model, force=getattr(args, "force", False), variant=getattr(args, "variant", None))
     if args.command == "measure":
         return measure_model(project, args.model)
     if args.command == "render":
@@ -233,6 +246,8 @@ def dispatch(args: argparse.Namespace) -> dict:
         return validate_model(project, args.model, render_view=args.view, render_views=render_views)
     if args.command == "deliver":
         return deliver_model(project, args.model, run_validation=not args.no_validate)
+    if args.command == "diff":
+        return diff_model(project, args.model, last=getattr(args, "last", False))
     if args.command == "probe":
         if args.scan:
             return probe_scan(project, args.model, axis=args.axis, samples=args.samples)

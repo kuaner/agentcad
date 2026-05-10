@@ -7,6 +7,7 @@ from agentcad.validate import (
     evaluate_design_checks,
     evaluate_feature_coverage,
     stage_check,
+    _attach_suggested_fixes,
     _vec_close,
 )
 
@@ -94,3 +95,33 @@ def test_design_checks_unsupported_type(tmp_path):
     assert len(results) == 1
     assert results[0]["ok"] is False
     assert "unsupported" in results[0].get("error", "")
+
+
+def test_suggested_fix_with_param_ref():
+    checks = [
+        {"name": "hole_dia", "type": "inner_diameter_at_z", "ok": False, "actual": 4.5, "expected": 5.0},
+        {"name": "wall_ok", "type": "watertight", "ok": True},
+    ]
+    design = {"checks": [{"id": "hole_dia", "type": "inner_diameter_at_z", "param_ref": "hole_radius"}]}
+    params = {"hole_radius": 2.25}
+    _attach_suggested_fixes(checks, design, params)
+    assert "suggested_fix" in checks[0]
+    assert checks[0]["suggested_fix"]["param"] == "hole_radius"
+    assert checks[0]["suggested_fix"]["current"] == 2.25
+    assert "suggested_fix" not in checks[1]
+
+
+def test_suggested_fix_without_param_ref():
+    checks = [
+        {"name": "wall_thick", "type": "min_wall_thickness", "ok": False, "actual": 0.8, "expected": 1.0},
+    ]
+    _attach_suggested_fixes(checks, {}, {})
+    assert "suggested_fix" in checks[0]
+    assert checks[0]["suggested_fix"]["action"]
+    assert "min_wall_thickness" in checks[0]["suggested_fix"]["action"]
+
+
+def test_passing_check_no_suggested_fix():
+    checks = [{"name": "good", "type": "watertight", "ok": True}]
+    _attach_suggested_fixes(checks, {}, {})
+    assert "suggested_fix" not in checks[0]

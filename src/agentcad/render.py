@@ -3,9 +3,9 @@ from __future__ import annotations
 import html
 from pathlib import Path
 
-from .jsonio import write_json
+from .jsonio import read_json, write_json
 from .stl import Vec3, cross, dot, normalize, read_stl, sub, triangle_normal
-from .workspace import outputs_dir
+from .workspace import model_dir, outputs_dir
 
 
 VIEW_DIRS: dict[str, Vec3] = {
@@ -66,7 +66,9 @@ def render_model(project: Path, name: str, view: str = "iso") -> dict:
 
     try:
         triangles = read_stl(stl_path)
-        svg = triangles_to_svg(triangles, title=f"{name} {actual_view}", view=actual_view)
+        geom = read_json(model_dir(project, name) / "outputs" / "geometry.json", default={}) or {}
+        bbox = (geom.get("geometry") or {}).get("bbox")
+        svg = triangles_to_svg(triangles, title=f"{name} {actual_view}", view=actual_view, bbox=bbox)
         svg_path.write_text(svg, encoding="utf-8")
     except Exception as exc:
         payload = {
@@ -90,7 +92,14 @@ def render_model(project: Path, name: str, view: str = "iso") -> dict:
     return payload
 
 
-def triangles_to_svg(triangles, title: str = "preview", view: str = "iso", width: int = 960, height: int = 720) -> str:
+def triangles_to_svg(
+    triangles,
+    title: str = "preview",
+    view: str = "iso",
+    width: int = 960,
+    height: int = 720,
+    bbox: dict | None = None,
+) -> str:
     direction = normalize(VIEW_DIRS.get(view, VIEW_DIRS["iso"]))
     world_up: Vec3 = (0.0, 0.0, 1.0)
     raw_right = cross(world_up, direction)
@@ -143,16 +152,92 @@ def triangles_to_svg(triangles, title: str = "preview", view: str = "iso", width
         polygons.append(f'<polygon points="{screen_pts}" fill="{fill}" stroke="#30343b" stroke-width="0.6"/>')
 
     escaped = html.escape(title)
+    annotations = _dimension_annotations(bbox, right, up, min_u, max_u, min_v, max_v, scale, margin, width, height) if bbox else ""
     return "\n".join(
         [
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
             "<rect width=\"100%\" height=\"100%\" fill=\"#f7f8fb\"/>",
             f"<title>{escaped}</title>",
             *polygons,
+            annotations,
             "</svg>",
             "",
         ]
     )
+
+def _axis_label(vec: Vec3) -> str:
+    labels = ("X", "Y", "Z")
+    abs_vals = [abs(c) for c in vec]
+    return labels[abs_vals.index(max(abs_vals))]
+
+
+def _nice_bar(total_range: float) -> float:
+    for v in (1, 2, 5, 10, 20, 50, 100, 200, 500):
+        if total_range / v <= 6:
+            return float(v)
+    return 500.0
+
+
+def _dimension_annotations(
+    bbox: dict,
+    right: Vec3,
+    up: Vec3,
+    min_u: float,
+    max_u: float,
+    min_v: float,
+    max_v: float,
+    scale: float,
+    margin: float,
+    width: int,
+    height: int,
+) -> str:
+    size = bbox.get("size") or []
+    if len(size) < 3:
+        return ""
+
+    u_axis = _axis_label(right)
+    v_axis = _axis_label(up)
+    axis_idx = {"X": 0, "Y": 1, "Z": 2}
+
+    u_dim = size[axis_idx[u_axis]]
+    v_dim = size[axis_idx[v_axis]]
+
+    u_cx = margin + (max_u - min_u) * scale / 2
+    v_cy = height - margin - (max_v - min_v) * scale / 2
+
+    u_left = margin
+    u_right = margin + (max_u - min_u) * scale
+    v_top = height - margin - (max_v - min_v) * scale
+    v_bottom = height - margin
+
+    elements: list[str] = []
+
+    # Horizontal dimension line (below the rendering area)
+    dy = 14
+    y = v_bottom + dy
+    elements.append(f'<line x1="{u_left:.1f}" y1="{y:.1f}" x2="{u_right:.1f}" y2="{y:.1f}" stroke="#999" stroke-width="0.8"/>')
+    elements.append(f'<line x1="{u_left:.1f}" y1="{y - 3:.1f}" x2="{u_left:.1f}" y2="{y + 3:.1f}" stroke="#999" stroke-width="0.8"/>')
+    elements.append(f'<line x1="{u_right:.1f}" y1="{y - 3:.1f}" x2="{u_right:.1f}" y2="{y + 3:.1f}" stroke="#999" stroke-width="0.8"/>')
+    elements.append(f'<text x="{u_cx:.1f}" y="{y + 11}" text-anchor="middle" font-size="9" fill="#777" font-family="monospace">{u_dim:.1f} mm ({u_axis})</text>')
+
+    # Vertical dimension line (left of the rendering area)
+    dx = 14
+    x = u_left - dx
+    elements.append(f'<line x1="{x:.1f}" y1="{v_top:.1f}" x2="{x:.1f}" y2="{v_bottom:.1f}" stroke="#999" stroke-width="0.8"/>')
+    elements.append(f'<line x1="{x - 3:.1f}" y1="{v_top:.1f}" x2="{x + 3:.1f}" y2="{v_top:.1f}" stroke="#999" stroke-width="0.8"/>')
+    elements.append(f'<line x1="{x - 3:.1f}" y1="{v_bottom:.1f}" x2="{x + 3:.1f}" y2="{v_bottom:.1f}" stroke="#999" stroke-width="0.8"/>')
+    elements.append(f'<text x="{x - 4:.1f}" y="{v_cy:.1f}" text-anchor="middle" font-size="9" fill="#777" font-family="monospace" transform="rotate(-90 {x - 4:.1f} {v_cy:.1f})">{v_dim:.1f} mm ({v_axis})</text>')
+
+    # Scale bar (bottom-right corner)
+    mm_range = max(max_u - min_u, max_v - min_v)
+    bar_mm = _nice_bar(mm_range)
+    bar_px = bar_mm * scale
+    bx = u_right - bar_px
+    by = v_bottom + 28
+    elements.append(f'<line x1="{bx:.1f}" y1="{by:.1f}" x2="{bx + bar_px:.1f}" y2="{by:.1f}" stroke="#999" stroke-width="1.5"/>')
+    elements.append(f'<text x="{bx + bar_px / 2:.1f}" y="{by + 11:.1f}" text-anchor="middle" font-size="9" fill="#999" font-family="sans-serif">{bar_mm:.0f} mm</text>')
+
+    return f'<g id="annotations">{"".join(elements)}</g>'
 
 
 def _empty_svg(width: int, height: int, title: str) -> str:
