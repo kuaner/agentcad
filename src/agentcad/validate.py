@@ -312,10 +312,20 @@ def _param_fix(check: dict, param_key: str, current_value) -> dict:
         try:
             delta = float(expected) - float(actual)
             if isinstance(current_value, (int, float)):
+                suggested = round(current_value + delta, 4)
+                if suggested <= 0 or abs(delta) > abs(current_value) * 2:
+                    return {
+                        "param": param_key,
+                        "current": current_value,
+                        "suggested": float(expected),
+                        "confidence": "low",
+                        "reason": f"{check.get('type', 'check')} actual={actual} target={expected}; param '{param_key}' may not control this dimension directly, using target as suggested value",
+                    }
                 return {
                     "param": param_key,
                     "current": current_value,
-                    "suggested": round(current_value + delta, 4),
+                    "suggested": suggested,
+                    "confidence": "high",
                     "reason": f"{check.get('type', 'check')} actual={actual} target={expected} delta={delta:.3f}",
                 }
         except (TypeError, ValueError):
