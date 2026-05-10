@@ -115,6 +115,15 @@ def test_min_clearance_3d_z_separated_no_interference():
     assert result["clearance_mm"] == pytest.approx(6.0)
 
 
+def test_min_clearance_3d_touching_z_faces_are_contact_not_interference():
+    a = {"type": "box", "x_range": [-5, 5], "y_range": [-5, 5], "z_range": [0, 4]}
+    b = {"type": "box", "x_range": [-5, 5], "y_range": [-5, 5], "z_range": [4, 8]}
+    result = min_clearance_3d(a, b)
+    assert result["interferes"] is False
+    assert result["z_overlap_mm"] == 0
+    assert result["clearance_mm"] == pytest.approx(0.0)
+
+
 def test_min_clearance_3d_full_interference():
     a = {"type": "cylinder", "axis": "z",
          "center": [-15, 15], "radius": 2.25, "z_range": [0, 4]}

@@ -14,6 +14,7 @@ from .contract import (
 from .jsonio import read_json, write_json
 from .measure import measure_model
 from .payloads import stage_check
+from .preview import write_model_preview
 from .render import render_models_multi
 from .runner import build_model, utc_now
 from .section import AXIS_Z, scan_profile, write_section_svg
@@ -106,6 +107,10 @@ def validate_model(
         artifacts["observability"] = str(observability_path)
     payload = _validation_payload(name, checks, artifacts=artifacts, warnings=warnings or None, auto_scan=auto_scan or None)
     write_json(validation_path, payload)
+    preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure)
+    if preview.get("ok"):
+        payload["artifacts"]["preview_page"] = (preview.get("artifacts") or {}).get("preview_page")
+    write_json(validation_path, payload)
     return payload
 
 
@@ -127,6 +132,7 @@ def deliver_model(project: Path, name: str, run_validation: bool = True) -> dict
         "metadata": str(model_dir(project, name) / "metadata.json"),
         "precheck": str(out_dir / "precheck.json"),
         "review": str(out_dir / "review.json"),
+        "preview_page": str(out_dir / "preview.html"),
         **preview_candidates,
         "deliverable": str(deliver_path),
     }

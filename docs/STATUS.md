@@ -244,13 +244,23 @@ Findings folded back into the project:
 8. Treat section measurement JSON as the first-pass truth. SVGs are still
    useful, but bbox, component count, closed-loop ratio, and warnings make
    geometry failures easier for agents to detect deterministically.
-9. Multi-model products still need assembly-level fit validation. The
-   bit-holder body/lid example passes by matching metadata and per-model
-   geometry, but a first-class mate/clearance contract is the right long-term
-   check.
-8. Side/top/front/back views are not optional; side view caught a floating lip
+9. Multi-model products need assembly-level fit validation. V4 now provides
+   first-class mate/clearance contracts, pair coverage, mesh narrow-phase
+   interference evidence, combined STL, mandatory MJCF, and interactive
+   previews so the bit-holder body/lid workflow no longer depends on matching
+   per-model metadata by convention alone.
+10. Assembly validation must make MJCF a required verification artifact, not
+    an optional viewer export. The source of truth remains `assembly.json` plus
+    measured `assembly_geometry.json`; MJCF is generated and round-tripped
+    against that geometry to catch export drift.
+11. Humans need a first-class preview artifact, not a pile of JSON paths.
+    `preview.html` now embeds STL geometry directly and presents Three.js
+    inspection, checks, SVG evidence, MJCF text, measurements, assembly
+    explode controls, and per-component isolate/focus controls in one local
+    page.
+12. Side/top/front/back views are not optional; side view caught a floating lip
    that iso and bbox validation did not make obvious.
-9. Two real build123d traps that always come back:
+13. Two real build123d traps that always come back:
    - `Locations + BuildSketch(Plane.XY)` does not move the sketch plane;
      use `Plane(origin=(x, y, z))` instead.
    - `Box(...).moved(Location(...))` inside `BuildPart` double-adds; use
@@ -260,16 +270,18 @@ Both are documented in `references/build123d-guide.md`.
 
 ## Tests
 
-`uv run pytest -v` — currently 144 tests across:
+`uv run pytest -v` — currently 168 tests across:
 
 - `test_cli.py` — CLI dispatch
 - `test_workspace.py` — init / new / sync / discovery
 - `test_runner.py`, `test_stale.py` — build runner + hash cache
 - `test_stl.py` — pure-Python STL reader and analysis
 - `test_render.py`, `test_section.py` — SVG rendering and section extraction
+- `test_preview.py` — local interactive HTML preview generation
 - `test_validate.py`, `test_weak_check.py` — post-build validation + weak-check warnings
 - `test_probe.py` — probe + scan
 - `test_geometry.py` — pure shape primitives (AABB, clearance, accessibility, wall thickness)
+- `test_assembly.py` — assembly contracts, transform bans, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, SVG/STL/MJCF artifacts
 - `test_precheck_review.py` — `agentcad precheck` and `agentcad review` integration
 - `test_jsonio.py`
 
@@ -282,5 +294,6 @@ Both are documented in `references/build123d-guide.md`.
 | V2 — design spec standardization | ✅ delivered | check IDs, schema validation, weak-check warnings, Markdown report (`agentcad report`) |
 | V2.5 — design-time observability | ✅ delivered (new) | `agentcad precheck`, `agentcad review`, four geometric relation checks, common-error catalog, mandatory TDD prompt |
 | V2.6 — design-thinking prompts | ✅ delivered (new) | split references, Discovery Gate, Concept Gate, Design Quality Review, real cable-hook e2e |
+| V4 — assembly validation | ✅ delivered (new) | `agentcad assembly init/list/validate/review`, rigid transforms, metadata interface measurement, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, combined/exploded SVG, combined STL, top-level interactive preview, mandatory MJCF round-trip |
 
 Next milestones (V3+) are tracked in [`DESIGN.md`](DESIGN.md).

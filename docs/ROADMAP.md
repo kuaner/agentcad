@@ -1,6 +1,6 @@
 # AgentCAD Roadmap
 
-Last updated: 2026-05-07
+Last updated: 2026-05-09
 
 This document is the actionable companion to [`DESIGN.md`](DESIGN.md). It
 takes the high-level milestones (V0 – V6) and breaks them into concrete,
@@ -20,7 +20,7 @@ For background on what is already shipped, see
 | V2 | Design spec standardization | ✅ delivered | check IDs, schema, weak-check warnings, Markdown report |
 | V2.5 | Design-time observability | ✅ delivered | `precheck`, `review`, four relational checks, common-error catalog |
 | **V3** | **Feature library** | **next** | **declarative helpers that emit matching checks** |
-| V4 | Assembly + relations | planned | multi-model workspace, mate points, inter-model clearance |
+| V4 | Assembly + relations | ✅ delivered | assembly contracts, mate residuals, fit checks, mesh narrow phase, interactive preview, mandatory MJCF |
 | V5 | CAD CI | planned | `validate all`, regression snapshots, GitHub Actions |
 | V6 | Optional integrations | deferred | MCP server, live viewer, PNG / glTF previews |
 
@@ -119,15 +119,22 @@ showcase example and the fan-adapter rewrite.
 
 Detailed design proposal: [`ASSEMBLY_TECHNICAL_PLAN.md`](ASSEMBLY_TECHNICAL_PLAN.md).
 
+Status: V4 validation is delivered in the CLI as
+`agentcad assembly init/list/validate/review` plus the cross-cutting
+`agentcad preview <name>` command for both models and assemblies. The delivered
+workflow includes mesh narrow-phase interference evidence, descriptor-based
+inter-model clearance, assembly section component counts, combined STL export,
+MJCF round-trip validation, and a `fan_with_screen` acceptance fixture.
+
 ### Why
 
-V3 makes single parts cheap to author. The next ceiling is multi-part
+V3 makes single parts cheap to author. The next ceiling was multi-part
 assemblies: most real CAD work is "this part bolts to that part with X
-clearance and Y mate". Today an agent has to reason about two STL files
-in two different model directories with no shared coordinate system.
-The `examples/e2e-bit-holder/` body/lid test makes this concrete: each
-model validates independently, but the fit is still expressed indirectly
-through matching metadata values instead of an assembly-level mate contract.
+clearance and Y mate". V4 gives the agent a shared assembly coordinate system,
+explicit mate/clearance contracts, and generated evidence instead of forcing it
+to compare unrelated model outputs manually. The
+`examples/e2e-bit-holder/` body/lid test remains the regression fixture for
+that workflow.
 
 ### Scope
 
@@ -138,7 +145,11 @@ through matching metadata values instead of an assembly-level mate contract.
   - `agentcad assembly init <name>` — scaffold an assembly directory.
   - `agentcad assembly list` — list discovered assemblies.
   - `agentcad assembly validate <name>` — run inter-model
-    checks, emit combined/exploded SVG previews, and generate MJCF.
+    checks, emit combined/exploded SVG previews, generate an explodable
+    component-isolation `preview.html`, and generate MJCF.
+  - `agentcad preview <name>` — regenerate the local interactive Three.js
+    review page for either a model or an assembly. Preview is a universal
+    artifact-viewing command; assembly is optional and should not own it.
   - `agentcad assembly review <name>` — block delivery on uncovered mates,
     missing MJCF, stale artifacts, or unresolved component-pair risks.
 - Inter-model relational checks: the existing four geometric-relation
@@ -146,15 +157,16 @@ through matching metadata values instead of an assembly-level mate contract.
   reference shapes declared in two different models.
 - Metadata-to-geometry consistency checks ensure assembly interfaces declared in
   `metadata.json` match the built STL instead of being trusted blindly.
-- Mandatory MJCF export as a human-verifiable assembly artifact; optional
-  MuJoCo-derived metrics can later augment the numeric validation report.
+- Mandatory MJCF export as a human-verifiable assembly artifact. Optional
+  MuJoCo-derived metrics may augment external viewer workflows, but do not
+  replace AgentCAD's numeric checks.
 
 ### Acceptance
 
-- A new example `examples/fan-with-screen/` combines the existing
-  `fan_duct_adapter_8025` and `outlet_magnetic_screen_plate_8025` into
-  an assembly with mate points and pass an inter-model
-  `min_clearance` check.
+- `examples/fan-adapter-8025/assemblies/fan_with_screen/` combines the existing
+  `fan_duct_adapter_8025` and `outlet_magnetic_screen_plate_8025` models into
+  an assembly that passes descriptor clearance, mesh penetration,
+  section-count, bbox, MJCF, and preview artifact checks.
 
 ---
 

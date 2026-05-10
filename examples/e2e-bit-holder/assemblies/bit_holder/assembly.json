@@ -1,0 +1,63 @@
+{
+  "schema": "agentcad.assembly.v1",
+  "name": "bit_holder",
+  "units": "mm",
+  "intent": "Closed-position body and stepped lid assembly for the driver-bit holder.",
+  "components": [
+    {
+      "id": "body",
+      "model": "bit_holder_body",
+      "transform": {
+        "translation": [0, 0, 0],
+        "rotation_euler_deg": [0, 0, 0]
+      }
+    },
+    {
+      "id": "lid",
+      "model": "bit_holder_lid",
+      "transform": {
+        "translation": [0, 0, 79],
+        "rotation_euler_deg": [0, 0, 0]
+      }
+    }
+  ],
+  "mates": [
+    {
+      "id": "lid_axis_coaxial",
+      "type": "coaxial",
+      "a": "body.interfaces.lid_neck.axis",
+      "b": "lid.interfaces.recess.axis",
+      "max_axis_angle_deg": 0.1,
+      "max_radial_offset_mm": 0.05
+    },
+    {
+      "id": "lid_neck_engagement",
+      "type": "axial_engagement",
+      "a": "body.interfaces.lid_neck.outer_cylinder",
+      "b": "lid.interfaces.recess.inner_cylinder",
+      "min_mm": 4.5
+    }
+  ],
+  "checks": [
+    {
+      "id": "lid_radial_clearance",
+      "type": "radial_clearance",
+      "inner": "lid.interfaces.recess.inner_cylinder",
+      "outer": "body.interfaces.lid_neck.outer_cylinder",
+      "min_mm": 0.2,
+      "max_mm": 0.5
+    },
+    {
+      "id": "assembly_envelope",
+      "type": "assembly_bbox_size",
+      "expected": [70, 70, 92],
+      "tolerance_mm": 0.5
+    }
+  ],
+  "ignore_pairs": [
+    {
+      "components": ["body", "lid"],
+      "reason": "slip-fit pair is intentionally overlapping in AABB and is covered by coaxial, radial clearance, and axial engagement checks"
+    }
+  ]
+}

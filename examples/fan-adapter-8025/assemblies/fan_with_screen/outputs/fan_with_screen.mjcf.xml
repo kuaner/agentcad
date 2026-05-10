@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="fan_with_screen">
+  <compiler angle="degree" coordinate="local" />
+  <asset>
+    <mesh name="screen_plate_mesh" file="../../../models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.stl" />
+    <mesh name="duct_adapter_mesh" file="../../../models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.stl" />
+  </asset>
+  <worldbody>
+    <body name="screen_plate" pos="0 0 0" euler="0 0 0">
+      <geom name="screen_plate_geom" type="mesh" mesh="screen_plate_mesh" />
+    </body>
+    <body name="duct_adapter" pos="0 0 9" euler="0 0 0">
+      <geom name="duct_adapter_geom" type="mesh" mesh="duct_adapter_mesh" />
+    </body>
+  </worldbody>
+</mujoco>

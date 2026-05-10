@@ -1,0 +1,313 @@
+{
+  "ok": true,
+  "schema": "agentcad.assembly.validation.v1",
+  "stage": "assembly_validate",
+  "assembly": "fan_with_screen",
+  "summary": {
+    "checks": 12,
+    "passed": 12,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "name": "fresh_component:screen_plate",
+      "type": "component_exists",
+      "ok": true,
+      "component": "screen_plate",
+      "model": "outlet_magnetic_screen_plate_8025",
+      "build_ok": true,
+      "artifacts_exist": {
+        "stl": true,
+        "step": true,
+        "metadata": true
+      },
+      "paths": {
+        "model_dir": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025",
+        "build": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/build.json",
+        "stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.stl",
+        "step": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/outputs/outlet_magnetic_screen_plate_8025.step",
+        "metadata": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/outlet_magnetic_screen_plate_8025/metadata.json"
+      }
+    },
+    {
+      "name": "fresh_component:duct_adapter",
+      "type": "component_exists",
+      "ok": true,
+      "component": "duct_adapter",
+      "model": "fan_duct_adapter_8025",
+      "build_ok": true,
+      "artifacts_exist": {
+        "stl": true,
+        "step": true,
+        "metadata": true
+      },
+      "paths": {
+        "model_dir": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025",
+        "build": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/build.json",
+        "stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.stl",
+        "step": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.step",
+        "metadata": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/metadata.json"
+      }
+    },
+    {
+      "name": "screen_plate_adapter_contact",
+      "type": "inter_model_min_clearance",
+      "ok": true,
+      "components": [
+        "duct_adapter",
+        "screen_plate"
+      ],
+      "actual_mm": 0.0,
+      "min_mm": 0.0,
+      "method": "shape_descriptor",
+      "evidence": {
+        "clearance_mm": 0.0,
+        "z_overlap_mm": 0.0,
+        "xy_clearance_mm": -86.0,
+        "interferes": false,
+        "components": [
+          "duct_adapter",
+          "screen_plate"
+        ],
+        "shape_a": {
+          "type": "box",
+          "x_range": [
+            -44.0,
+            44.0
+          ],
+          "y_range": [
+            -44.0,
+            44.0
+          ],
+          "z_range": [
+            0.0,
+            9.0
+          ]
+        },
+        "shape_b": {
+          "type": "box",
+          "x_range": [
+            -43.0,
+            43.0
+          ],
+          "y_range": [
+            -43.0,
+            43.0
+          ],
+          "z_range": [
+            9.0,
+            42.0
+          ]
+        }
+      }
+    },
+    {
+      "name": "screen_plate_adapter_no_mesh_penetration",
+      "type": "interference_free",
+      "ok": true,
+      "components": [
+        "duct_adapter",
+        "screen_plate"
+      ],
+      "method": "mesh_narrow_phase_v1",
+      "bbox_overlap": true,
+      "mesh_clearance_mm": 0.0,
+      "mesh_penetration_mm": 0.0,
+      "tolerance_mm": 0.05,
+      "aabb_clearance_mm": 0.0,
+      "narrow_phase": {
+        "ok": true,
+        "broad_phase": "aabb_overlap",
+        "triangle_candidate_pairs": 77834,
+        "triangle_intersection_count": 256,
+        "inside_sample_count": 0,
+        "sample_count": 768,
+        "min_sample_distance_mm": 0.0,
+        "max_penetration_mm": 0.0,
+        "deepest_sample": null,
+        "note": "inside samples estimate solid penetration; triangle intersections without inside samples are treated as surface contact evidence"
+      },
+      "error": null
+    },
+    {
+      "name": "closed_stack_envelope",
+      "type": "assembly_bbox_size",
+      "ok": true,
+      "actual": [
+        88.0,
+        88.0,
+        42.0
+      ],
+      "expected": [
+        88.0,
+        88.0,
+        42.0
+      ],
+      "tolerance_mm": 0.6
+    },
+    {
+      "name": "mid_stack_section_has_both_models",
+      "type": "assembly_section_component_count",
+      "ok": true,
+      "axis": "z",
+      "value_mm": 9.0,
+      "actual": 2,
+      "expected": 2,
+      "total_segment_count": 3064,
+      "disconnected_contour_count": 2,
+      "components": [
+        "screen_plate",
+        "duct_adapter"
+      ],
+      "evidence": [
+        {
+          "component": "screen_plate",
+          "segment_count": 1532,
+          "component_count": 1,
+          "bbox": {
+            "u_min": -44.0,
+            "u_max": 44.0,
+            "v_min": -44.0,
+            "v_max": 44.0,
+            "u_size": 88.0,
+            "v_size": 88.0
+          }
+        },
+        {
+          "component": "duct_adapter",
+          "segment_count": 1532,
+          "component_count": 1,
+          "bbox": {
+            "u_min": -43.0,
+            "u_max": 43.0,
+            "v_min": -43.0,
+            "v_max": 43.0,
+            "u_size": 86.0,
+            "v_size": 86.0
+          }
+        }
+      ]
+    },
+    {
+      "name": "component_pair_classified:duct_adapter+screen_plate",
+      "type": "component_pair_classified",
+      "ok": true,
+      "components": [
+        "duct_adapter",
+        "screen_plate"
+      ],
+      "coverage": "check",
+      "reason": null
+    },
+    {
+      "name": "assembly_previews_generated",
+      "type": "artifact_exists",
+      "ok": true,
+      "artifacts": {
+        "preview_combined_iso": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/preview.combined.iso.svg",
+        "preview_exploded_iso": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/preview.exploded.iso.svg"
+      },
+      "error": null
+    },
+    {
+      "name": "assembly_stl_generated",
+      "type": "artifact_exists",
+      "ok": true,
+      "artifacts": {
+        "assembly_stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/fan_with_screen.stl"
+      },
+      "error": null
+    },
+    {
+      "name": "mjcf_consistency",
+      "type": "mjcf_consistency",
+      "ok": true,
+      "artifact": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/fan_with_screen.mjcf.xml",
+      "errors": []
+    },
+    {
+      "name": "transform_consistency",
+      "type": "transform_consistency",
+      "ok": true,
+      "source": "assembly_geometry.transform.matrix",
+      "uses": [
+        "stl_world_bbox",
+        "svg_previews",
+        "mjcf_body_pose"
+      ]
+    },
+    {
+      "name": "interactive_preview_generated",
+      "type": "artifact_exists",
+      "ok": true,
+      "artifacts": {
+        "preview_page": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/preview.html"
+      },
+      "error": null
+    }
+  ],
+  "geometry_summary": {
+    "component_count": 2,
+    "triangle_count": 12932,
+    "bbox": {
+      "min": [
+        -44.0,
+        -44.0,
+        0.0
+      ],
+      "max": [
+        44.0,
+        44.0,
+        42.0
+      ],
+      "size": [
+        88.0,
+        88.0,
+        42.0
+      ],
+      "center": [
+        0.0,
+        0.0,
+        21.0
+      ]
+    }
+  },
+  "mate_residuals": [],
+  "pairwise": [
+    {
+      "components": [
+        "duct_adapter",
+        "screen_plate"
+      ],
+      "bbox_overlap": true,
+      "aabb_clearance_mm": 0.0,
+      "method": "mesh_narrow_phase_v1",
+      "mesh_clearance_mm": 0.0,
+      "mesh_penetration_mm": 0.0,
+      "interferes": false,
+      "narrow_phase": {
+        "ok": true,
+        "broad_phase": "aabb_overlap",
+        "triangle_candidate_pairs": 77834,
+        "triangle_intersection_count": 256,
+        "inside_sample_count": 0,
+        "sample_count": 768,
+        "min_sample_distance_mm": 0.0,
+        "max_penetration_mm": 0.0,
+        "deepest_sample": null,
+        "note": "inside samples estimate solid penetration; triangle intersections without inside samples are treated as surface contact evidence"
+      }
+    }
+  ],
+  "artifacts": {
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/assembly_geometry.json",
+    "validation": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/assembly_validation.json",
+    "observability": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/assembly_observability.json",
+    "preview_combined_iso": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/preview.combined.iso.svg",
+    "preview_exploded_iso": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/preview.exploded.iso.svg",
+    "assembly_stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/fan_with_screen.stl",
+    "mjcf": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/fan_with_screen.mjcf.xml",
+    "preview_page": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/assemblies/fan_with_screen/outputs/preview.html"
+  },
+  "message": "assembly validation passed"
+}

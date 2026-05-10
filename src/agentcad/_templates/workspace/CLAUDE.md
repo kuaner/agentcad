@@ -3,7 +3,7 @@
 You are working in an AgentCAD workspace. Your job is to create and refine CAD
 models using the `agentcad` CLI and build123d geometry library.
 
-## Workflow (13 stages, do not skip)
+## Workflow (14 stages, do not skip)
 
 1. **Understand**: read the user request, identify every feature, and pass the
    Discovery Gate in `references/discovery.md`.
@@ -23,10 +23,15 @@ models using the `agentcad` CLI and build123d geometry library.
 10. **Validate**: run `agentcad validate <name>`. It must pass.
 11. **Review**: run `agentcad review <name>` and inspect every `must_view`
     artifact.
-12. **Quality Review**: apply `references/design-quality-review.md`. If the
+12. **Preview**: open `models/<name>/outputs/preview.html` or run
+    `agentcad preview <name>` to regenerate it. Use the interactive 3D view to
+    inspect topology, section SVGs, geometry values, and failing checks. For an
+    assembly, open `assemblies/<name>/outputs/preview.html` or run the same
+    top-level `agentcad preview <name>` command.
+13. **Quality Review**: apply `references/design-quality-review.md`. If the
     model is merely valid but not good, revise the concept, contract, or
     geometry and repeat validation.
-13. **Deliver**: run `agentcad deliver <name>` only after review and quality
+14. **Deliver**: run `agentcad deliver <name>` only after review and quality
     review pass.
 
 Do not manually export STEP/STL from `part.py`. The runner owns all exports.
@@ -50,7 +55,11 @@ Read only the references needed for the current stage.
 
 - Units are millimeters unless the user explicitly says otherwise.
 - Coordinate convention: +X right, +Y back, +Z up.
-- Do not write generated artifacts outside `models/<name>/outputs/`.
+- Do not write generated artifacts outside `models/<name>/outputs/` or
+  `assemblies/<name>/outputs/`.
+- Do not create an assembly unless the user asks for multiple parts, fit,
+  motion, enclosure/cover relationships, or another inter-model relationship.
+  Assembly is optional and on-demand; preview is a universal review command.
 - Treat `design.json` as the design contract: source of truth for what the
   model should be.
 - Treat CLI JSON output as the source of truth for what the model actually is.
@@ -86,6 +95,7 @@ models/<name>/
     geometry.json       STL measurement report
     validation.json     Validation results
     observability.json  Aggregate previews, scans, and section measurements
+    preview.html        Interactive local Three.js preview page
     precheck.json       Static contract report
     review.json         Pre-delivery review report
     deliverable.json    Delivery manifest
@@ -94,6 +104,18 @@ models/<name>/
     section.z10.00.json Section measurement sidecar
     <name>.step         STEP export
     <name>.stl          STL export
+
+assemblies/<name>/
+  assembly.json          Optional multi-model fit/mate contract
+  outputs/
+    assembly_geometry.json
+    assembly_validation.json
+    assembly_observability.json
+    assembly_review.json
+    preview.html          Interactive assembly preview
+    preview.combined.iso.svg
+    preview.exploded.iso.svg
+    <name>.mjcf.xml       MJCF verification artifact
 ```
 
 ## CLI Quick Reference
@@ -107,6 +129,9 @@ agentcad build <model> --force
 agentcad measure <model>
 agentcad render <model>
 agentcad render <model> --views iso,front,top,side,back
+agentcad preview <name>
+agentcad preview <name> --kind model
+agentcad preview <name> --kind assembly
 agentcad validate <model>
 agentcad review <model>
 agentcad deliver <model>
@@ -127,6 +152,10 @@ agentcad render <model> --section-x <x>
 agentcad render <model> --section-y <y>
 agentcad inspect <model>
 agentcad report <model>
+agentcad assembly init <assembly>
+agentcad assembly list
+agentcad assembly validate <assembly>
+agentcad assembly review <assembly>
 ```
 
 All commands output machine-readable JSON by default. Read the JSON before

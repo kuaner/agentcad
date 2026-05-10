@@ -24,10 +24,12 @@ discovery -> concept -> design contract -> precheck -> params/source -> build
 | Build | `agentcad build <model>` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
 | Measure | `agentcad measure <model>` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
 | Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews + Z/X/Y cross-section SVGs with measurement sidecars |
+| Preview | `agentcad preview <name>` | Generate a local `preview.html` for either a model or an assembly, with interactive Three.js STL inspection, component isolation, and geometry/check panels |
 | Probe | `agentcad probe <model>` | Cross-section diameter / bbox / component analysis plus ad-hoc line, point, and region measurements; `--scan` to discover step changes |
 | Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + measurement JSON + suggested probes |
 | Validate | `agentcad validate <model>` | Build + measure + render all orthographic previews + design checks + feature coverage; emits observability and debug artifacts |
 | Review | `agentcad review <model>` | Pre-delivery checklist with pairwise relations matrix, hole-access enforcement, and must-view SVG list |
+| Assembly | `agentcad assembly init/list/validate/review` | Optional multi-model assembly contracts with component transforms, mate residuals, fit checks, combined/exploded SVGs, preview generation during validation, and mandatory MJCF export |
 | Deliver | `agentcad deliver <model>` | Delivery manifest |
 | Report | `agentcad report <model>` | Markdown summary of validation result |
 
@@ -63,6 +65,28 @@ half-covered by an adjacent wall.
 are declared, and always requires iso/front/top/side/back previews. The side
 view requirement came from a real e2e failure where a retaining lip existed in
 the contract but was effectively floating in side projection.
+
+## Assembly validation
+
+Assemblies live in `assemblies/<name>/assembly.json` and reference existing
+models by component id, model name, and rigid transform. `agentcad assembly
+validate <name>` rebuilds stale components, resolves metadata anchors and
+interfaces, measures declared cylindrical interfaces against STL sections,
+emits mate residuals, checks pair coverage, writes combined/exploded SVG
+previews, exports `<name>.mjcf.xml`, generates an interactive `preview.html`
+that can explode the assembly and isolate components one by one, and
+round-trips the MJCF body/site data against `assembly_geometry.json`.
+
+Manual preview regeneration uses the same top-level command as single models:
+`agentcad preview <name>`. The command auto-detects whether `<name>` is under
+`models/` or `assemblies/`; use `--kind model` or `--kind assembly` only when
+a model and an assembly intentionally share the same name.
+
+Interference validation now uses two layers: AABB broad phase first, then a
+mesh narrow phase for overlapping component pairs. The narrow phase records
+triangle-contact evidence, inside-sample penetration depth, and sampled minimum
+surface distance, so `interference_free` can distinguish acceptable contact
+from real solid penetration.
 
 ## Quick start
 
@@ -115,10 +139,11 @@ common-error catalog live in `AGENTS.md`, `CLAUDE.md`, and `references/`
 
 | Path | What it shows |
 |---|---|
-| `examples/fan-adapter-8025/` | Two validated models: a fan-to-duct adapter and a magnetic outlet plate |
+| `examples/fan-adapter-8025/` | Two validated models plus `assemblies/fan_with_screen/` for inter-model clearance, section, STL, MJCF, and preview validation |
 | `examples/iphone15pro-case/` | Real-world phone case with multi-cutouts + section validation |
 | `examples/e2e-test/` | Sub-agent end-to-end test: design → precheck → build → validate → review on a mounting bracket |
 | `examples/e2e-real-cable-hook/` | Real e2e surface-mounted cable hook with concept + quality review artifacts |
+| `examples/e2e-bit-holder/` | Two-part body/lid design that motivated first-class assembly validation |
 
 Re-run any example:
 
@@ -134,18 +159,18 @@ agentcad review fan_duct_adapter_8025
 uv run pytest -v
 ```
 
-144 tests at last count, covering CLI dispatch, workspace scaffolding, STL
+The test suite covers CLI dispatch, workspace scaffolding, STL
 reading and measurement, section extraction and SVG rendering, JSON IO,
 post-build validation checks, weak-check warnings, stale build detection,
-geometric primitives, and `precheck` / `review` integration.
+geometric primitives, interactive previews, assembly validation, and
+`precheck` / `review` integration.
 
 ## Documentation
 
 - [`docs/DESIGN.md`](docs/DESIGN.md) — architecture, first principles, and
   V0–V5 iteration roadmap (with delivered milestones marked).
 - [`docs/STATUS.md`](docs/STATUS.md) — current implementation state, recent
-  lessons (build123d traps, hole-wall interference), and the planned next
-  research and engineering work.
+  lessons, delivered validation gates, and remaining roadmap direction.
 - `AGENTS.md` / `CLAUDE.md` (workspace) — operating rules for the coding
   agent, including the mandatory TDD red/green workflow and the common
   design-error catalog.

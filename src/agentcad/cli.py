@@ -5,11 +5,13 @@ import sys
 from pathlib import Path
 
 from . import __version__
+from .assembly import assembly_dir, init_assembly, list_assemblies, review_assembly, validate_assembly
 from .inspect import inspect_model
 from .jsonio import print_payload
 from .measure import measure_model
 from .precheck import precheck_model
 from .probe import probe_model, probe_scan
+from .preview import write_assembly_preview, write_model_preview
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .report import report_model
 from .review import review_model
@@ -17,7 +19,7 @@ from .runner import build_model
 from .section import AXIS_X, AXIS_Y, AXIS_Z, write_section_svg
 from .stl import read_stl
 from .validate import deliver_model, validate_model
-from .workspace import find_project, init_workspace, new_model, outputs_dir, sync_workspace
+from .workspace import find_project, init_workspace, model_dir, new_model, normalize_model_name, outputs_dir, sync_workspace
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -70,13 +72,22 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("--section-y", dest="section_y", type=float, default=None,
                         help="render a Y cross-section SVG (XZ plane) at this position (mm)")
 
+    preview = sub.add_parser("preview", help="generate an interactive local HTML preview for a model or assembly")
+    preview.add_argument("target")
+    preview.add_argument(
+        "--kind",
+        choices=["auto", "model", "assembly"],
+        default="auto",
+        help="preview target kind; auto detects models/<name> or assemblies/<name>",
+    )
+
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
     validate.add_argument("model")
     validate.add_argument("--view", choices=["iso", "front", "top", "side", "back"], default="iso")
     validate.add_argument(
         "--views",
         default=None,
-        help="comma-separated list of views to render during validation (default: iso,back)",
+        help="comma-separated list of views to render during validation (default: iso,front,top,side,back)",
     )
 
     deliver = sub.add_parser("deliver", help="write a delivery manifest")
@@ -117,6 +128,17 @@ def build_parser() -> argparse.ArgumentParser:
     sync.add_argument("--dry-run", action="store_true", help="preview template updates without writing files")
     sync.add_argument("--only", default=None, help="sync only one template path prefix (e.g. references/)")
     sync.add_argument("--prune-deprecated", action="store_true", help="remove deprecated scaffold paths like skills/")
+
+    assembly = sub.add_parser("assembly", help="create, validate, and review multi-model assemblies")
+    assembly_sub = assembly.add_subparsers(dest="assembly_command", required=True)
+    assembly_init = assembly_sub.add_parser("init", help="create an assembly contract")
+    assembly_init.add_argument("assembly")
+    assembly_init.add_argument("--force", action="store_true")
+    assembly_sub.add_parser("list", help="list assemblies in this workspace")
+    assembly_validate = assembly_sub.add_parser("validate", help="measure, check, render, and export MJCF for an assembly")
+    assembly_validate.add_argument("assembly")
+    assembly_review = assembly_sub.add_parser("review", help="run assembly delivery gates")
+    assembly_review.add_argument("assembly")
 
     return parser
 
@@ -165,6 +187,15 @@ def dispatch(args: argparse.Namespace) -> dict:
         )
 
     project = _resolve_project(args)
+    if args.command == "assembly":
+        if args.assembly_command == "init":
+            return init_assembly(project, args.assembly, force=getattr(args, "force", False))
+        if args.assembly_command == "list":
+            return list_assemblies(project)
+        if args.assembly_command == "validate":
+            return validate_assembly(project, args.assembly)
+        if args.assembly_command == "review":
+            return review_assembly(project, args.assembly)
     if args.command == "new":
         return new_model(project, args.model, force=args.force)
     if args.command == "build":
@@ -194,6 +225,8 @@ def dispatch(args: argparse.Namespace) -> dict:
             views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS]
             return render_models_multi(project, args.model, views or [args.view])
         return render_model(project, args.model, view=args.view)
+    if args.command == "preview":
+        return _preview_target(project, args.target, kind=getattr(args, "kind", "auto"))
     if args.command == "validate":
         views_arg = getattr(args, "views", None)
         render_views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS] if views_arg else None
@@ -242,6 +275,57 @@ def dispatch(args: argparse.Namespace) -> dict:
         return review_model(project, args.model)
 
     raise ValueError(f"unknown command: {args.command}")
+
+
+def _preview_target(project: Path, target: str, *, kind: str = "auto") -> dict:
+    safe = normalize_model_name(target)
+    has_model = model_dir(project, safe).exists()
+    has_assembly = (assembly_dir(project, safe) / "assembly.json").exists()
+
+    if kind == "model":
+        if not has_model:
+            return _preview_not_found(safe, kind="model")
+        return write_model_preview(project, safe)
+    if kind == "assembly":
+        if not has_assembly:
+            return _preview_not_found(safe, kind="assembly")
+        return write_assembly_preview(project, safe)
+    if has_model and has_assembly:
+        return {
+            "ok": False,
+            "stage": "preview",
+            "target": safe,
+            "error": {
+                "type": "AmbiguousPreviewTarget",
+                "message": f"both model and assembly exist for {safe}; pass --kind model or --kind assembly",
+            },
+        }
+    if has_model:
+        return write_model_preview(project, safe)
+    if has_assembly:
+        return write_assembly_preview(project, safe)
+    return {
+        "ok": False,
+        "stage": "preview",
+        "target": safe,
+        "error": {
+            "type": "PreviewTargetNotFound",
+            "message": f"no model or assembly found for {safe}",
+        },
+    }
+
+
+def _preview_not_found(target: str, *, kind: str) -> dict:
+    return {
+        "ok": False,
+        "stage": "preview",
+        "target": target,
+        "kind": kind,
+        "error": {
+            "type": "PreviewTargetNotFound",
+            "message": f"no {kind} found for {target}",
+        },
+    }
 
 
 if __name__ == "__main__":
