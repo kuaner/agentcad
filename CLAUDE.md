@@ -71,7 +71,8 @@ agentcad precheck <model>                        # Static design solve before wr
 agentcad build <model>[:<variant>]                       # Build + export STEP/STL
 agentcad measure <model>[:<variant>]                     # Measure STL geometry
 agentcad render <model>                          # SVG preview from STL
-agentcad preview <name>[:<variant>]                      # Interactive HTML preview for model or assembly
+agentcad preview <name>[:<variant>]                      # Start local server + interactive browser preview
+agentcad preview <name> --static                         # Self-contained offline HTML preview
 agentcad preview <name> --kind assembly          # Disambiguate if a model and assembly share a name
 agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
 agentcad validate <model>[:<variant>]                    # Full validation pipeline

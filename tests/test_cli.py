@@ -4,8 +4,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 import agentcad.cli as cli_mod
 from agentcad.cli import main
+
+
+@pytest.fixture(autouse=True)
+def _no_serve(monkeypatch):
+    monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
 
 
 def test_new_auto_init(tmp_path, monkeypatch):
@@ -179,7 +186,6 @@ def test_preview_auto_detects_model(monkeypatch, tmp_path):
         return {"ok": True, "stage": "preview", "kind": "model", "name": target}
 
     monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
-    monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
     result = main(["preview", "bracket"])
 
     assert result == 0
@@ -198,7 +204,6 @@ def test_preview_auto_detects_assembly(monkeypatch, tmp_path):
         return {"ok": True, "stage": "assembly_preview", "kind": "assembly", "name": target}
 
     monkeypatch.setattr(cli_mod, "write_assembly_preview", fake_assembly_preview)
-    monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
     result = main(["preview", "fit"])
 
     assert result == 0
@@ -228,7 +233,6 @@ def test_preview_kind_disambiguates_assembly(monkeypatch, tmp_path):
         return {"ok": True, "stage": "assembly_preview", "kind": "assembly", "name": target}
 
     monkeypatch.setattr(cli_mod, "write_assembly_preview", fake_assembly_preview)
-    monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
     result = main(["preview", "shared", "--kind", "assembly"])
 
     assert result == 0
@@ -292,7 +296,6 @@ def test_preview_variant_with_colon_syntax(tmp_path, monkeypatch):
         return {"ok": True, "stage": "preview", "kind": "model", "name": target}
 
     monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
-    monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
     result = main(["preview", "box:small"])
     assert result == 0
     assert captured["target"] == "box"

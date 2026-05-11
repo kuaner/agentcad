@@ -12,7 +12,7 @@ from .jsonio import print_payload
 from .measure import measure_model
 from .precheck import precheck_model
 from .probe import probe_model, probe_scan
-from .preview import serve_preview, write_assembly_preview, write_model_preview
+from .preview import open_preview, serve_preview, write_assembly_preview, write_model_preview
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .report import report_model
 from .review import review_model
@@ -91,8 +91,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="preview target kind; auto detects models/<name> or assemblies/<name>",
     )
-    preview.add_argument("--static", action="store_true", help="embed STL/SVG as base64 for offline use (large file)")
-    preview.add_argument("--no-serve", action="store_true", help="write HTML only, do not start HTTP server")
+    preview.add_argument("--static", action="store_true", help="generate self-contained HTML with embedded assets (for offline use)")
 
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
     validate.add_argument("model")
@@ -258,7 +257,6 @@ def dispatch(args: argparse.Namespace) -> dict:
             kind=getattr(args, "kind", "auto"),
             variant=variant_name,
             static=getattr(args, "static", False),
-            serve=not getattr(args, "no_serve", False),
         )
     if args.command == "validate":
         model_name, variant_name = _parse_model_target(args.model)
@@ -315,7 +313,7 @@ def dispatch(args: argparse.Namespace) -> dict:
     raise ValueError(f"unknown command: {args.command}")
 
 
-def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: str | None = None, static: bool = False, serve: bool = True) -> dict:
+def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: str | None = None, static: bool = False) -> dict:
     safe = normalize_model_name(target)
     has_model = model_dir(project, safe).exists()
     has_assembly = (assembly_dir(project, safe) / "assembly.json").exists()
@@ -355,9 +353,12 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: 
             },
         }
 
-    if result and result.get("ok") and serve and result.get("artifacts", {}).get("preview_page"):
+    if result and result.get("ok") and result.get("artifacts", {}).get("preview_page"):
         preview_path = Path(result["artifacts"]["preview_page"])
-        serve_preview(preview_path)
+        if static:
+            open_preview(preview_path)
+        else:
+            serve_preview(preview_path)
 
     return result
 

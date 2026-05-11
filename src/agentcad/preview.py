@@ -160,7 +160,7 @@ def write_assembly_preview(
 def serve_preview(preview_path: Path, *, port: int = 0) -> None:
     directory = str(preview_path.parent.resolve())
     handler = _make_handler(directory)
-    with socketserver.TCPServer(("", port), handler) as httpd:
+    with _ReusableThreadedServer(("", port), handler) as httpd:
         actual_port = httpd.server_address[1]
         url = f"http://localhost:{actual_port}/{preview_path.name}"
         print(f"Serving preview at {url}  (Ctrl+C to stop)")
@@ -169,6 +169,14 @@ def serve_preview(preview_path: Path, *, port: int = 0) -> None:
             httpd.serve_forever()
         except KeyboardInterrupt:
             pass
+
+
+def open_preview(preview_path: Path) -> None:
+    webbrowser.open(preview_path.resolve().as_uri())
+
+
+class _ReusableThreadedServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    allow_reuse_address = True
 
 
 def _make_handler(directory: str):
