@@ -21,6 +21,7 @@ from .rib import rib
 from .rounding import rounding_mask
 from .screw_hole import ScrewHole, screw_hole
 from .slot import slot
+from .sparse_wall import sparse_wall
 from .stepped_bore import SteppedBore, stepped_bore
 from .teardrop import teardrop
 from .thread import sinusoidal_thread
@@ -55,6 +56,7 @@ __all__ = [
     "ScrewHole",
     "screw_hole",
     "slot",
+    "sparse_wall",
     "SteppedBore",
     "stepped_bore",
     "teardrop",
