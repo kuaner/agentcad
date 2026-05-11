@@ -4,8 +4,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 import agentcad.cli as cli_mod
 from agentcad.cli import main
+
+
+@pytest.fixture(autouse=True)
+def _no_serve(monkeypatch):
+    monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
+    monkeypatch.setattr(cli_mod, "open_preview", lambda *a, **kw: None)
 
 
 def test_new_auto_init(tmp_path, monkeypatch):
@@ -192,7 +200,7 @@ def test_preview_auto_detects_assembly(monkeypatch, tmp_path):
     main(["assembly", "init", "fit"])
     captured = {}
 
-    def fake_assembly_preview(project_path, target):
+    def fake_assembly_preview(project_path, target, **kwargs):
         captured["target"] = target
         return {"ok": True, "stage": "assembly_preview", "kind": "assembly", "name": target}
 
@@ -221,7 +229,7 @@ def test_preview_kind_disambiguates_assembly(monkeypatch, tmp_path):
     main(["assembly", "init", "shared"])
     captured = {}
 
-    def fake_assembly_preview(project_path, target):
+    def fake_assembly_preview(project_path, target, **kwargs):
         captured["target"] = target
         return {"ok": True, "stage": "assembly_preview", "kind": "assembly", "name": target}
 
@@ -293,3 +301,41 @@ def test_preview_variant_with_colon_syntax(tmp_path, monkeypatch):
     assert result == 0
     assert captured["target"] == "box"
     assert captured["variant"] == "small"
+
+
+def test_project_flag_resolves_explicitly(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main(["init", "wsp", "--model", "demo"])
+    project = tmp_path / "wsp"
+
+    # From a different cwd, --project should find the workspace
+    other = tmp_path / "elsewhere"
+    other.mkdir()
+    monkeypatch.chdir(other)
+    result = main(["--project", str(project), "build", "demo"])
+    assert result == 0
+
+
+def test_project_flag_rejects_invalid(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = main(["--project", str(tmp_path / "nonexistent"), "build", "x"])
+    assert result == 1
+
+
+def test_preview_static_uses_open_preview(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main(["init", "project", "--model", "box"])
+    monkeypatch.chdir(tmp_path / "project")
+    opened = {}
+
+    def fake_model_preview(project_path, target, **kwargs):
+        return {"ok": True, "stage": "preview", "kind": "model", "name": target,
+                "artifacts": {"preview_page": str(tmp_path / "project" / "models" / "box" / "outputs" / "preview.html")}}
+
+    monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
+    monkeypatch.setattr(cli_mod, "open_preview", lambda p: opened.setdefault("path", str(p)))
+    monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
+
+    result = main(["preview", "box", "--static"])
+    assert result == 0
+    assert "path" in opened

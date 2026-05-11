@@ -23,11 +23,11 @@ models using the `agentcad` CLI and build123d geometry library.
 10. **Validate**: run `agentcad validate <name>`. It must pass.
 11. **Review**: run `agentcad review <name>` and inspect every `must_view`
     artifact.
-12. **Preview**: open `models/<name>/outputs/preview.html` or run
-    `agentcad preview <name>` to regenerate it. Use the interactive 3D view to
+12. **Preview**: run `agentcad preview <name>` to launch an interactive 3D
+    preview in the browser (starts a local HTTP server). Use the 3D view to
     inspect topology, section SVGs, geometry values, and failing checks. For an
-    assembly, open `assemblies/<name>/outputs/preview.html` or run the same
-    top-level `agentcad preview <name>` command.
+    assembly, run `agentcad preview <name>` (auto-detected). Add `--static` to
+    generate a self-contained HTML file that works offline without a server.
 13. **Quality Review**: apply `references/design-quality-review.md`. If the
     model is merely valid but not good, revise the concept, contract, or
     geometry and repeat validation.
@@ -144,7 +144,7 @@ models/<name>/
     validation.json     Validation results
     validation-history/ Archived validation runs (for diff)
     observability.json  Aggregate previews, scans, and section measurements
-    preview.html        Interactive local Three.js preview page
+    preview.html        Lightweight interactive preview (served by `agentcad preview`)
     precheck.json       Static contract report
     review.json         Pre-delivery review report
     deliverable.json    Delivery manifest
@@ -162,7 +162,7 @@ assemblies/<name>/
     assembly_validation.json
     assembly_observability.json
     assembly_review.json
-    preview.html          Interactive assembly preview
+    preview.html          Lightweight interactive assembly preview
     preview.combined.iso.svg
     preview.exploded.iso.svg
     <name>.mjcf.xml       MJCF verification artifact
@@ -194,9 +194,9 @@ agentcad review <model>
 agentcad deliver <model>
 
 # Preview
-agentcad preview <name>
-agentcad preview <name> --kind model
-agentcad preview <name> --kind assembly
+agentcad preview <name>                  # Start local server + open browser
+agentcad preview <name> --static         # Generate self-contained HTML + open browser
+agentcad preview <name> --kind assembly  # Force assembly mode
 
 # Inspection
 agentcad probe <model> --z <z>

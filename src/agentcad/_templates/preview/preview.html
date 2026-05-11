@@ -649,6 +649,12 @@
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       return bytes.buffer;
     }
+    async function loadStlBuffer(component) {
+      if (component.stlBase64) return decodeBase64(component.stlBase64);
+      const response = await fetch(component.stlUrl);
+      if (!response.ok) throw new Error(`fetch failed: ${response.status}`);
+      return response.arrayBuffer();
+    }
     function matrixFromRows(rows) {
       const m = new THREE.Matrix4();
       const r = rows || [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
@@ -669,10 +675,20 @@
         side: THREE.DoubleSide
       });
     }
-    function buildScene() {
+    async function buildScene() {
       const assemblyCenter = bboxCenter((data.geometry || {}).bbox || data.geometry);
+      let buffers;
+      try {
+        buffers = await Promise.all(data.components.map((c) => loadStlBuffer(c)));
+      } catch (err) {
+        const banner = document.createElement("div");
+        banner.style.cssText = "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;background:var(--stage);color:var(--ink);font-size:14px;text-align:center;padding:32px";
+        banner.innerHTML = `<div><b>Could not load STL</b><br><br>Open via HTTP server:<br><code style="background:var(--code-bg);color:var(--code-ink);padding:2px 8px;border-radius:4px">agentcad preview ${data.title || ""}</code></div>`;
+        document.getElementById("viewer").appendChild(banner);
+        return;
+      }
       data.components.forEach((component, index) => {
-        const geometry = loader.parse(decodeBase64(component.stlBase64));
+        const geometry = loader.parse(buffers[index]);
         geometry.computeVertexNormals();
         const mesh = new THREE.Mesh(geometry, materialFor(index));
         mesh.castShadow = true;
@@ -1050,12 +1066,12 @@
         label.textContent = item.label || item.path || "svg";
         label.style.cssText = "font-size:11px;color:var(--muted);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
         const img = document.createElement("img");
-        img.src = `data:image/svg+xml;base64,${item.svgBase64 || ""}`;
+        img.src = item.svgBase64 ? `data:image/svg+xml;base64,${item.svgBase64}` : (item.path || "");
         img.alt = item.label || "";
         img.addEventListener("click", () => {
           const modal = document.getElementById("svg-modal");
           document.getElementById("svg-modal-title").textContent = item.label || item.path || "SVG";
-          document.getElementById("svg-modal-img").src = img.src;
+          document.getElementById("svg-modal-img").src = img.src.startsWith("data:") ? img.src : item.path;
           modal.classList.add("open");
         });
         card.append(label, img);
@@ -1113,7 +1129,7 @@
           extTag.textContent = ext;
           const dl = document.createElement("a");
           dl.href = value;
-          dl.textContent = "Download";
+          dl.textContent = "Open";
           dl.className = "download";
           row.append(label, path, extTag, dl);
           links.append(row);
@@ -1122,12 +1138,13 @@
       if (!links.children.length) links.append(emptyNode("No artifact links."));
     }
 
-    buildScene();
-    renderUi();
-    setMode("solid");
-    resize();
-    fitCamera("iso");
-    renderLoop();
+    buildScene().then(() => {
+      renderUi();
+      setMode("solid");
+      resize();
+      fitCamera("iso");
+      renderLoop();
+    });
     new ResizeObserver(() => { resize(); }).observe(host);
     document.querySelectorAll("[data-mode]").forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.mode)));
     document.getElementById("explode").addEventListener("input", (event) => setExplode(Number(event.target.value)));

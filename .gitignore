@@ -4,5 +4,8 @@ __pycache__/
 *.egg-info/
 .DS_Store
 
-# Generated preview pages (contain embedded base64 SVGs)
-examples/**/outputs/preview.html
+# Generated preview pages
+**/outputs/preview.html
+
+# Validation history (contains machine-specific paths)
+**/outputs/validation-history/

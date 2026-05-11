@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import base64
 import html
+import http.server
 import json
 import os
+import socketserver
+import webbrowser
 from functools import lru_cache
 from pathlib import Path
 from . import templates
 from .jsonio import read_json
-from .workspace import model_dir, normalize_model_name, outputs_dir, outputs_dir_for_variant
+from .workspace import find_project, model_dir, normalize_model_name, outputs_dir, outputs_dir_for_variant
 
 THREE_VERSION = "0.164.1"
 
@@ -20,6 +23,7 @@ def write_model_preview(
     validation_payload: dict | None = None,
     geometry_payload: dict | None = None,
     variant: str | None = None,
+    static: bool = False,
 ) -> dict:
     safe = normalize_model_name(name)
     out_dir = outputs_dir_for_variant(project, safe, variant)
@@ -35,6 +39,19 @@ def write_model_preview(
     metadata = read_json(model_dir(project, safe) / "metadata.json", default={}) or {}
     bbox = ((geometry or {}).get("geometry") or {}).get("bbox")
 
+    component: dict = {
+        "id": safe,
+        "model": safe,
+        "matrix": _identity_matrix(),
+        "worldBbox": bbox,
+        "mesh": ((geometry or {}).get("geometry") or {}).get("mesh"),
+        "artifacts": _model_artifact_links(project, safe, out_dir),
+    }
+    if static:
+        component["stlBase64"] = _file_b64(stl_path)
+    else:
+        component["stlUrl"] = _rel_link(stl_path, out_dir)
+
     data = {
         "schema": "agentcad.preview.v1",
         "kind": "model",
@@ -44,17 +61,7 @@ def write_model_preview(
             "ok": bool(validation.get("ok")),
             "stage": validation.get("stage") or "preview",
         },
-        "components": [
-            {
-                "id": safe,
-                "model": safe,
-                "stlBase64": _file_b64(stl_path),
-                "matrix": _identity_matrix(),
-                "worldBbox": bbox,
-                "mesh": ((geometry or {}).get("geometry") or {}).get("mesh"),
-                "artifacts": _model_artifact_links(project, safe, out_dir),
-            }
-        ],
+        "components": [component],
         "geometry": {
             "bbox": bbox,
             "mesh": ((geometry or {}).get("geometry") or {}).get("mesh"),
@@ -74,11 +81,12 @@ def write_model_preview(
             "features": design.get("features") or [],
         },
         "metadata": metadata,
-        "svgs": _collect_svg_assets(out_dir),
+        "svgs": _collect_svg_assets(out_dir, static=static),
         "artifacts": _model_artifact_links(project, safe, out_dir),
-        "artifactsContent": _artifact_contents(_model_artifact_paths(project, safe, out_dir)),
-        "runtime": _runtime_caps(mjcf=False),
+        "runtime": _runtime_caps(mjcf=False, static=static),
     }
+    if static:
+        data["artifactsContent"] = _artifact_contents(_model_artifact_paths(project, safe, out_dir))
     return _write_preview_file(preview_path, data, title=f"AgentCAD Preview - {safe}")
 
 
@@ -88,6 +96,7 @@ def write_assembly_preview(
     *,
     validation_payload: dict | None = None,
     geometry_payload: dict | None = None,
+    static: bool = False,
 ) -> dict:
     safe = normalize_model_name(name)
     root = project / "assemblies" / safe
@@ -103,19 +112,21 @@ def write_assembly_preview(
         stl_path = Path((component.get("paths") or {}).get("stl", ""))
         if not stl_path.exists():
             return _failure("assembly_preview", "STLMissing", f"missing component STL artifact: {stl_path}", preview_path)
-        components.append(
-            {
-                "id": cid,
-                "model": component.get("model"),
-                "stlBase64": _file_b64(stl_path),
-                "matrix": ((component.get("transform") or {}).get("matrix") or _identity_matrix()),
-                "worldBbox": component.get("world_bbox"),
-                "localBbox": component.get("local_bbox"),
-                "mesh": component.get("mesh"),
-                "build": component.get("build"),
-                "artifacts": _component_artifact_links(component, out_dir),
-            }
-        )
+        entry: dict = {
+            "id": cid,
+            "model": component.get("model"),
+            "matrix": ((component.get("transform") or {}).get("matrix") or _identity_matrix()),
+            "worldBbox": component.get("world_bbox"),
+            "localBbox": component.get("local_bbox"),
+            "mesh": component.get("mesh"),
+            "build": component.get("build"),
+            "artifacts": _component_artifact_links(component, out_dir),
+        }
+        if static:
+            entry["stlBase64"] = _file_b64(stl_path)
+        else:
+            entry["stlUrl"] = _rel_link(stl_path, out_dir)
+        components.append(entry)
 
     mjcf_path = out_dir / f"{safe}.mjcf.xml"
     data = {
@@ -137,12 +148,57 @@ def write_assembly_preview(
         "observability": {
             "failed_checks": ((observability.get("checks") or {}).get("failed") if observability else []),
         },
-        "svgs": _collect_svg_assets(out_dir),
+        "svgs": _collect_svg_assets(out_dir, static=static),
         "artifacts": _assembly_artifact_links(root, out_dir),
-        "artifactsContent": _artifact_contents(_assembly_artifact_paths(root, out_dir)),
-        "runtime": _runtime_caps(mjcf=mjcf_path.exists()),
+        "runtime": _runtime_caps(mjcf=mjcf_path.exists(), static=static),
     }
+    if static:
+        data["artifactsContent"] = _artifact_contents(_assembly_artifact_paths(root, out_dir))
     return _write_preview_file(preview_path, data, title=f"AgentCAD Assembly Preview - {safe}")
+
+
+def serve_preview(preview_path: Path, *, port: int = 0) -> None:
+    directory = str(_find_serve_root(preview_path))
+    handler = _make_handler(directory)
+    with _ReusableThreadedServer(("127.0.0.1", port), handler) as httpd:
+        actual_port = httpd.server_address[1]
+        url = f"http://localhost:{actual_port}/{_rel_link(preview_path, Path(directory))}"
+        print(f"Serving preview at {url}  (Ctrl+C to stop)")
+        webbrowser.open(url)
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            pass
+
+
+def open_preview(preview_path: Path) -> None:
+    webbrowser.open(preview_path.resolve().as_uri())
+
+
+class _ReusableThreadedServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    allow_reuse_address = True
+
+
+def _find_serve_root(preview_path: Path) -> Path:
+    """Find the best directory root for serving preview assets.
+
+    Tries the project root (so relative links like ../design.json work),
+    falls back to the preview file's parent directory.
+    """
+    try:
+        return find_project(preview_path.parent)
+    except FileNotFoundError:
+        return preview_path.parent.resolve()
+
+
+def _make_handler(directory: str):
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=directory, **kwargs)
+
+        def log_message(self, format, *args):
+            pass
+    return Handler
 
 
 def _write_preview_file(path: Path, data: dict, title: str) -> dict:
@@ -168,10 +224,10 @@ def _failure(stage: str, error_type: str, message: str, path: Path) -> dict:
     }
 
 
-def _runtime_caps(*, mjcf: bool) -> dict:
+def _runtime_caps(*, mjcf: bool, static: bool) -> dict:
     return {
         "three": {"enabled": True, "source": f"jsdelivr three@{THREE_VERSION}"},
-        "stl": {"enabled": True, "mode": "embedded-base64"},
+        "stl": {"enabled": True, "mode": "embedded-base64" if static else "fetch-relative-url"},
         "mjcf": {"enabled": mjcf, "mode": "browser-xml-summary-and-agentcad-roundtrip"},
         "occt": {"enabled": False, "mode": "external-viewer-compatible-step-artifact"},
         "mujoco": {"enabled": False, "mjcf_present": mjcf, "mode": "external-viewer-compatible-mjcf-artifact"},
@@ -182,7 +238,7 @@ def _file_b64(path: Path) -> str:
     return base64.b64encode(path.read_bytes()).decode("ascii")
 
 
-def _collect_svg_assets(out_dir: Path) -> list[dict]:
+def _collect_svg_assets(out_dir: Path, *, static: bool = False) -> list[dict]:
     paths = sorted(out_dir.glob("preview.*.svg")) + sorted(out_dir.glob("section.*.svg"))
     seen: set[Path] = set()
     rows = []
@@ -190,13 +246,10 @@ def _collect_svg_assets(out_dir: Path) -> list[dict]:
         if path in seen:
             continue
         seen.add(path)
-        rows.append(
-            {
-                "label": path.stem,
-                "path": _rel_link(path, out_dir),
-                "svgBase64": _file_b64(path),
-            }
-        )
+        item: dict = {"label": path.stem, "path": _rel_link(path, out_dir)}
+        if static:
+            item["svgBase64"] = _file_b64(path)
+        rows.append(item)
     return rows
 
 
@@ -290,5 +343,3 @@ def _html(title: str, payload: str) -> str:
         .replace("{{three_version}}", THREE_VERSION)
         .replace("{{payload}}", payload)
     )
-
-
