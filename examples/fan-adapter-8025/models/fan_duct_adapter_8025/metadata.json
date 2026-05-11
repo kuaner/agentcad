@@ -10,29 +10,8 @@
   "mounting": {
     "hole_count": 4,
     "pattern_spacing_mm": 71.5,
-    "screw_clearance_diameter_mm": 4.5,
-    "screw_positions_mm": [
-      [
-        -35.75,
-        -35.75,
-        0
-      ],
-      [
-        35.75,
-        -35.75,
-        0
-      ],
-      [
-        -35.75,
-        35.75,
-        0
-      ],
-      [
-        35.75,
-        35.75,
-        0
-      ]
-    ]
+    "screw_spec": "M4_cap",
+    "screw_clearance_diameter_mm": 4.4
   },
   "duct": {
     "inner_diameter_mm": 80.0,

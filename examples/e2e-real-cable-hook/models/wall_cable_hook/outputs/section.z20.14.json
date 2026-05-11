@@ -1,0 +1,71 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z20.14.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 20.143,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 179,
+  "point_count": 358,
+  "bbox": {
+    "u_min": -30.0,
+    "u_max": 30.0,
+    "v_min": -41.0,
+    "v_max": 5.0,
+    "u_size": 60.0,
+    "v_size": 46.0
+  },
+  "total_segment_length_mm": 186.0,
+  "component_count": 2,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 171,
+      "point_count": 171,
+      "bbox": {
+        "u_min": -30.0,
+        "u_max": 30.0,
+        "v_min": 0.0,
+        "v_max": 5.0,
+        "u_size": 60.0,
+        "v_size": 5.0
+      },
+      "centroid": [
+        0.1112,
+        2.3335
+      ],
+      "total_segment_length_mm": 130.0,
+      "hull_area_estimate_mm2": 300.0,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 1,
+      "segment_count": 8,
+      "point_count": 8,
+      "bbox": {
+        "u_min": -11.0,
+        "u_max": 11.0,
+        "v_min": -41.0,
+        "v_max": -35.0,
+        "u_size": 22.0,
+        "v_size": 6.0
+      },
+      "centroid": [
+        -1.2213,
+        -37.2715
+      ],
+      "total_segment_length_mm": 56.0,
+      "hull_area_estimate_mm2": 132.0,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    }
+  ],
+  "warnings": [
+    "multiple_section_components"
+  ]
+}

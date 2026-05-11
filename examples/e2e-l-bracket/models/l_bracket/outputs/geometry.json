@@ -27,30 +27,37 @@
       ]
     },
     "mesh": {
-      "triangles": 1044,
-      "vertices": 3132,
-      "unique_edges": 1566,
+      "triangles": 1036,
+      "vertices": 3108,
+      "unique_edges": 1554,
       "boundary_or_nonmanifold_edges": 0,
       "watertight": true
     },
     "mass_properties": {
-      "surface_area": 9128.556088038136,
-      "volume": 19303.731808618024
+      "surface_area": 9133.243581217093,
+      "volume": 19389.736535422093
     }
   },
   "structure": {
     "has_internal_void": true,
-    "void_start_z": 5.0,
+    "void_start_z": 3.08,
     "step_changes": [
       {
-        "pos": -0.76,
+        "pos": -2.68,
         "delta_u": 0.0,
         "delta_v": 35.0,
-        "delta_point_count": 1012,
+        "delta_point_count": 4,
         "hint": "section grows — possible feature addition or flange"
       },
       {
-        "pos": 5.0,
+        "pos": -0.76,
+        "delta_u": 0.0,
+        "delta_v": 0.0,
+        "delta_point_count": 1008,
+        "hint": "more interior surfaces — inner cavity or new features begin here"
+      },
+      {
+        "pos": 3.08,
         "delta_u": 0.0,
         "delta_v": -35.0,
         "delta_point_count": -1016,
