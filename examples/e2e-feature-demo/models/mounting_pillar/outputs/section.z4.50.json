@@ -1,0 +1,159 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z4.50.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 4.5,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 1268,
+  "point_count": 2536,
+  "bbox": {
+    "u_min": -40.0,
+    "u_max": 40.0,
+    "v_min": -30.0,
+    "v_max": 30.0,
+    "u_size": 80.0,
+    "v_size": 60.0
+  },
+  "total_segment_length_mm": 360.4164,
+  "component_count": 6,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 8,
+      "point_count": 8,
+      "bbox": {
+        "u_min": -40.0,
+        "u_max": 40.0,
+        "v_min": -30.0,
+        "v_max": 30.0,
+        "u_size": 80.0,
+        "v_size": 60.0
+      },
+      "centroid": [
+        1.0,
+        0.75
+      ],
+      "total_segment_length_mm": 280.0,
+      "hull_area_estimate_mm2": 4800.0,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 1,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": -4.0,
+        "u_max": 4.0,
+        "v_min": -3.9988,
+        "v_max": 3.9988,
+        "u_size": 8.0,
+        "v_size": 7.9976
+      },
+      "centroid": [
+        -0.0005,
+        0.0004
+      ],
+      "total_segment_length_mm": 25.1301,
+      "hull_area_estimate_mm2": 50.2449,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 2,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": 27.8,
+        "u_max": 32.2,
+        "v_min": -22.1993,
+        "v_max": -17.8007,
+        "u_size": 4.4,
+        "v_size": 4.3986
+      },
+      "centroid": [
+        30.0015,
+        -19.9993
+      ],
+      "total_segment_length_mm": 13.8216,
+      "hull_area_estimate_mm2": 15.1991,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 3,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": 27.8,
+        "u_max": 32.2,
+        "v_min": 17.8007,
+        "v_max": 22.1993,
+        "u_size": 4.4,
+        "v_size": 4.3986
+      },
+      "centroid": [
+        30.0015,
+        20.0007
+      ],
+      "total_segment_length_mm": 13.8216,
+      "hull_area_estimate_mm2": 15.1991,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 4,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": -32.2,
+        "u_max": -27.8,
+        "v_min": 17.8007,
+        "v_max": 22.1993,
+        "u_size": 4.4,
+        "v_size": 4.3986
+      },
+      "centroid": [
+        -29.9985,
+        20.0007
+      ],
+      "total_segment_length_mm": 13.8216,
+      "hull_area_estimate_mm2": 15.1991,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 5,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": -32.2,
+        "u_max": -27.8,
+        "v_min": -22.1993,
+        "v_max": -17.8007,
+        "u_size": 4.4,
+        "v_size": 4.3986
+      },
+      "centroid": [
+        -29.9985,
+        -19.9993
+      ],
+      "total_segment_length_mm": 13.8216,
+      "hull_area_estimate_mm2": 15.1991,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    }
+  ],
+  "warnings": [
+    "multiple_section_components"
+  ]
+}

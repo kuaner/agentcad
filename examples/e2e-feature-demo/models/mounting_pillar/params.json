@@ -1,0 +1,15 @@
+{
+  "plate_width": 80.0,
+  "plate_depth": 60.0,
+  "plate_thickness": 10.0,
+  "boss_diameter": 20.0,
+  "boss_height": 15.0,
+  "boss_bore_diameter": 8.0,
+  "screw_spec": "M4_cap",
+  "hole_spacing_x": 60.0,
+  "hole_spacing_y": 40.0,
+  "slot_width": 6.0,
+  "slot_depth": 3.0,
+  "slot_length": 30.0,
+  "slot_from_edge": 10.0
+}

@@ -49,7 +49,7 @@ def stepped_bore(
         with BuildPart(mode=Mode.PRIVATE) as recess:
             Cylinder(radius=recess_r, height=recess_depth,
                      align=(Align.CENTER, Align.CENTER, Align.MIN))
-        parts.append(recess.part.moved(Location((cx, cy, through_depth))))
+        parts.append(recess.part.moved(Location((cx, cy, through_depth - recess_depth))))
     elif bore_kind == "countersink" and s.head_diameter > 0:
         recess_depth = s.head_diameter / 2
         recess_r = s.head_diameter / 2
@@ -78,7 +78,7 @@ def stepped_bore(
             checks.append({
                 "id": f"{feature_id}_recess",
                 "type": "inner_diameter_at_z",
-                "z": through_depth + recess_depth / 2,
+                "z": through_depth - recess_depth / 2,
                 "center": [cx, cy],
                 "expected": s.counterbore_diameter(),
                 "tolerance": 0.3,

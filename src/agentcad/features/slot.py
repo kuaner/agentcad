@@ -65,12 +65,17 @@ def slot(
     result = bp.part.moved(Location((center[0], center[1], base_z)))
 
     if builder is not None:
+        half_w = w / 2 * 0.8
+        half_d = d / 2 * 0.8
         checks: list[dict] = [
             {
                 "id": f"{feature_id}_section",
                 "type": "section_bbox_at_z",
                 "z": base_z + depth / 2,
-                "center": list(center),
+                "region": [
+                    [center[0] - half_w, center[1] - half_d],
+                    [center[0] + half_w, center[1] + half_d],
+                ],
                 "expected": "void",
                 "tolerance": 0.3,
                 "feature_ref": feature_id,

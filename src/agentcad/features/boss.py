@@ -52,10 +52,15 @@ def boss(
     """
     cx, cy = center
     radius = diameter / 2
+    inner_r = inner_diameter / 2 if inner_diameter > 0 else 0
 
     with BuildPart(mode=Mode.PRIVATE) as bp:
         Cylinder(radius=radius, height=height,
                  align=(Align.CENTER, Align.CENTER, Align.MIN))
+        if inner_r > 0:
+            Cylinder(radius=inner_r, height=height,
+                     align=(Align.CENTER, Align.CENTER, Align.MIN),
+                     mode=Mode.SUBTRACT)
     result = bp.part.moved(Location((cx, cy, base_z)))
 
     if builder is not None:

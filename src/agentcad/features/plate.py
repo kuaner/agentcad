@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from build123d import Box, BuildPart, Mode, Part
+from build123d import Align, Box, BuildPart, Mode, Part
 from build123d import fillet as _fillet
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ def plate(
         The plate solid.
     """
     with BuildPart(mode=Mode.PRIVATE) as bp:
-        Box(width, depth, thickness)
+        Box(width, depth, thickness, align=(Align.CENTER, Align.CENTER, Align.MIN))
         if fillet_r > 0:
             _fillet(bp.edges(), radius=fillet_r)
 
