@@ -24,6 +24,7 @@ from .slot import slot
 from .stepped_bore import SteppedBore, stepped_bore
 from .teardrop import teardrop
 from .thread import sinusoidal_thread
+from .threaded_nut import threaded_nut
 from .threaded_rod import threaded_rod
 from .torus import torus
 from .tube import tube
@@ -58,6 +59,7 @@ __all__ = [
     "stepped_bore",
     "teardrop",
     "sinusoidal_thread",
+    "threaded_nut",
     "threaded_rod",
     "torus",
     "nema_mount",

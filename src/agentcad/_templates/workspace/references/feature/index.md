@@ -49,6 +49,7 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `screw_hole` | Full parametric screw hole | `references/feature/screw-hole.md` |
 | `living_hinge_mask` | FDM-printable flex hinge | `references/feature/living-hinge.md` |
 | `threaded_rod` | ISO-standard threaded rod | `references/feature/threaded-rod.md` |
+| `threaded_nut` | Hex nut with internal thread | `references/feature/threaded-nut.md` |
 | `dovetail` | Interlocking dovetail joint | `references/feature/dovetail.md` |
 | `hex_panel` | Honeycomb-core lightweight panel | `references/feature/hex-panel.md` |
 | `snap_pin` / `snap_pin_socket` | Double-ended snap-fit pin + socket | `references/feature/snap-pin.md` |
