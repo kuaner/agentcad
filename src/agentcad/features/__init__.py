@@ -11,6 +11,7 @@ from .living_hinge import living_hinge_mask
 from .mounting_pattern import MountingHoles, mounting_pattern
 from .nut_trap import nut_trap
 from .plate import plate
+from .pie_slice import pie_slice
 from .prismoid import prismoid
 from .rect_tube import rect_tube
 from .rib import rib
@@ -41,6 +42,7 @@ __all__ = [
     "mounting_pattern",
     "nut_trap",
     "plate",
+    "pie_slice",
     "prismoid",
     "rect_tube",
     "rib",
