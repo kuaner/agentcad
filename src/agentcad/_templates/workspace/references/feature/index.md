@@ -34,6 +34,15 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `rib` | Reinforcing thin wall | `references/feature/rib.md` |
 | `duct_socket` | Cylindrical pipe socket | `references/feature/duct-socket.md` |
 | `slot` | Rectangular channel | `references/feature/slot.md` |
+| `tube` | Hollow cylinder (spacer, bushing) | `references/feature/tube.md` |
+| `prismoid` | Tapered box (draft angles) | `references/feature/prismoid.md` |
+| `wedge` | Triangular prism (gusset, support) | `references/feature/wedge.md` |
+| `teardrop` | FDM-printable horizontal hole | `references/feature/teardrop.md` |
+| `chamfer_mask` | Edge chamfer wedge (subtract) | `references/feature/chamfer-mask.md` |
+| `nut_trap` | Hex nut pocket (subtract) | `references/feature/nut-trap.md` |
+| `screw_hole` | Full parametric screw hole | `references/feature/screw-hole.md` |
+| `living_hinge_mask` | FDM-printable flex hinge | `references/feature/living-hinge.md` |
+| `threaded_rod` | ISO-standard threaded rod | `references/feature/threaded-rod.md` |
 
 ## Hardware Database
 
