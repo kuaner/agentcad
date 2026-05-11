@@ -44,6 +44,7 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `living_hinge_mask` | FDM-printable flex hinge | `references/feature/living-hinge.md` |
 | `threaded_rod` | ISO-standard threaded rod | `references/feature/threaded-rod.md` |
 | `dovetail` | Interlocking dovetail joint | `references/feature/dovetail.md` |
+| `hex_panel` | Honeycomb-core lightweight panel | `references/feature/hex-panel.md` |
 
 ## Hardware Database
 

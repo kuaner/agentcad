@@ -3,6 +3,7 @@ from .chamfer import chamfer_mask
 from .contract import ContractBuilder
 from .duct_socket import duct_socket
 from .dovetail import dovetail
+from .hex_panel import hex_panel
 from .knurl import helical_knurl
 from .living_hinge import living_hinge_mask
 from .mounting_pattern import MountingHoles, mounting_pattern
@@ -25,6 +26,7 @@ __all__ = [
     "chamfer_mask",
     "dovetail",
     "duct_socket",
+    "hex_panel",
     "helical_knurl",
     "living_hinge_mask",
     "MountingHoles",
