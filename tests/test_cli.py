@@ -300,3 +300,22 @@ def test_preview_variant_with_colon_syntax(tmp_path, monkeypatch):
     assert result == 0
     assert captured["target"] == "box"
     assert captured["variant"] == "small"
+
+
+def test_project_flag_resolves_explicitly(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main(["init", "wsp", "--model", "demo"])
+    project = tmp_path / "wsp"
+
+    # From a different cwd, --project should find the workspace
+    other = tmp_path / "elsewhere"
+    other.mkdir()
+    monkeypatch.chdir(other)
+    result = main(["--project", str(project), "build", "demo"])
+    assert result == 0
+
+
+def test_project_flag_rejects_invalid(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = main(["--project", str(tmp_path / "nonexistent"), "build", "x"])
+    assert result == 1

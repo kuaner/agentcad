@@ -132,6 +132,7 @@ project/
 - Coordinate convention: +X right, +Y back, +Z up
 - Units are millimeters unless explicitly stated otherwise
 - Generated artifacts live only under `models/<name>/outputs/` or `assemblies/<name>/outputs/`
+- After building and validating a model, always run `agentcad preview <name>` and let the human review the 3D result. Do NOT claim the model is complete until the human confirms it looks correct.
 
 ## Validation Check Types
 

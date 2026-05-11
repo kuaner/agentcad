@@ -50,6 +50,8 @@ def main(argv: list[str] | None = None) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="agentcad", description="Agent-first CAD workflow runtime")
     parser.add_argument("--version", action="version", version=f"agentcad {__version__}")
+    parser.add_argument("--project", "-p", default=None, type=Path,
+                        help="explicit project root directory (default: auto-detect from cwd)")
     sub = parser.add_subparsers(dest="command", required=True)
 
     init = sub.add_parser("init", help="initialize a workspace and create first model")
@@ -161,6 +163,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def _resolve_project(args: argparse.Namespace) -> Path:
     """Find existing project, or auto-init when creating a new model."""
+    explicit = getattr(args, "project", None)
+    if explicit is not None:
+        resolved = Path(explicit).expanduser().resolve()
+        if not (resolved / "cadproject.json").exists():
+            raise FileNotFoundError(f"No cadproject.json found in {resolved}")
+        return resolved
     project = Path(".")
     try:
         return find_project(project)
