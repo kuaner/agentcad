@@ -12,7 +12,7 @@ from .jsonio import print_payload
 from .measure import measure_model
 from .precheck import precheck_model
 from .probe import probe_model, probe_scan
-from .preview import write_assembly_preview, write_model_preview
+from .preview import serve_preview, write_assembly_preview, write_model_preview
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .report import report_model
 from .review import review_model
@@ -91,6 +91,8 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="preview target kind; auto detects models/<name> or assemblies/<name>",
     )
+    preview.add_argument("--static", action="store_true", help="embed STL/SVG as base64 for offline use (large file)")
+    preview.add_argument("--no-serve", action="store_true", help="write HTML only, do not start HTTP server")
 
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
     validate.add_argument("model")
@@ -251,7 +253,13 @@ def dispatch(args: argparse.Namespace) -> dict:
         return render_model(project, model_name, view=args.view, variant=variant_name)
     if args.command == "preview":
         target, variant_name = _parse_model_target(args.target)
-        return _preview_target(project, target, kind=getattr(args, "kind", "auto"), variant=variant_name)
+        return _preview_target(
+            project, target,
+            kind=getattr(args, "kind", "auto"),
+            variant=variant_name,
+            static=getattr(args, "static", False),
+            serve=not getattr(args, "no_serve", False),
+        )
     if args.command == "validate":
         model_name, variant_name = _parse_model_target(args.model)
         views_arg = getattr(args, "views", None)
@@ -307,20 +315,22 @@ def dispatch(args: argparse.Namespace) -> dict:
     raise ValueError(f"unknown command: {args.command}")
 
 
-def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: str | None = None) -> dict:
+def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: str | None = None, static: bool = False, serve: bool = True) -> dict:
     safe = normalize_model_name(target)
     has_model = model_dir(project, safe).exists()
     has_assembly = (assembly_dir(project, safe) / "assembly.json").exists()
 
+    result: dict | None = None
+
     if kind == "model":
         if not has_model:
             return _preview_not_found(safe, kind="model")
-        return write_model_preview(project, safe, variant=variant)
-    if kind == "assembly":
+        result = write_model_preview(project, safe, variant=variant, static=static)
+    elif kind == "assembly":
         if not has_assembly:
             return _preview_not_found(safe, kind="assembly")
-        return write_assembly_preview(project, safe)
-    if has_model and has_assembly:
+        result = write_assembly_preview(project, safe, static=static)
+    elif has_model and has_assembly:
         return {
             "ok": False,
             "stage": "preview",
@@ -330,19 +340,26 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: 
                 "message": f"both model and assembly exist for {safe}; pass --kind model or --kind assembly",
             },
         }
-    if has_model:
-        return write_model_preview(project, safe, variant=variant)
-    if has_assembly:
-        return write_assembly_preview(project, safe)
-    return {
-        "ok": False,
-        "stage": "preview",
-        "target": safe,
-        "error": {
-            "type": "PreviewTargetNotFound",
-            "message": f"no model or assembly found for {safe}",
-        },
-    }
+    elif has_model:
+        result = write_model_preview(project, safe, variant=variant, static=static)
+    elif has_assembly:
+        result = write_assembly_preview(project, safe, static=static)
+    else:
+        return {
+            "ok": False,
+            "stage": "preview",
+            "target": safe,
+            "error": {
+                "type": "PreviewTargetNotFound",
+                "message": f"no model or assembly found for {safe}",
+            },
+        }
+
+    if result and result.get("ok") and serve and result.get("artifacts", {}).get("preview_page"):
+        preview_path = Path(result["artifacts"]["preview_page"])
+        serve_preview(preview_path)
+
+    return result
 
 
 def _preview_not_found(target: str, *, kind: str) -> dict:
