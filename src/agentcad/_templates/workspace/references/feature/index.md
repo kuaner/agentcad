@@ -46,6 +46,7 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `dovetail` | Interlocking dovetail joint | `references/feature/dovetail.md` |
 | `hex_panel` | Honeycomb-core lightweight panel | `references/feature/hex-panel.md` |
 | `snap_pin` / `snap_pin_socket` | Double-ended snap-fit pin + socket | `references/feature/snap-pin.md` |
+| `spur_gear` | Involute spur gear | `references/feature/spur-gear.md` |
 
 ## Hardware Database
 
