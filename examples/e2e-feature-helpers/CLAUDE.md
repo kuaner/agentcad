@@ -24,9 +24,7 @@ models using the `agentcad` CLI and build123d geometry library.
 11. **Review**: run `agentcad review <name>` and inspect every `must_view`
     artifact.
 12. **Preview**: run `agentcad preview <name>` to launch an interactive 3D
-    preview — it auto-opens the browser. `--static` generates a self-contained
-    HTML file (no server). Do NOT manually `open` the preview file; the command
-    already opens it. Use the 3D view to
+    preview in the browser (starts a local HTTP server). Use the 3D view to
     inspect topology, section SVGs, geometry values, and failing checks. For an
     assembly, run `agentcad preview <name>` (auto-detected). Add `--static` to
     generate a self-contained HTML file that works offline without a server.
@@ -197,9 +195,9 @@ agentcad diff <model> --last
 agentcad review <model>
 agentcad deliver <model>
 
-# Preview (auto-opens browser — do NOT manually run `open`)
-agentcad preview <name>                  # Start local server + auto-open browser
-agentcad preview <name> --static         # Self-contained HTML + auto-open browser
+# Preview
+agentcad preview <name>                  # Start local server + open browser
+agentcad preview <name> --static         # Generate self-contained HTML + open browser
 agentcad preview <name> --kind assembly  # Force assembly mode
 
 # Inspection
