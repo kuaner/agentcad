@@ -17,7 +17,7 @@
     "u_size": 60.0,
     "v_size": 40.0
   },
-  "total_segment_length_mm": 4965.4065,
+  "total_segment_length_mm": 4936.4213,
   "component_count": 1,
   "components": [
     {
@@ -36,7 +36,7 @@
         0.0,
         0.1931
       ],
-      "total_segment_length_mm": 4965.4065,
+      "total_segment_length_mm": 4936.4213,
       "hull_area_estimate_mm2": 2400.0,
       "closed_vertex_ratio": 0.2819,
       "endpoint_count": 0,

@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "validate",
   "model": "mounting_pillar",
-  "validatedAt": "2026-05-11T07:06:20.588656+00:00",
+  "validatedAt": "2026-05-11T07:35:15.095225+00:00",
   "checks": [
     {
       "name": "build",
@@ -166,7 +166,7 @@
       "ok": true,
       "z": 5.0,
       "expected": 4.4,
-      "actual": 4.399348860949508,
+      "actual": 4.399349063540437,
       "tolerance": 0.3,
       "section": {
         "ok": true,
@@ -174,11 +174,11 @@
         "point_count": 3532,
         "radius_min": 2.1996735803890513,
         "radius_max": 86.02325267042627,
-        "radius_mean": 40.4801393568098,
+        "radius_mean": 40.479419611494315,
         "radius_outer_estimate": 74.10885612396228,
-        "radius_inner_estimate": 2.199674430474754,
+        "radius_inner_estimate": 2.1996745317702184,
         "diameter_outer_estimate": 148.21771224792457,
-        "diameter_inner_estimate": 4.399348860949508
+        "diameter_inner_estimate": 4.399349063540437
       }
     },
     {
@@ -208,7 +208,7 @@
       "ok": true,
       "z": 5.0,
       "expected": 4.4,
-      "actual": 4.399348864124618,
+      "actual": 4.399349063540437,
       "tolerance": 0.3,
       "section": {
         "ok": true,
@@ -216,11 +216,11 @@
         "point_count": 3532,
         "radius_min": 2.1996735803890513,
         "radius_max": 86.02325267042627,
-        "radius_mean": 40.47657705797851,
-        "radius_outer_estimate": 74.12824839184933,
-        "radius_inner_estimate": 2.199674432062309,
-        "diameter_outer_estimate": 148.25649678369865,
-        "diameter_inner_estimate": 4.399348864124618
+        "radius_mean": 40.47651057327048,
+        "radius_outer_estimate": 74.10885612396228,
+        "radius_inner_estimate": 2.1996745317702184,
+        "diameter_outer_estimate": 148.21771224792457,
+        "diameter_inner_estimate": 4.399349063540437
       }
     },
     {
@@ -250,7 +250,7 @@
       "ok": true,
       "z": 5.0,
       "expected": 4.4,
-      "actual": 4.399348860949508,
+      "actual": 4.399349063540437,
       "tolerance": 0.3,
       "section": {
         "ok": true,
@@ -258,11 +258,11 @@
         "point_count": 3532,
         "radius_min": 2.1996735803890513,
         "radius_max": 86.02325267042627,
-        "radius_mean": 40.46927122300815,
+        "radius_mean": 40.469340256985866,
         "radius_outer_estimate": 74.11476173367329,
-        "radius_inner_estimate": 2.199674430474754,
+        "radius_inner_estimate": 2.1996745317702184,
         "diameter_outer_estimate": 148.22952346734658,
-        "diameter_inner_estimate": 4.399348860949508
+        "diameter_inner_estimate": 4.399349063540437
       }
     },
     {
@@ -292,7 +292,7 @@
       "ok": true,
       "z": 5.0,
       "expected": 4.4,
-      "actual": 4.399348864124618,
+      "actual": 4.399349063540437,
       "tolerance": 0.3,
       "section": {
         "ok": true,
@@ -300,11 +300,11 @@
         "point_count": 3532,
         "radius_min": 2.1996735803890513,
         "radius_max": 86.02325267042627,
-        "radius_mean": 40.46645617318597,
+        "radius_mean": 40.46717876787145,
         "radius_outer_estimate": 74.10885612396228,
-        "radius_inner_estimate": 2.199674432062309,
+        "radius_inner_estimate": 2.1996745317702184,
         "diameter_outer_estimate": 148.21771224792457,
-        "diameter_inner_estimate": 4.399348864124618
+        "diameter_inner_estimate": 4.399349063540437
       }
     },
     {
@@ -754,8 +754,8 @@
               "v_size": 4.3986
             },
             "centroid": [
-              30.0015,
-              -19.9993
+              30.0006,
+              -20.0007
             ],
             "total_segment_length_mm": 13.8216,
             "hull_area_estimate_mm2": 15.1991,
@@ -768,16 +768,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": 27.8,
-              "u_max": 32.2,
-              "v_min": 17.8007,
-              "v_max": 22.1993,
+              "u_min": -32.2,
+              "u_max": -27.8,
+              "v_min": -22.1993,
+              "v_max": -17.8007,
               "u_size": 4.4,
               "v_size": 4.3986
             },
             "centroid": [
-              30.0015,
-              20.0007
+              -29.9994,
+              -20.0007
             ],
             "total_segment_length_mm": 13.8216,
             "hull_area_estimate_mm2": 15.1991,
@@ -790,16 +790,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -32.2,
-              "u_max": -27.8,
+              "u_min": 27.8,
+              "u_max": 32.2,
               "v_min": 17.8007,
               "v_max": 22.1993,
               "u_size": 4.4,
               "v_size": 4.3986
             },
             "centroid": [
-              -29.9985,
-              20.0007
+              30.0006,
+              19.9993
             ],
             "total_segment_length_mm": 13.8216,
             "hull_area_estimate_mm2": 15.1991,
@@ -814,14 +814,14 @@
             "bbox": {
               "u_min": -32.2,
               "u_max": -27.8,
-              "v_min": -22.1993,
-              "v_max": -17.8007,
+              "v_min": 17.8007,
+              "v_max": 22.1993,
               "u_size": 4.4,
               "v_size": 4.3986
             },
             "centroid": [
-              -29.9985,
-              -19.9993
+              -29.9994,
+              19.9993
             ],
             "total_segment_length_mm": 13.8216,
             "hull_area_estimate_mm2": 15.1991,

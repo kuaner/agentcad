@@ -1,43 +1,43 @@
 {
   "stage": "section_analysis",
-  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z4.50.svg",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/section.z3.00.svg",
   "ok": true,
   "axis": "Z",
-  "value": 4.5,
+  "value": 3.0,
   "plane_label": "XY plane",
   "u_label": "X (mm)",
   "v_label": "Y (mm)",
-  "segment_count": 1268,
-  "point_count": 2536,
+  "segment_count": 1524,
+  "point_count": 3048,
   "bbox": {
-    "u_min": -40.0,
-    "u_max": 40.0,
-    "v_min": -30.0,
-    "v_max": 30.0,
-    "u_size": 80.0,
-    "v_size": 60.0
+    "u_min": -43.0,
+    "u_max": 43.0,
+    "v_min": -43.0,
+    "v_max": 43.0,
+    "u_size": 86.0,
+    "v_size": 86.0
   },
-  "total_segment_length_mm": 360.4164,
+  "total_segment_length_mm": 623.1528,
   "component_count": 6,
   "components": [
     {
       "index": 0,
-      "segment_count": 8,
-      "point_count": 8,
+      "segment_count": 264,
+      "point_count": 264,
       "bbox": {
-        "u_min": -40.0,
-        "u_max": 40.0,
-        "v_min": -30.0,
-        "v_max": 30.0,
-        "u_size": 80.0,
-        "v_size": 60.0
+        "u_min": -43.0,
+        "u_max": 43.0,
+        "v_min": -43.0,
+        "v_max": 43.0,
+        "u_size": 86.0,
+        "v_size": 86.0
       },
       "centroid": [
-        1.0,
-        0.75
+        -0.0574,
+        -0.0573
       ],
-      "total_segment_length_mm": 280.0,
-      "hull_area_estimate_mm2": 4800.0,
+      "total_segment_length_mm": 335.4128,
+      "hull_area_estimate_mm2": 7374.5083,
       "closed_vertex_ratio": 1.0,
       "endpoint_count": 0,
       "branch_vertex_count": 0
@@ -47,19 +47,19 @@
       "segment_count": 252,
       "point_count": 252,
       "bbox": {
-        "u_min": -4.0,
-        "u_max": 4.0,
-        "v_min": -3.9988,
-        "v_max": 3.9988,
-        "u_size": 8.0,
-        "v_size": 7.9976
+        "u_min": -37.0,
+        "u_max": 37.0,
+        "v_min": -36.9885,
+        "v_max": 36.9885,
+        "u_size": 74.0,
+        "v_size": 73.977
       },
       "centroid": [
-        -0.0005,
-        0.0004
+        -0.0391,
+        -0.0163
       ],
-      "total_segment_length_mm": 25.1301,
-      "hull_area_estimate_mm2": 50.2449,
+      "total_segment_length_mm": 232.4538,
+      "hull_area_estimate_mm2": 4299.0586,
       "closed_vertex_ratio": 1.0,
       "endpoint_count": 0,
       "branch_vertex_count": 0
@@ -69,16 +69,16 @@
       "segment_count": 252,
       "point_count": 252,
       "bbox": {
-        "u_min": 27.8,
-        "u_max": 32.2,
-        "v_min": -22.1993,
-        "v_max": -17.8007,
+        "u_min": -37.95,
+        "u_max": -33.55,
+        "v_min": 33.5507,
+        "v_max": 37.9493,
         "u_size": 4.4,
         "v_size": 4.3986
       },
       "centroid": [
-        30.0006,
-        -20.0007
+        -35.7504,
+        35.7502
       ],
       "total_segment_length_mm": 13.8216,
       "hull_area_estimate_mm2": 15.1991,
@@ -91,16 +91,16 @@
       "segment_count": 252,
       "point_count": 252,
       "bbox": {
-        "u_min": -32.2,
-        "u_max": -27.8,
-        "v_min": -22.1993,
-        "v_max": -17.8007,
+        "u_min": 33.55,
+        "u_max": 37.95,
+        "v_min": -37.9493,
+        "v_max": -33.5507,
         "u_size": 4.4,
         "v_size": 4.3986
       },
       "centroid": [
-        -29.9994,
-        -20.0007
+        35.7496,
+        -35.7498
       ],
       "total_segment_length_mm": 13.8216,
       "hull_area_estimate_mm2": 15.1991,
@@ -113,16 +113,16 @@
       "segment_count": 252,
       "point_count": 252,
       "bbox": {
-        "u_min": 27.8,
-        "u_max": 32.2,
-        "v_min": 17.8007,
-        "v_max": 22.1993,
+        "u_min": 33.55,
+        "u_max": 37.95,
+        "v_min": 33.5507,
+        "v_max": 37.9493,
         "u_size": 4.4,
         "v_size": 4.3986
       },
       "centroid": [
-        30.0006,
-        19.9993
+        35.7496,
+        35.7502
       ],
       "total_segment_length_mm": 13.8216,
       "hull_area_estimate_mm2": 15.1991,
@@ -135,16 +135,16 @@
       "segment_count": 252,
       "point_count": 252,
       "bbox": {
-        "u_min": -32.2,
-        "u_max": -27.8,
-        "v_min": 17.8007,
-        "v_max": 22.1993,
+        "u_min": -37.95,
+        "u_max": -33.55,
+        "v_min": -37.9493,
+        "v_max": -33.5507,
         "u_size": 4.4,
         "v_size": 4.3986
       },
       "centroid": [
-        -29.9994,
-        19.9993
+        -35.7504,
+        -35.7498
       ],
       "total_segment_length_mm": 13.8216,
       "hull_area_estimate_mm2": 15.1991,

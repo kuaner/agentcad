@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "validate",
   "model": "fan_duct_adapter_8025",
-  "validatedAt": "2026-05-11T06:48:55.973748+00:00",
+  "validatedAt": "2026-05-11T07:35:18.443984+00:00",
   "checks": [
     {
       "name": "build",
@@ -247,7 +247,7 @@
       "ok": true,
       "z": 2.5,
       "expected": 4.4,
-      "actual": 4.3990639629346,
+      "actual": 4.399063524146639,
       "tolerance": 0.3,
       "section": {
         "ok": true,
@@ -255,11 +255,11 @@
         "point_count": 3048,
         "radius_min": 2.199530738112924,
         "radius_max": 109.29825022373811,
-        "radius_mean": 61.97464179500616,
+        "radius_mean": 61.97458353092808,
         "radius_outer_estimate": 108.9766580845566,
-        "radius_inner_estimate": 2.1995319814673,
+        "radius_inner_estimate": 2.1995317620733195,
         "diameter_outer_estimate": 217.9533161691132,
-        "diameter_inner_estimate": 4.3990639629346
+        "diameter_inner_estimate": 4.399063524146639
       }
     },
     {
@@ -284,7 +284,7 @@
       "ok": true,
       "z": 2.5,
       "expected": 4.4,
-      "actual": 4.3990639629346,
+      "actual": 4.399063524146639,
       "tolerance": 0.3,
       "section": {
         "ok": true,
@@ -292,11 +292,11 @@
         "point_count": 3048,
         "radius_min": 2.199530738112924,
         "radius_max": 109.29825022373811,
-        "radius_mean": 61.98592752203253,
+        "radius_mean": 61.98559551773646,
         "radius_outer_estimate": 108.9766580845566,
-        "radius_inner_estimate": 2.1995319814673,
+        "radius_inner_estimate": 2.1995317620733195,
         "diameter_outer_estimate": 217.9533161691132,
-        "diameter_inner_estimate": 4.3990639629346
+        "diameter_inner_estimate": 4.399063524146639
       }
     },
     {
@@ -321,7 +321,7 @@
       "ok": true,
       "z": 2.5,
       "expected": 4.4,
-      "actual": 4.3990639629346,
+      "actual": 4.399063524146639,
       "tolerance": 0.3,
       "section": {
         "ok": true,
@@ -329,11 +329,11 @@
         "point_count": 3048,
         "radius_min": 2.199530738112924,
         "radius_max": 109.29825022373811,
-        "radius_mean": 61.980999378272,
+        "radius_mean": 61.981334359630935,
         "radius_outer_estimate": 108.9766580845566,
-        "radius_inner_estimate": 2.1995319814673,
+        "radius_inner_estimate": 2.1995317620733195,
         "diameter_outer_estimate": 217.9533161691132,
-        "diameter_inner_estimate": 4.3990639629346
+        "diameter_inner_estimate": 4.399063524146639
       }
     },
     {
@@ -358,7 +358,7 @@
       "ok": true,
       "z": 2.5,
       "expected": 4.4,
-      "actual": 4.3990639629346,
+      "actual": 4.399063524146639,
       "tolerance": 0.3,
       "section": {
         "ok": true,
@@ -366,11 +366,11 @@
         "point_count": 3048,
         "radius_min": 2.199530738112924,
         "radius_max": 109.29825022373811,
-        "radius_mean": 61.98594739483616,
+        "radius_mean": 61.986002654312365,
         "radius_outer_estimate": 108.9766580845566,
-        "radius_inner_estimate": 2.1995319814673,
+        "radius_inner_estimate": 2.1995317620733195,
         "diameter_outer_estimate": 217.9533161691132,
-        "diameter_inner_estimate": 4.3990639629346
+        "diameter_inner_estimate": 4.399063524146639
       }
     },
     {

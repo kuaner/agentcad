@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "observe",
   "model": "mounting_pillar",
-  "observedAt": "2026-05-11T07:06:20.588175+00:00",
+  "observedAt": "2026-05-11T07:35:15.094428+00:00",
   "geometry": {
     "ok": true,
     "stage": "measure",
@@ -40,7 +40,7 @@
       },
       "mass_properties": {
         "surface_area": 14866.573712510537,
-        "volume": 49550.68439781415
+        "volume": 49550.68439781416
       }
     },
     "structure": {
@@ -351,8 +351,8 @@
               "v_size": 4.3986
             },
             "centroid": [
-              30.0015,
-              -19.9993
+              30.0006,
+              -20.0007
             ],
             "total_segment_length_mm": 13.8216,
             "hull_area_estimate_mm2": 15.1991,
@@ -365,16 +365,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": 27.8,
-              "u_max": 32.2,
-              "v_min": 17.8007,
-              "v_max": 22.1993,
+              "u_min": -32.2,
+              "u_max": -27.8,
+              "v_min": -22.1993,
+              "v_max": -17.8007,
               "u_size": 4.4,
               "v_size": 4.3986
             },
             "centroid": [
-              30.0015,
-              20.0007
+              -29.9994,
+              -20.0007
             ],
             "total_segment_length_mm": 13.8216,
             "hull_area_estimate_mm2": 15.1991,
@@ -387,16 +387,16 @@
             "segment_count": 252,
             "point_count": 252,
             "bbox": {
-              "u_min": -32.2,
-              "u_max": -27.8,
+              "u_min": 27.8,
+              "u_max": 32.2,
               "v_min": 17.8007,
               "v_max": 22.1993,
               "u_size": 4.4,
               "v_size": 4.3986
             },
             "centroid": [
-              -29.9985,
-              20.0007
+              30.0006,
+              19.9993
             ],
             "total_segment_length_mm": 13.8216,
             "hull_area_estimate_mm2": 15.1991,
@@ -411,14 +411,14 @@
             "bbox": {
               "u_min": -32.2,
               "u_max": -27.8,
-              "v_min": -22.1993,
-              "v_max": -17.8007,
+              "v_min": 17.8007,
+              "v_max": 22.1993,
               "u_size": 4.4,
               "v_size": 4.3986
             },
             "centroid": [
-              -29.9985,
-              -19.9993
+              -29.9994,
+              19.9993
             ],
             "total_segment_length_mm": 13.8216,
             "hull_area_estimate_mm2": 15.1991,
