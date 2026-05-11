@@ -18,70 +18,16 @@ Important reports:
 
 ## Critical build123d Warnings
 
-### 1. BuildSketch + Locations does not move the sketch plane
+For detailed build123d pitfalls with code examples, see
+`references/build123d-guide.md` (pitfalls #8 and #9).
 
-`Locations(x, y, z) + BuildSketch(Plane.XY) + extrude` does not place the
-sketch at `z`. The sketch stays on its own plane.
+Key warnings to keep in mind:
 
-```python
-# Wrong: sketch stays at Z=0.
-with Locations((0, 0, wall_back)):
-    with BuildSketch(Plane.XY):
-        RectangleRounded(w, h, r)
-    extrude(amount=depth, mode=Mode.SUBTRACT)
-
-# Correct: explicit origin positions the plane.
-with BuildSketch(Plane(origin=(0, 0, wall_back))):
-    RectangleRounded(w, h, r)
-extrude(amount=depth, mode=Mode.SUBTRACT)
-```
-
-Use `Locations` with 3D primitives such as `Box`, `Cylinder`, and `Cone`. Use
-explicit `Plane(origin=(x, y, z))` for `BuildSketch` positioning.
-
-### 2. fuse() + add(mode=SUBTRACT) does not create reliable through-holes
-
-Creating standalone cylinders, fusing them into a single Part, and then using
-`add(fused_part, mode=Mode.SUBTRACT)` produces **incomplete boolean cuts**.
-The hole appears to start from one face but stops partway through the solid,
-even though the cylinder geometry extends past both faces. `inner_diameter_at_z`
-at mid-depth passes, giving a false sense of correctness.
-
-```python
-# Wrong: hole stops partway through.
-holes = []
-for px, py in positions:
-    with BuildPart(mode=Mode.PRIVATE) as hole:
-        Cylinder(radius=r, height=depth, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    holes.append(hole.part.moved(Location((px, py, 0))))
-fused = holes[0]
-for h in holes[1:]:
-    fused = fused.fuse(h)
-add(fused, mode=Mode.SUBTRACT)
-
-# Correct: subtract each cylinder in-context with overshoot.
-overshoot = 1.0
-for px, py in positions:
-    with Locations((px, py, -overshoot / 2)):
-        Cylinder(
-            radius=r,
-            height=depth + overshoot,
-            align=(Align.CENTER, Align.CENTER, Align.MIN),
-            mode=Mode.SUBTRACT,
-        )
-```
-
-**Why overshoot matters:** A cylinder whose height exactly matches the material
-thickness leaves paper-thin faces at the entry and exit surfaces. Adding 1mm
-overshoot and offsetting the start by 0.5mm ensures the cylinder extends past
-both faces for a clean cut.
-
-**How to verify:** Run section checks at Z near the bottom face AND Z near the
-top face. A single `inner_diameter_at_z` at mid-depth is not sufficient — it
-passes even when the hole only penetrates halfway.
-
-The feature helpers `MountingHoles.cut()` and `SteppedBore.cut()` already use
-the correct in-context pattern.
+- **BuildSketch + Locations does not move the sketch plane.** Use
+  `Plane(origin=(x, y, z))` explicitly.
+- **fuse() + add(mode=SUBTRACT) does not create reliable through-holes.** Use
+  `Locations` + `Cylinder(mode=Mode.SUBTRACT)` in-context instead.
+- **Always add overshoot to subtraction cylinders** (1mm past both faces).
 
 ## Common Triage
 
