@@ -10,6 +10,7 @@ from .spur_gear import spur_gear
 from .living_hinge import living_hinge_mask
 from .mounting_pattern import MountingHoles, mounting_pattern
 from .nut_trap import nut_trap
+from .nut_body import nut_body
 from .plate import plate
 from .pie_slice import pie_slice
 from .prismoid import prismoid
@@ -41,6 +42,7 @@ __all__ = [
     "MountingHoles",
     "mounting_pattern",
     "nut_trap",
+    "nut_body",
     "plate",
     "pie_slice",
     "prismoid",
