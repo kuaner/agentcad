@@ -8,10 +8,7 @@ from typing import TYPE_CHECKING
 from build123d import (
     BuildPart,
     BuildSketch,
-    Circle,
-    Cylinder,
     Location,
-    Locations,
     Mode,
     Part,
     Plane,
@@ -20,19 +17,10 @@ from build123d import (
     extrude,
 )
 
+from ._geometry import hexagon_vertices
+
 if TYPE_CHECKING:
     from .contract import ContractBuilder
-
-_XZ_PLANE = Plane(origin=(0, 0, 0), z_dir=(0, 1, 0))
-
-
-def _hexagon_vertices(radius: float, rotation: float = 30.0) -> list[tuple[float, float]]:
-    """Regular hexagon vertices for a given circumradius."""
-    return [
-        (radius * math.cos(math.radians(60 * i + rotation)),
-         radius * math.sin(math.radians(60 * i + rotation)))
-        for i in range(6)
-    ]
 
 
 def _hex_grid_positions(
@@ -124,7 +112,7 @@ def hex_panel(
         # Subtract hex cells at each grid position
         overshoot = 1.0
         grid = _hex_grid_positions(width, depth, spacing)
-        hex_verts = _hexagon_vertices(cell_r, rotation=30)
+        hex_verts = hexagon_vertices(cell_r)
 
         for gx, gy in grid:
             # Only cut cells that are inside the panel bounds (with frame margin)

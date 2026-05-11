@@ -9,56 +9,18 @@ from build123d import (
     Align,
     BuildPart,
     BuildSketch,
-    Circle,
     Cylinder,
     Location,
     Mode,
     Part,
-    Plane,
     Polygon,
     extrude,
 )
 
+from ._involute import involute_point, involute_polar, angle_at_radius
+
 if TYPE_CHECKING:
     from .contract import ContractBuilder
-
-
-def _involute_point(base_r: float, angle_deg: float) -> tuple[float, float]:
-    """Point on the involute of a circle at the given unwinding angle."""
-    a = angle_deg * math.pi / 180
-    x = base_r * (math.cos(a) + a * math.sin(a))
-    y = base_r * (math.sin(a) - a * math.cos(a))
-    return (x, y)
-
-
-def _involute_radius_at_angle(base_r: float, angle_deg: float) -> float:
-    """Radius of the involute curve at a given unwinding angle."""
-    x, y = _involute_point(base_r, angle_deg)
-    return math.sqrt(x * x + y * y)
-
-
-def _angle_at_radius(base_r: float, target_r: float) -> float:
-    """Unwinding angle where the involute reaches the target radius."""
-    a = 0.0
-    while _involute_radius_at_angle(base_r, a) < target_r:
-        a += 1.0
-    # Refine with bisection
-    lo, hi = a - 1.0, a
-    for _ in range(20):
-        mid = (lo + hi) / 2
-        if _involute_radius_at_angle(base_r, mid) < target_r:
-            lo = mid
-        else:
-            hi = mid
-    return (lo + hi) / 2
-
-
-def _involute_polar(base_r: float, angle_deg: float) -> tuple[float, float]:
-    """Involute point in polar coordinates (radius, angle from start)."""
-    x, y = _involute_point(base_r, angle_deg)
-    r = math.sqrt(x * x + y * y)
-    theta = math.atan2(y, x)
-    return (r, theta)
 
 
 def _gear_profile_points(
@@ -81,12 +43,12 @@ def _gear_profile_points(
     pitch_tooth_angle = math.pi / teeth - backlash / (2 * r_p)
 
     # Involute angle at key radii
-    ang_at_pitch = _angle_at_radius(r_b, r_p)
-    ang_at_outer = _angle_at_radius(r_b, r_o)
+    ang_at_pitch = angle_at_radius(r_b, r_p)
+    ang_at_outer = angle_at_radius(r_b, r_o)
 
     # Involute polar angles at pitch and outer
-    _, theta_at_pitch = _involute_polar(r_b, ang_at_pitch)
-    _, theta_at_outer = _involute_polar(r_b, ang_at_outer)
+    _, theta_at_pitch = involute_polar(r_b, ang_at_pitch)
+    _, theta_at_outer = involute_polar(r_b, ang_at_outer)
 
     # Tooth center offset: the involute starts at angle 0, but the tooth
     # centerline is at pitch_tooth_angle from the start of the left flank
@@ -94,10 +56,6 @@ def _gear_profile_points(
 
     # Build points for one tooth
     tooth_points: list[tuple[float, float]] = []
-
-    # Root arc from previous tooth gap to start of left flank
-    root_start_angle = -(math.pi / teeth) + center_offset
-    root_end_angle = center_offset - theta_at_pitch + theta_at_outer * 0  # simplified
 
     # Left involute flank: from root to outer
     left_start_angle = center_offset - theta_at_pitch
@@ -111,8 +69,8 @@ def _gear_profile_points(
             angle = left_start_angle
             tooth_points.append((r_target * math.cos(angle), r_target * math.sin(angle)))
         else:
-            a_inv = _angle_at_radius(r_b, r_target)
-            _, theta_inv = _involute_polar(r_b, a_inv)
+            a_inv = angle_at_radius(r_b, r_target)
+            _, theta_inv = involute_polar(r_b, a_inv)
             angle = center_offset - theta_at_pitch + theta_inv
             tooth_points.append((r_target * math.cos(angle), r_target * math.sin(angle)))
 
@@ -134,8 +92,8 @@ def _gear_profile_points(
             angle = center_offset + theta_at_pitch
             tooth_points.append((r_target * math.cos(angle), r_target * math.sin(angle)))
         else:
-            a_inv = _angle_at_radius(r_b, r_target)
-            _, theta_inv = _involute_polar(r_b, a_inv)
+            a_inv = angle_at_radius(r_b, r_target)
+            _, theta_inv = involute_polar(r_b, a_inv)
             angle = center_offset + theta_at_pitch - theta_inv
             tooth_points.append((r_target * math.cos(angle), r_target * math.sin(angle)))
 

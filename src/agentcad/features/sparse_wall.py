@@ -7,7 +7,6 @@ from build123d import (
     Align,
     BuildPart,
     Box,
-    Cylinder,
     Location,
     Mode,
     Part,

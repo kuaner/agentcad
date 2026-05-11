@@ -12,8 +12,6 @@ from build123d import (
     Part,
 )
 
-from .mounting_pattern import MountingHoles  # noqa: F401 — kept for future integration
-
 if TYPE_CHECKING:
     from .contract import ContractBuilder
 

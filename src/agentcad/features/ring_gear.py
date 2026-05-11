@@ -18,44 +18,10 @@ from build123d import (
     extrude,
 )
 
+from ._involute import involute_polar, angle_at_radius
+
 if TYPE_CHECKING:
     from .contract import ContractBuilder
-
-
-def _involute_point(base_r: float, angle_deg: float) -> tuple[float, float]:
-    """Point on the involute of a circle at the given unwinding angle."""
-    a = angle_deg * math.pi / 180
-    x = base_r * (math.cos(a) + a * math.sin(a))
-    y = base_r * (math.sin(a) - a * math.cos(a))
-    return (x, y)
-
-
-def _involute_polar(base_r: float, angle_deg: float) -> tuple[float, float]:
-    """Involute point in polar coordinates (radius, angle from start)."""
-    x, y = _involute_point(base_r, angle_deg)
-    r = math.sqrt(x * x + y * y)
-    theta = math.atan2(y, x)
-    return (r, theta)
-
-
-def _angle_at_radius(base_r: float, target_r: float) -> float:
-    """Unwinding angle where the involute reaches the target radius."""
-    a = 0.0
-    r = base_r
-    while r < target_r:
-        a += 1.0
-        x, y = _involute_point(base_r, a)
-        r = math.sqrt(x * x + y * y)
-    lo, hi = a - 1.0, a
-    for _ in range(20):
-        mid = (lo + hi) / 2
-        x, y = _involute_point(base_r, mid)
-        r = math.sqrt(x * x + y * y)
-        if r < target_r:
-            lo = mid
-        else:
-            hi = mid
-    return (lo + hi) / 2
 
 
 def _ring_gear_profile_points(
@@ -77,11 +43,11 @@ def _ring_gear_profile_points(
     n_involute_pts = 8
 
     # Involute angles at key radii
-    ang_at_root = _angle_at_radius(r_b, r_root) if r_root > r_b else 0.0
-    ang_at_tip = _angle_at_radius(r_b, r_tip) if r_tip > r_b else 0.0
+    ang_at_root = angle_at_radius(r_b, r_root) if r_root > r_b else 0.0
+    ang_at_tip = angle_at_radius(r_b, r_tip) if r_tip > r_b else 0.0
 
-    _, theta_at_root = _involute_polar(r_b, ang_at_root) if r_root > r_b else (r_root, 0.0)
-    _, theta_at_tip = _involute_polar(r_b, ang_at_tip) if r_tip > r_b else (r_tip, 0.0)
+    _, theta_at_root = involute_polar(r_b, ang_at_root) if r_root > r_b else (r_root, 0.0)
+    _, theta_at_tip = involute_polar(r_b, ang_at_tip) if r_tip > r_b else (r_tip, 0.0)
 
     # For internal gear: tooth angular span
     # At pitch circle, tooth thickness = pi*module/2 (wider than spur)

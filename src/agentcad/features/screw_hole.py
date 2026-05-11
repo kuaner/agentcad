@@ -55,15 +55,8 @@ class ScrewHole(SteppedBore):
         else:
             raise ValueError(f"kind must be 'clearance', 'tap', or 'self_tap', got '{kind}'")
 
-        # Map head to bore_kind for SteppedBore
-        bore_kind_map = {
-            "counterbore": "counterbore",
-            "countersink": "countersink",
-            "plain": "plain",
-        }
-        bore_kind = bore_kind_map.get(head, "plain")
+        bore_kind = head if head in ("counterbore", "countersink", "plain") else "plain"
 
-        # Only add head recess for cap/dome screws (not grub, not cs without head)
         if head == "plain" or s.head_diameter == 0:
             bore_kind = "plain"
 

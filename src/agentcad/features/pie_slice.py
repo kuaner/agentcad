@@ -87,11 +87,7 @@ def pie_slice(
     result = bp.part.moved(Location((cx, cy, base_z)))
 
     if builder is not None:
-        # Expected bbox width depends on angle
-        if angle <= 180:
-            bbox_w = radius * 2
-        else:
-            bbox_w = radius * 2
+        bbox_w = radius * 2
         builder.add(
             feature={
                 "id": feature_id,

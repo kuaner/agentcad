@@ -11,32 +11,22 @@ from build123d import (
     BuildSketch,
     Cylinder,
     Location,
-    Locations,
     Mode,
     Part,
     Polygon,
-    Rot,
+    Rectangle,
     extrude,
 )
 
-from ..hardware.screws import Screw, screw
+from ..hardware.nuts import Nut, nut as nut_lookup
+from ._geometry import hexagon_vertices
 
 if TYPE_CHECKING:
     from .contract import ContractBuilder
 
 
-def _hexagon_vertices(radius: float) -> list[tuple[float, float]]:
-    """Regular hexagon vertices for a given circumradius (across-flats / 2)."""
-    # Across-flats radius → across-corners circumradius
-    cr = radius / math.cos(math.radians(30))
-    return [
-        (cr * math.cos(math.radians(60 * i)), cr * math.sin(math.radians(60 * i)))
-        for i in range(6)
-    ]
-
-
 def nut_trap(
-    spec: str | Screw,
+    spec: str | Nut,
     *,
     depth: float = 10.0,
     orientation: Literal["side", "top"] = "side",
@@ -77,29 +67,17 @@ def nut_trap(
     Part
         The hex pocket solid (subtract from your part).
     """
-    s = screw(spec) if isinstance(spec, str) else spec
+    n = nut_lookup(spec) if isinstance(spec, str) else spec
     cx, cy = center
 
-    # Hex nut dimensions: across-flats ≈ 2×nominal_diameter for M3–M8
-    # Standard: AF = 5.5 for M3, 7 for M4, 8 for M5, 10 for M6, 13 for M8
-    af_map = {2.0: 4.0, 2.5: 5.0, 3.0: 5.5, 4.0: 7.0, 5.0: 8.0, 6.0: 10.0, 8.0: 13.0}
-    af = af_map.get(s.nominal_diameter, s.nominal_diameter * 1.8)
+    af = n.width_across_flats
     hex_r = af / 2
 
     # Hex pocket
     with BuildPart(mode=Mode.PRIVATE) as bp:
         with BuildSketch():
-            Polygon(_hexagon_vertices(hex_r))
+            Polygon(hexagon_vertices(hex_r / math.cos(math.radians(30)), rotation=0))
         extrude(amount=depth)
-
-        # Side-entry slot: rectangular opening on one side
-        if orientation == "side" and entry_slot_width > 0:
-            slot_height = af
-            with Locations((0, hex_r + slot_height / 2, depth / 2)):
-                # Slot as a box: extends outward from hex face
-                # Width = entry_slot_width along Z, height along Y, depth along X
-                # Actually, use a simple rectangular cut through one face
-                pass  # Slot is added via separate subtraction
 
     result = bp.part.moved(Location((cx, cy, base_z)))
 
@@ -107,7 +85,6 @@ def nut_trap(
     if orientation == "side" and entry_slot_width > 0:
         with BuildPart(mode=Mode.PRIVATE) as slot_bp:
             with BuildSketch():
-                from build123d import Rectangle
                 Rectangle(entry_slot_width, af)
             extrude(amount=depth)
         slot = slot_bp.part.moved(Location((cx, cy + hex_r + af / 2, base_z)))
@@ -129,7 +106,7 @@ def nut_trap(
         builder.add(
             feature={
                 "id": feature_id,
-                "description": f"nut_trap {s.name} depth={depth}mm orient={orientation}",
+                "description": f"nut_trap {n.name} depth={depth}mm orient={orientation}",
             },
             checks=checks,
         )

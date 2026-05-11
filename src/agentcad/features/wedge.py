@@ -70,20 +70,8 @@ def wedge(
 
     part = bp.part
 
-    # Default part has X=depth, Y=height, Z=width.
-    # Rotate to match direction.
+    # Default: X=depth, Y=height, Z=width
     if direction == "+y":
-        # +y: want width=Y, depth=X, height=Z → already matches (X=depth, Y=height, Z=width)
-        # but we want width=Y, depth=X. Currently Y=height not depth.
-        # Need: X=depth, Y=width, Z=height → Rot(Z=90) swaps X/Y → X=height, Y=depth, Z=width
-        # Then Rot(X=90) swaps Y/Z → X=height, Y=width, Z=depth... no
-        # Let me think: Rot(Z=90) → (X,Y) → (Y,-X) → new X=height, new Y=depth, Z=width
-        # Hmm. We want X=depth, Y=width, Z=height.
-        # Currently: X=depth, Y=height, Z=width
-        # Rot(X=-90) → Y,Z → (Z,-Y) → X=depth, Y=width, Z=-height... almost!
-        # Actually Rot(90,0,0) rotates around X: Y→Z, Z→-Y
-        # After Rot(X=90): X=depth, Y=width, Z=-height (Z is inverted)
-        # Need to also shift Z
         result = part.moved(Rot(90, 0, 0)).moved(Location((0, 0, height)))
     elif direction == "-y":
         result = part.moved(Rot(-90, 0, 0))

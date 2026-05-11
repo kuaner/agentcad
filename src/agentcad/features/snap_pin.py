@@ -112,7 +112,7 @@ def snap_pin(
     t = params["thickness"]
 
     r = (d - clearance) / 2
-    tip_h = r if pointed else r  # for pointed: cone height = r (45° tip)
+    tip_h = r
     nub_r = r + s
     nub_h = s * 2
     inner_r = max(r - t, 0)

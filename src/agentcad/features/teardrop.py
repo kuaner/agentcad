@@ -15,7 +15,6 @@ from build123d import (
     Circle,
     Polygon,
     extrude,
-    Vector,
 )
 
 if TYPE_CHECKING:

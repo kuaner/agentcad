@@ -22,9 +22,6 @@ if TYPE_CHECKING:
 
 Gender = Literal["male", "female"]
 
-# XZ plane: sketch X → 3D X, sketch Y → 3D Z, extrude → 3D Y
-_XZ_PLANE = Plane(origin=(0, 0, 0), z_dir=(0, 1, 0))
-
 
 def _make_profile(width: float, height: float, slope: float, clearance: float = 0.0) -> list[tuple[float, float]]:
     """Build the dovetail cross-section polygon in (Z, X) order for XZ plane."""
@@ -33,10 +30,10 @@ def _make_profile(width: float, height: float, slope: float, clearance: float = 
     base_half = width / 2 + height / slope + clearance
     top_half = width / 2 + clearance
     return [
-        (0, -base_half),        # bottom-left (Z=0, X=-base_half)
-        (height, -top_half),     # top-left (Z=height, X=-top_half)
-        (height, top_half),      # top-right
-        (0, base_half),          # bottom-right
+        (0, -base_half),
+        (height, -top_half),
+        (height, top_half),
+        (0, base_half),
     ]
 
 

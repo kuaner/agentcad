@@ -55,7 +55,6 @@ def chamfer_mask(
     if edge not in ("x", "y", "z"):
         raise ValueError(f"edge must be 'x', 'y', or 'z', got '{edge}'")
 
-    # Right triangle in XY sketch plane, extrude along Z.
     with BuildPart(mode=Mode.PRIVATE) as bp:
         with BuildSketch():
             Polygon([(0, 0), (size, 0), (0, size)])

@@ -1,8 +1,6 @@
 """Nut body helper: hex nut 3D solid for assembly visualization."""
 from __future__ import annotations
 
-import math
-
 from typing import TYPE_CHECKING
 
 from build123d import (
@@ -18,18 +16,10 @@ from build123d import (
 )
 
 from ..hardware.nuts import Nut, nut as nut_lookup
+from ._geometry import hexagon_vertices
 
 if TYPE_CHECKING:
     from .contract import ContractBuilder
-
-
-def _hexagon_vertices(radius: float) -> list[tuple[float, float]]:
-    """Regular hexagon vertices for a given circumradius."""
-    return [
-        (radius * math.cos(math.radians(60 * i + 30)),
-         radius * math.sin(math.radians(60 * i + 30)))
-        for i in range(6)
-    ]
 
 
 def nut_body(
@@ -71,7 +61,7 @@ def nut_body(
 
     cx, cy = center
 
-    hex_verts = _hexagon_vertices(corner_r)
+    hex_verts = hexagon_vertices(corner_r)
 
     with BuildPart(mode=Mode.PRIVATE) as bp:
         # Hex body
