@@ -35,7 +35,8 @@ def threaded_nut(
     """Create a hex nut with internal sinusoidal thread.
 
     Returns a positive solid with hex outer profile and helical
-    internal thread. Complement to ``threaded_rod``.
+    thread peaks protruding from the bore wall. The bore has
+    sinusoidal thread ridges running along its length.
 
     Parameters
     ----------
@@ -68,7 +69,7 @@ def threaded_nut(
     cx, cy = center
     hex_verts = hexagon_vertices(corner_r)
 
-    # Hex body with smooth bore
+    # Hex body with smooth bore hole
     with BuildPart(mode=Mode.PRIVATE) as bp:
         with BuildSketch():
             Polygon(hex_verts)
@@ -83,14 +84,27 @@ def threaded_nut(
 
     nut_part = bp.part
 
-    # Internal thread — peaks protrude inward from bore wall
-    inner_thread = sinusoidal_thread(
+    # Build thread ring separately and subtract the inner bore
+    # to get just the thread ridges (peaks that protrude from bore wall)
+    thread_ring = sinusoidal_thread(
         radius=bore_r,
         pitch=pitch,
         height=thickness,
     )
 
-    result = nut_part.fuse(inner_thread).moved(Location((cx, cy, base_z)))
+    # Subtract the bore cylinder from the thread to isolate just the ridges
+    with BuildPart(mode=Mode.PRIVATE) as thread_bp:
+        Cylinder(
+            radius=bore_r - pitch / 4,
+            height=thickness + 1,
+            align=(Align.CENTER, Align.CENTER, Align.MIN),
+            mode=Mode.ADD,
+        ).moved(Location((0, 0, -0.5)))
+
+    bore_core = thread_bp.part
+    ridges = thread_ring.cut(bore_core)
+
+    result = nut_part.fuse(ridges).moved(Location((cx, cy, base_z)))
 
     if builder is not None:
         builder.add(
