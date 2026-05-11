@@ -1,7 +1,26 @@
 """Mounting pattern helper: bolt hole patterns with auto-emitting checks.
 
-Generates holes and matching inner_diameter + hole_accessibility checks
+Generates hole positions and matching inner_diameter + hole_accessibility checks
 based on hardware specs from the hardware database.
+
+Usage within a BuildPart context::
+
+    with BuildPart() as bp:
+        plank = plate(...)
+        add(plank)
+
+        holes = MountingHoles(m5, kind="linear", spacing=40, count=2,
+                              depth=base_thickness, builder=b)
+        holes.cut()
+
+Or get positions and cut manually::
+
+    holes = MountingHoles(m5, kind="linear", spacing=40, count=2, depth=5)
+    for px, py in holes.positions:
+        with Locations((px, py, 0)):
+            Cylinder(radius=holes.hole_radius, height=depth + 1,
+                     align=(Align.CENTER, Align.CENTER, Align.MIN),
+                     mode=Mode.SUBTRACT)
 """
 from __future__ import annotations
 
@@ -13,6 +32,7 @@ from build123d import (
     BuildPart,
     Cylinder,
     Location,
+    Locations,
     Mode,
     Part,
 )
@@ -23,6 +43,96 @@ if TYPE_CHECKING:
     from .contract import ContractBuilder
 
 PatternKind = Literal["square", "rectangular", "linear", "circular"]
+
+
+class MountingHoles:
+    """Bolt hole pattern with positions, geometry, and optional checks."""
+
+    def __init__(
+        self,
+        spec: str | Screw,
+        *,
+        kind: PatternKind = "square",
+        spacing: float | None = None,
+        spacing_x: float | None = None,
+        spacing_y: float | None = None,
+        count: int | None = None,
+        center: tuple[float, float] = (0.0, 0.0),
+        depth: float = 5.0,
+        through: bool = True,
+        fit: str = "normal",
+        approach_axis: str = "z",
+        approach_z: float | None = None,
+        builder: ContractBuilder | None = None,
+        feature_id: str = "mounting_holes",
+    ):
+        s = screw(spec) if isinstance(spec, str) else spec
+        self.hole_radius = s.clearance_radius if through else s.tap_radius
+        self.hole_diameter = self.hole_radius * 2
+        self.depth = depth
+        self.screw = s
+        self.through = through
+        self.approach_axis = approach_axis
+        self.approach_z = approach_z
+
+        self.positions = _compute_positions(
+            kind, spacing, spacing_x, spacing_y, count, center,
+        )
+
+        if builder is not None:
+            checks: list[dict] = []
+            for i, (px, py) in enumerate(self.positions):
+                suffix = f"_{i}" if len(self.positions) > 1 else ""
+                checks.append({
+                    "id": f"{feature_id}_dia{suffix}",
+                    "type": "inner_diameter_at_z",
+                    "z": depth / 2,
+                    "center": [px, py],
+                    "expected": self.hole_diameter,
+                    "tolerance": 0.3,
+                    "feature_ref": feature_id,
+                })
+                if through:
+                    z_check = approach_z if approach_z is not None else depth + 0.5
+                    checks.append({
+                        "id": f"{feature_id}_access{suffix}",
+                        "type": "hole_accessibility",
+                        "z": z_check,
+                        "center": [px, py],
+                        "hole_diameter": self.hole_diameter,
+                        "clearance_diameter": s.head_diameter + 1.0,
+                        "approach_axis": approach_axis,
+                        "feature_ref": feature_id,
+                    })
+
+            builder.add(
+                feature={
+                    "id": feature_id,
+                    "description": (
+                        f"{s.name} {kind} pattern, "
+                        f"{len(self.positions)} holes, "
+                        f"spacing {spacing or spacing_x}mm"
+                    ),
+                },
+                checks=checks,
+            )
+
+    def cut(self) -> None:
+        """Subtract holes from the active BuildPart context.
+
+        Must be called inside a ``with BuildPart()`` block.
+        Uses ``Locations`` + ``Cylinder(mode=SUBTRACT)`` for reliable
+        boolean through-holes.
+        """
+        overshoot = 1.0
+        for px, py in self.positions:
+            with Locations((px, py, -overshoot / 2)):
+                Cylinder(
+                    radius=self.hole_radius,
+                    height=self.depth + overshoot,
+                    align=(Align.CENTER, Align.CENTER, Align.MIN),
+                    mode=Mode.SUBTRACT,
+                )
 
 
 def mounting_pattern(
@@ -41,63 +151,15 @@ def mounting_pattern(
     approach_z: float | None = None,
     builder: ContractBuilder | None = None,
     feature_id: str = "mounting_holes",
-) -> Part:
-    """Create a bolt hole pattern and optionally register hole checks."""
-    s = screw(spec) if isinstance(spec, str) else spec
-    hole_radius = s.clearance_radius if through else s.tap_radius
-    hole_diameter = hole_radius * 2
-
-    positions = _compute_positions(kind, spacing, spacing_x, spacing_y, count, center)
-
-    holes = []
-    for px, py in positions:
-        with BuildPart(mode=Mode.PRIVATE) as hole:
-            Cylinder(
-                radius=hole_radius,
-                height=depth,
-                align=(Align.CENTER, Align.CENTER, Align.MIN),
-            )
-        holes.append(hole.part.moved(Location((px, py, 0))))
-
-    result = holes[0]
-    for h in holes[1:]:
-        result = result.fuse(h)
-
-    if builder is not None:
-        checks: list[dict] = []
-        for i, (px, py) in enumerate(positions):
-            suffix = f"_{i}" if len(positions) > 1 else ""
-            checks.append({
-                "id": f"{feature_id}_dia{suffix}",
-                "type": "inner_diameter_at_z",
-                "z": depth / 2,
-                "center": [px, py],
-                "expected": hole_diameter,
-                "tolerance": 0.3,
-                "feature_ref": feature_id,
-            })
-            if through:
-                z_check = approach_z if approach_z is not None else depth + 0.5
-                checks.append({
-                    "id": f"{feature_id}_access{suffix}",
-                    "type": "hole_accessibility",
-                    "z": z_check,
-                    "center": [px, py],
-                    "hole_diameter": hole_diameter,
-                    "clearance_diameter": s.head_diameter + 1.0,
-                    "approach_axis": approach_axis,
-                    "feature_ref": feature_id,
-                })
-
-        builder.add(
-            feature={
-                "id": feature_id,
-                "description": f"{s.name} {kind} pattern, {len(positions)} holes, spacing {spacing or spacing_x}mm",
-            },
-            checks=checks,
-        )
-
-    return result
+) -> MountingHoles:
+    """Backward-compatible factory: returns a MountingHoles instance."""
+    return MountingHoles(
+        spec,
+        kind=kind, spacing=spacing, spacing_x=spacing_x, spacing_y=spacing_y,
+        count=count, center=center, depth=depth, through=through, fit=fit,
+        approach_axis=approach_axis, approach_z=approach_z,
+        builder=builder, feature_id=feature_id,
+    )
 
 
 def _compute_positions(

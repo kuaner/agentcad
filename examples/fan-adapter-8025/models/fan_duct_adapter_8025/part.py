@@ -26,7 +26,7 @@ from build123d import (
     extrude,
 )
 
-from agentcad.features import ContractBuilder, duct_socket, mounting_pattern
+from agentcad.features import ContractBuilder, MountingHoles, duct_socket
 from agentcad.hardware import screw
 
 PARAMS = json.loads(Path(__file__).with_name("params.json").read_text(encoding="utf-8"))
@@ -118,11 +118,11 @@ def build():
             )
 
         # --- Mounting holes (feature helper) ---
-        holes = mounting_pattern(
+        holes = MountingHoles(
             m4, kind="square", spacing=mount_spacing,
             depth=flange_thickness, builder=b, feature_id="fan_mounting_holes",
         )
-        add(holes, mode=Mode.SUBTRACT)
+        holes.cut()
 
         # --- Screw head recesses ---
         for x in (-half_spacing, half_spacing):

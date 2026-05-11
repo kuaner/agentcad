@@ -14,7 +14,7 @@ from build123d import (
     add,
 )
 
-from agentcad.features import ContractBuilder, plate, mounting_pattern
+from agentcad.features import ContractBuilder, MountingHoles, plate
 from agentcad.hardware import screw
 
 PARAMS = json.loads(Path(__file__).with_name("params.json").read_text(encoding="utf-8"))
@@ -60,11 +60,11 @@ def build():
                       "tolerance": 1.0, "feature_ref": "vertical_flange"})
 
         # Mounting holes (feature helper — geometry + auto checks)
-        holes = mounting_pattern(
+        holes = MountingHoles(
             m5, kind="linear", spacing=hole_spacing, count=2,
             depth=base_thickness, builder=b, feature_id="mounting_holes",
         )
-        add(holes, mode=Mode.SUBTRACT)
+        holes.cut()
 
     # Deliverables
     b.add_feature({"id": "deliverable_artifacts", "description": "STEP and STL exports"})

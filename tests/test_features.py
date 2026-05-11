@@ -203,17 +203,17 @@ class TestPlate:
 # --- Mounting pattern tests ---
 
 class TestMountingPattern:
-    def test_square_pattern_returns_part(self):
+    def test_square_pattern_returns_holes(self):
         holes = mounting_pattern("M3", kind="square", spacing=25)
-        assert holes.volume > 0
+        assert len(holes.positions) == 4
 
     def test_rectangular_pattern(self):
         holes = mounting_pattern("M3", kind="rectangular", spacing_x=30, spacing_y=20)
-        assert holes.volume > 0
+        assert len(holes.positions) == 4
 
     def test_linear_pattern(self):
         holes = mounting_pattern("M3", kind="linear", spacing=25, count=4)
-        assert holes.volume > 0
+        assert len(holes.positions) == 4
 
     def test_registers_checks(self):
         b = ContractBuilder()
@@ -238,13 +238,13 @@ class TestMountingPattern:
 # --- Stepped bore tests ---
 
 class TestSteppedBore:
-    def test_plain_bore_returns_part(self):
+    def test_plain_bore_returns_bore(self):
         bore = stepped_bore("M3", bore_kind="plain", through_depth=10)
-        assert bore.volume > 0
+        assert bore.through_r > 0
 
-    def test_counterbore_returns_part(self):
+    def test_counterbore_returns_bore(self):
         bore = stepped_bore("M3_cap", bore_kind="counterbore", through_depth=10)
-        assert bore.volume > 0
+        assert bore.through_r > 0
 
     def test_plain_registers_one_check(self):
         b = ContractBuilder()

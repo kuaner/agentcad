@@ -17,10 +17,10 @@ from build123d import (
 
 from agentcad.features import (
     ContractBuilder,
+    SteppedBore,
     boss,
     plate,
     slot,
-    stepped_bore,
 )
 from agentcad.hardware import screw
 
@@ -82,13 +82,13 @@ def build():
 
         # --- Counterbored mounting holes (feature helper) ---
         for i, (cx, cy) in enumerate(corner_positions):
-            bore_neg = stepped_bore(
+            bore = SteppedBore(
                 s, center=(cx, cy),
                 through_depth=plate_t,
                 bore_kind="counterbore",
                 builder=b, feature_id=f"mount_hole_{i}",
             )
-            add(bore_neg, mode=Mode.SUBTRACT)
+            bore.cut()
 
         # --- Cable routing slots (feature helper) ---
         for sign, fid in [(-1, "left_slot"), (1, "right_slot")]:
