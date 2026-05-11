@@ -45,6 +45,7 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `threaded_rod` | ISO-standard threaded rod | `references/feature/threaded-rod.md` |
 | `dovetail` | Interlocking dovetail joint | `references/feature/dovetail.md` |
 | `hex_panel` | Honeycomb-core lightweight panel | `references/feature/hex-panel.md` |
+| `snap_pin` / `snap_pin_socket` | Double-ended snap-fit pin + socket | `references/feature/snap-pin.md` |
 
 ## Hardware Database
 

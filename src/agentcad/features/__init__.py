@@ -5,6 +5,7 @@ from .duct_socket import duct_socket
 from .dovetail import dovetail
 from .hex_panel import hex_panel
 from .knurl import helical_knurl
+from .snap_pin import snap_pin, snap_pin_socket
 from .living_hinge import living_hinge_mask
 from .mounting_pattern import MountingHoles, mounting_pattern
 from .nut_trap import nut_trap
@@ -28,6 +29,8 @@ __all__ = [
     "duct_socket",
     "hex_panel",
     "helical_knurl",
+    "snap_pin",
+    "snap_pin_socket",
     "living_hinge_mask",
     "MountingHoles",
     "mounting_pattern",
