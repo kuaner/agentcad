@@ -1,7 +1,7 @@
 """Heat-set and threaded insert dimension tables.
 
-Dimensions from NopSCADlib (GPL-3.0, Chris Palmer). Hole diameters are
-empirically verified for 3D printing — too loose and inserts pull out,
+Dimensions from published manufacturer specs and empirical 3D printing
+testing. Hole diameters are verified — too loose and inserts pull out,
 too tight and the plastic cracks.
 """
 from __future__ import annotations

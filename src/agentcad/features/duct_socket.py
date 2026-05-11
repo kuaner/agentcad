@@ -21,13 +21,12 @@ def duct_socket(
     inner_diameter: float,
     length: float,
     *,
-    lead_in: float = 0.0,
     center: tuple[float, float] = (0.0, 0.0),
     base_z: float = 0.0,
     builder: ContractBuilder | None = None,
     feature_id: str = "duct_socket",
 ) -> Part:
-    """Create a cylindrical duct socket with optional lead-in taper.
+    """Create a cylindrical duct socket.
 
     Parameters
     ----------
@@ -37,8 +36,6 @@ def duct_socket(
         Inner diameter (bore) of the socket (mm).
     length : float
         Socket length in Z (mm).
-    lead_in : float
-        Taper reduction at the open end (mm diameter reduction).
     center : tuple[float, float]
         XY center position.
     base_z : float
@@ -79,15 +76,6 @@ def duct_socket(
                 "feature_ref": feature_id,
             },
         ]
-        if lead_in > 0:
-            checks.append({
-                "id": f"{feature_id}_taper",
-                "type": "diameter_decreases_along_z",
-                "z_start": base_z + length * 0.5,
-                "z_end": base_z + length,
-                "center": [cx, cy],
-                "feature_ref": feature_id,
-            })
         builder.add(
             feature={
                 "id": feature_id,

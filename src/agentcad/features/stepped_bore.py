@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Literal
 from build123d import (
     Align,
     BuildPart,
+    Cone,
     Cylinder,
     Location,
     Locations,
@@ -54,13 +55,16 @@ class SteppedBore:
         self.through_r = s.through_hole_diameter(fit) / 2
         self.recess_depth = 0.0
         self.recess_r = 0.0
+        self.cone = False
 
         if bore_kind == "counterbore" and s.head_diameter > 0:
             self.recess_r = s.counterbore_diameter() / 2
             self.recess_depth = s.counterbore_depth()
         elif bore_kind == "countersink" and s.head_diameter > 0:
+            # Countersink uses a Cone for conical recess (90° included angle)
             self.recess_depth = s.head_diameter / 2
             self.recess_r = s.head_diameter / 2
+            self.cone = True
 
         if builder is not None:
             cx, cy = center
@@ -115,13 +119,26 @@ class SteppedBore:
 
         # Counterbore or countersink recess
         if self.recess_depth > 0 and self.recess_r > 0:
-            with Locations((cx, cy, self.through_depth - self.recess_depth)):
-                Cylinder(
-                    radius=self.recess_r,
-                    height=self.recess_depth + overshoot,
-                    align=(Align.CENTER, Align.CENTER, Align.MIN),
-                    mode=Mode.SUBTRACT,
-                )
+            recess_z = self.through_depth - self.recess_depth
+            if self.cone:
+                # Conical countersink: Cone(r1=through_r, r2=recess_r)
+                with Locations((cx, cy, recess_z)):
+                    Cone(
+                        radius1=self.through_r,
+                        radius2=self.recess_r,
+                        height=self.recess_depth + overshoot,
+                        align=(Align.CENTER, Align.CENTER, Align.MIN),
+                        mode=Mode.SUBTRACT,
+                    )
+            else:
+                # Cylindrical counterbore
+                with Locations((cx, cy, recess_z)):
+                    Cylinder(
+                        radius=self.recess_r,
+                        height=self.recess_depth + overshoot,
+                        align=(Align.CENTER, Align.CENTER, Align.MIN),
+                        mode=Mode.SUBTRACT,
+                    )
 
 
 def stepped_bore(

@@ -8,9 +8,10 @@ import json
 from pathlib import Path
 
 from build123d import (
+    Align,
     BuildPart,
     Cylinder,
-    Location,
+    Locations,
     Mode,
     add,
 )
@@ -75,10 +76,15 @@ def build():
         )
         add(pillar)
 
-        # Boss bore extends through plate
-        with BuildPart(mode=Mode.PRIVATE) as bore_ext:
-            Cylinder(radius=boss_bore / 2, height=plate_t + 0.5)
-        add(bore_ext.part.moved(Location((0, 0, -0.25))), mode=Mode.SUBTRACT)
+        # Boss bore extends through plate (in-context subtraction with overshoot)
+        overshoot = 1.0
+        with Locations((0, 0, -overshoot / 2)):
+            Cylinder(
+                radius=boss_bore / 2,
+                height=plate_t + overshoot,
+                align=(Align.CENTER, Align.CENTER, Align.MIN),
+                mode=Mode.SUBTRACT,
+            )
 
         # --- Counterbored mounting holes (feature helper) ---
         for i, (cx, cy) in enumerate(corner_positions):

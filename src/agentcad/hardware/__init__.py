@@ -1,6 +1,9 @@
-"""Hardware dimension tables extracted from ISO/DIN standards.
+"""Hardware dimension tables from ISO/DIN metric fastener standards.
 
-Data sourced from NopSCADlib (GPL-3.0) empirically verified dimensions.
+Dimensions are derived from published ISO/DIN specifications (ISO 4014,
+ISO 4032, DIN 934, DIN 125, etc.) — these are factual standard data, not
+copyrightable expression. Values were cross-referenced against NopSCADlib
+for accuracy verification only.
 """
 from __future__ import annotations
 

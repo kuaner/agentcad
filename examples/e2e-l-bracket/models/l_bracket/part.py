@@ -50,7 +50,8 @@ def build():
 
         # Vertical flange: back edge, rising from base top
         with Locations((0, base_depth / 2 - flange_thickness / 2, base_thickness)):
-            Box(base_width, flange_thickness, flange_height)
+            Box(base_width, flange_thickness, flange_height,
+                align=(Align.CENTER, Align.CENTER, Align.MIN))
         b.add_feature({
             "id": "vertical_flange",
             "description": f"vertical flange {base_width}x{flange_thickness}x{flange_height}mm",

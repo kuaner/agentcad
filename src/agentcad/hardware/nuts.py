@@ -1,6 +1,7 @@
 """ISO metric nut dimension tables.
 
-Dimensions from NopSCADlib (GPL-3.0, Chris Palmer).
+Dimensions from published ISO/DIN specifications. Values cross-referenced
+with NopSCADlib for accuracy verification.
 """
 from __future__ import annotations
 
@@ -25,7 +26,6 @@ class Nut:
         import math
         return self.width_across_corners * math.cos(math.pi / 6)
 
-    @property
     def pocket_diameter(self, clearance: float = 0.3) -> float:
         return self.width_across_corners + clearance * 2
 

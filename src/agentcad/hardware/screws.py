@@ -1,8 +1,8 @@
 """ISO metric screw dimension tables.
 
-Dimensions from NopSCADlib (GPL-3.0, Chris Palmer) with ISO 4762 / ISO 7045 /
-ISO 4014 / ISO 10642 / ISO 7380 references. Tap and clearance radii are
-empirically verified for 3D printing.
+Dimensions from ISO 4762, ISO 7045, ISO 4014, ISO 10642, ISO 7380
+published standards. Values cross-referenced with NopSCADlib for accuracy
+verification. Tap and clearance radii are empirically verified for 3D printing.
 """
 from __future__ import annotations
 

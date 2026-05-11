@@ -1,12 +1,13 @@
 # stepped_bore(spec, bore_kind)
 
 Through-hole with counterbore or countersink for screw head recess.
-Returns a **negative** solid — subtract from parent.
+Returns a **SteppedBore** object — call ``cut()`` inside a BuildPart context to subtract.
 
 ```python
-from agentcad.features import stepped_bore
+from agentcad.features import SteppedBore
 
-bore = stepped_bore("M3_cap", bore_kind="counterbore", through_depth=8, builder=b)
+bore = SteppedBore("M3_cap", bore_kind="counterbore", through_depth=8, builder=b)
+bore.cut()  # inside a with BuildPart() block
 ```
 
 ## Parameters
@@ -26,7 +27,7 @@ bore = stepped_bore("M3_cap", bore_kind="counterbore", through_depth=8, builder=
 | Kind | Description |
 |---|---|
 | `counterbore` | Flat-bottom cylindrical recess for socket/cap head |
-| `countersink` | Conical recess for flat/countersunk head |
+| `countersink` | Conical recess (90° included angle) for flat/countersunk head |
 | `plain` | Through-hole only, no head recess |
 
 ## Auto-generated Checks

@@ -66,7 +66,7 @@ def rib(
             {
                 "id": f"{feature_id}_thickness",
                 "type": "min_wall_thickness",
-                "z": height / 2,
+                "z": origin[2] + height / 2,
                 "center": list(origin[:2]),
                 "expected_min": thickness,
                 "tolerance": 0.3,

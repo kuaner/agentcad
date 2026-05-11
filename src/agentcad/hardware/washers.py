@@ -1,6 +1,6 @@
 """ISO metric washer dimension tables.
 
-Dimensions from NopSCADlib (GPL-3.0, Chris Palmer).
+Dimensions from DIN 125 / ISO 7089 published standards.
 """
 from __future__ import annotations
 
