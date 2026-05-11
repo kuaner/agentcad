@@ -42,6 +42,7 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `rounding_mask` | Edge roundover/fillet (subtract) | `references/feature/rounding.md` |
 | `rect_tube` | Rectangular hollow tube | `references/feature/rect-tube.md` |
 | `pie_slice` | Cylindrical sector wedge | `references/feature/pie-slice.md` |
+| `nema_mount` | NEMA stepper motor mount pattern | `references/feature/nema-mount.md` |
 | `nut_trap` | Hex nut pocket (subtract) | `references/feature/nut-trap.md` |
 | `nut_body` | Hex nut 3D solid (visual) | `references/feature/nut-body.md` |
 | `screw_hole` | Full parametric screw hole | `references/feature/screw-hole.md` |

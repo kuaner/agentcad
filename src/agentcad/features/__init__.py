@@ -9,6 +9,7 @@ from .snap_pin import snap_pin, snap_pin_socket
 from .spur_gear import spur_gear
 from .living_hinge import living_hinge_mask
 from .mounting_pattern import MountingHoles, mounting_pattern
+from .nema_mount import nema_mount
 from .nut_trap import nut_trap
 from .nut_body import nut_body
 from .plate import plate
@@ -58,6 +59,7 @@ __all__ = [
     "sinusoidal_thread",
     "threaded_rod",
     "torus",
+    "nema_mount",
     "tube",
     "wedge",
 ]
