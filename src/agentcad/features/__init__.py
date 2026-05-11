@@ -13,6 +13,7 @@ from .nut_trap import nut_trap
 from .plate import plate
 from .prismoid import prismoid
 from .rib import rib
+from .rounding import rounding_mask
 from .screw_hole import ScrewHole, screw_hole
 from .slot import slot
 from .stepped_bore import SteppedBore, stepped_bore
@@ -40,6 +41,7 @@ __all__ = [
     "plate",
     "prismoid",
     "rib",
+    "rounding_mask",
     "ScrewHole",
     "screw_hole",
     "slot",
