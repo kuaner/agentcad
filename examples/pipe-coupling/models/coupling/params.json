@@ -1,0 +1,17 @@
+{
+  "pipe_od": 20.0,
+  "pipe_id": 18.0,
+  "coupling_od": 30.0,
+  "coupling_id": 18.0,
+  "socket_length": 10.0,
+  "total_length": 40.0,
+  "flange_size": 44.0,
+  "flange_thickness": 4.0,
+  "oring_major_radius": 13.5,
+  "oring_minor_radius": 1.5,
+  "oring_z": 20.0,
+  "bolt_spacing_x": 14.0,
+  "bolt_spacing_y": 14.0,
+  "m4_clearance_diameter": 4.4,
+  "m4_nut_depth": 4.0
+}

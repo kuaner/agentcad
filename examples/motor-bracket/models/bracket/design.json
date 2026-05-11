@@ -1,0 +1,333 @@
+{
+  "schema": "design-spec.v1",
+  "model": "bracket",
+  "units": "mm",
+  "intent": "NEMA17 L-bracket: base plate mounts to panel (4 M3 bolts), vertical web holds NEMA17 motor, rounded base edges, side nut trap, cable slot, triangular gussets.",
+  "features": [
+    {
+      "id": "base_plate",
+      "intent": "Horizontal mounting plate that attaches to panel via 4 M3 bolts.",
+      "checks": ["base_solid_z2.5", "watertight", "volume_range"]
+    },
+    {
+      "id": "vertical_web",
+      "intent": "Vertical plate at back edge for NEMA17 motor mounting.",
+      "checks": ["web_solid_z26", "web_base_connected"]
+    },
+    {
+      "id": "nema_mount",
+      "intent": "NEMA17 motor mounting pattern: center bore (22mm) and 4 M3 clearance screw holes (31mm spacing).",
+      "checks": ["nema_bore_dia", "nema_screw_ll", "nema_screw_lr", "nema_screw_ul", "nema_screw_ur", "nema_bore_access", "nema_screw_ll_access", "nema_screw_lr_access", "nema_screw_ul_access", "nema_screw_ur_access", "nema_bore_left_wall", "nema_bore_top_wall", "nema_screw_ll_left_wall"]
+    },
+    {
+      "id": "panel_mount",
+      "intent": "4 M3 clearance holes in rectangular pattern for mounting bracket to panel.",
+      "checks": ["panel_hole_fl", "panel_hole_fr", "panel_hole_bl", "panel_hole_br", "panel_access_fl", "panel_access_fr", "panel_access_bl", "panel_access_br", "panel_fl_front_wall", "panel_bl_back_wall"]
+    },
+    {
+      "id": "base_rounding",
+      "intent": "3mm fillet on base plate bottom edges (front and sides, not back near web).",
+      "checks": ["base_round_corner_void"]
+    },
+    {
+      "id": "nut_trap",
+      "intent": "M3 hex nut pocket on web outer face (Y-axis approach) for side fastening.",
+      "checks": ["nut_trap_void", "nut_trap_access"]
+    },
+    {
+      "id": "cable_slot",
+      "intent": "Cable routing channel on web outer face, vertical extent near motor.",
+      "checks": ["cable_slot_void"]
+    },
+    {
+      "id": "gusset",
+      "intent": "Two triangular gussets reinforcing the base-web junction.",
+      "checks": ["gusset_solid_z8", "gusset_root_connected"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "base_solid_z2.5",
+      "type": "section_bbox_at_z",
+      "z": 2.5,
+      "region": [[-20, -20], [20, 20]],
+      "expected": "solid",
+      "tolerance": 0.3
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "volume_range",
+      "type": "volume_range",
+      "min": 15000,
+      "max": 35000
+    },
+    {
+      "id": "web_solid_z26",
+      "type": "section_bbox_at_z",
+      "z": 26,
+      "region": [[-25, 27.5], [-20, 32]],
+      "expected": "solid",
+      "tolerance": 0.3
+    },
+    {
+      "id": "web_base_connected",
+      "type": "section_bbox_at_z",
+      "z": 5.5,
+      "region": [[-5, 27.5], [5, 32.5]],
+      "expected": "solid",
+      "tolerance": 0.3
+    },
+    {
+      "id": "nema_bore_dia",
+      "type": "inner_diameter_at_z",
+      "z": 26,
+      "center": [0, 30],
+      "expected": 22,
+      "tolerance": 0.5,
+      "param_ref": "nema_center_z"
+    },
+    {
+      "id": "nema_screw_ll",
+      "type": "inner_diameter_at_z",
+      "z": 10.5,
+      "center": [-15.5, 30],
+      "expected": 3.2,
+      "tolerance": 0.3
+    },
+    {
+      "id": "nema_screw_lr",
+      "type": "inner_diameter_at_z",
+      "z": 10.5,
+      "center": [15.5, 30],
+      "expected": 3.2,
+      "tolerance": 0.3
+    },
+    {
+      "id": "nema_screw_ul",
+      "type": "inner_diameter_at_z",
+      "z": 41.5,
+      "center": [-15.5, 30],
+      "expected": 3.2,
+      "tolerance": 0.3
+    },
+    {
+      "id": "nema_screw_ur",
+      "type": "inner_diameter_at_z",
+      "z": 41.5,
+      "center": [15.5, 30],
+      "expected": 3.2,
+      "tolerance": 0.3
+    },
+    {
+      "id": "nema_bore_access",
+      "type": "hole_accessibility",
+      "axis": "y",
+      "y": 33,
+      "center": [0, 26],
+      "hole_diameter": 22,
+      "clearance_diameter": 44
+    },
+    {
+      "id": "nema_screw_ll_access",
+      "type": "hole_accessibility",
+      "axis": "y",
+      "y": 33,
+      "center": [-15.5, 10.5],
+      "hole_diameter": 3.2,
+      "clearance_diameter": 8
+    },
+    {
+      "id": "nema_screw_lr_access",
+      "type": "hole_accessibility",
+      "axis": "y",
+      "y": 33,
+      "center": [15.5, 10.5],
+      "hole_diameter": 3.2,
+      "clearance_diameter": 8
+    },
+    {
+      "id": "nema_screw_ul_access",
+      "type": "hole_accessibility",
+      "axis": "y",
+      "y": 33,
+      "center": [-15.5, 41.5],
+      "hole_diameter": 3.2,
+      "clearance_diameter": 8
+    },
+    {
+      "id": "nema_screw_ur_access",
+      "type": "hole_accessibility",
+      "axis": "y",
+      "y": 33,
+      "center": [15.5, 41.5],
+      "hole_diameter": 3.2,
+      "clearance_diameter": 8
+    },
+    {
+      "id": "nema_bore_left_wall",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "y", "center": [0, 26], "radius": 11, "y_range": [27, 33]},
+      "feature_b": {"type": "box", "x_range": [-25, -11], "y_range": [27.5, 32.5], "z_range": [15, 37]},
+      "min_mm": 0
+    },
+    {
+      "id": "nema_bore_top_wall",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "y", "center": [0, 26], "radius": 11, "y_range": [27, 33]},
+      "feature_b": {"type": "box", "x_range": [-11, 11], "y_range": [27.5, 32.5], "z_range": [37, 47]},
+      "min_mm": 0
+    },
+    {
+      "id": "nema_screw_ll_left_wall",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "y", "center": [-15.5, 10.5], "radius": 1.6, "y_range": [27, 33]},
+      "feature_b": {"type": "box", "x_range": [-25, -17.1], "y_range": [27.5, 32.5], "z_range": [8.9, 12.1]},
+      "min_mm": 0
+    },
+    {
+      "id": "panel_hole_fl",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [-18, -20],
+      "expected": 3.2,
+      "tolerance": 0.3
+    },
+    {
+      "id": "panel_hole_fr",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [18, -20],
+      "expected": 3.2,
+      "tolerance": 0.3
+    },
+    {
+      "id": "panel_hole_bl",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [-18, 4],
+      "expected": 3.2,
+      "tolerance": 0.3
+    },
+    {
+      "id": "panel_hole_br",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [18, 4],
+      "expected": 3.2,
+      "tolerance": 0.3
+    },
+    {
+      "id": "panel_access_fl",
+      "type": "hole_accessibility",
+      "z": -0.5,
+      "center": [-18, -20],
+      "hole_diameter": 3.2,
+      "clearance_diameter": 8
+    },
+    {
+      "id": "panel_access_fr",
+      "type": "hole_accessibility",
+      "z": -0.5,
+      "center": [18, -20],
+      "hole_diameter": 3.2,
+      "clearance_diameter": 8
+    },
+    {
+      "id": "panel_access_bl",
+      "type": "hole_accessibility",
+      "z": -0.5,
+      "center": [-18, 4],
+      "hole_diameter": 3.2,
+      "clearance_diameter": 8
+    },
+    {
+      "id": "panel_access_br",
+      "type": "hole_accessibility",
+      "z": -0.5,
+      "center": [18, 4],
+      "hole_diameter": 3.2,
+      "clearance_diameter": 8
+    },
+    {
+      "id": "panel_fl_front_wall",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "center": [-18, -20], "radius": 1.6, "z_range": [-0.5, 5.5]},
+      "feature_b": {"type": "box", "x_range": [-25, -21.6], "y_range": [-27.5, -21.6], "z_range": [0, 5]},
+      "min_mm": 0
+    },
+    {
+      "id": "panel_bl_back_wall",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "center": [-18, 4], "radius": 1.6, "z_range": [-0.5, 5.5]},
+      "feature_b": {"type": "box", "x_range": [-25, -21.6], "y_range": [5.6, 27.5], "z_range": [0, 5]},
+      "min_mm": 0
+    },
+    {
+      "id": "base_round_corner_void",
+      "type": "feature_position",
+      "point": [24, -26, 0.5],
+      "expected": "void",
+      "tolerance": 0.5
+    },
+    {
+      "id": "nut_trap_void",
+      "type": "section_bbox_at_z",
+      "z": 35,
+      "region": [[18, 29], [22, 32]],
+      "expected": "void",
+      "tolerance": 0.5
+    },
+    {
+      "id": "nut_trap_access",
+      "type": "hole_accessibility",
+      "axis": "y",
+      "y": 33,
+      "center": [20, 35],
+      "hole_diameter": 5.5,
+      "clearance_diameter": 10
+    },
+    {
+      "id": "cable_slot_void",
+      "type": "section_bbox_at_z",
+      "z": 25,
+      "region": [[-23, 29.5], [-19, 32]],
+      "expected": "void",
+      "tolerance": 0.5
+    },
+    {
+      "id": "gusset_solid_z8",
+      "type": "section_bbox_at_z",
+      "z": 8,
+      "region": [[-24, 22], [-20, 27]],
+      "expected": "solid",
+      "tolerance": 0.3
+    },
+    {
+      "id": "gusset_root_connected",
+      "type": "section_bbox_at_z",
+      "z": 6,
+      "region": [[-24, 25], [-20, 28]],
+      "expected": "solid",
+      "tolerance": 0.3
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/bracket.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/bracket.stl"
+    },
+    {
+      "id": "min_triangles",
+      "type": "min_triangles",
+      "expected": 100
+    }
+  ]
+}

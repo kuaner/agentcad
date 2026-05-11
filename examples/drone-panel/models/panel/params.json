@@ -1,0 +1,20 @@
+{
+  "panel_width": 80.0,
+  "panel_depth": 60.0,
+  "panel_height": 5.0,
+  "sparse_strut": 2.0,
+  "sparse_spacing": 15.0,
+  "corner_radius": 8.0,
+  "corner_angle": 90.0,
+  "border_wall": 2.0,
+  "border_height": 3.0,
+  "hex_strut": 1.0,
+  "hex_spacing": 8.0,
+  "hex_size_x": 40.0,
+  "hex_size_y": 30.0,
+  "hex_height": 3.0,
+  "infill_height": 3.0,
+  "seal_major_radius": 25.0,
+  "seal_minor_radius": 1.5,
+  "seal_offset_y": -25.0
+}

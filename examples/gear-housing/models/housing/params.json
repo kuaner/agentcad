@@ -1,0 +1,18 @@
+{
+  "ring_teeth": 24,
+  "ring_module": 2.0,
+  "ring_thickness": 5.0,
+  "ring_rim_width": 8.0,
+  "sun_teeth": 12,
+  "sun_module": 2.0,
+  "sun_thickness": 5.0,
+  "sun_shaft_diameter": 8.0,
+  "tube_od": 14.0,
+  "tube_id": 8.0,
+  "tube_height": 5.0,
+  "rect_width": 80.0,
+  "rect_depth": 80.0,
+  "rect_height": 5.0,
+  "rect_wall": 5.0,
+  "nut_spec": "M8"
+}
