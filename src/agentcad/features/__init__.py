@@ -12,6 +12,7 @@ from .mounting_pattern import MountingHoles, mounting_pattern
 from .nut_trap import nut_trap
 from .plate import plate
 from .prismoid import prismoid
+from .rect_tube import rect_tube
 from .rib import rib
 from .rounding import rounding_mask
 from .screw_hole import ScrewHole, screw_hole
@@ -41,6 +42,7 @@ __all__ = [
     "nut_trap",
     "plate",
     "prismoid",
+    "rect_tube",
     "rib",
     "rounding_mask",
     "ScrewHole",

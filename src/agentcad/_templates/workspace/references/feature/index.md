@@ -40,6 +40,7 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `teardrop` | FDM-printable horizontal hole | `references/feature/teardrop.md` |
 | `chamfer_mask` | Edge chamfer wedge (subtract) | `references/feature/chamfer-mask.md` |
 | `rounding_mask` | Edge roundover/fillet (subtract) | `references/feature/rounding.md` |
+| `rect_tube` | Rectangular hollow tube | `references/feature/rect-tube.md` |
 | `nut_trap` | Hex nut pocket (subtract) | `references/feature/nut-trap.md` |
 | `screw_hole` | Full parametric screw hole | `references/feature/screw-hole.md` |
 | `living_hinge_mask` | FDM-printable flex hinge | `references/feature/living-hinge.md` |
