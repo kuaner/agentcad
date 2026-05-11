@@ -669,3 +669,45 @@ objects you build outside a builder context.
 
 `agentcad probe <model> --scan --axis y` is the fastest way to detect this
 bug — you will see a doubled mass distribution along the moved axis.
+
+### 9. ⚠️ CRITICAL: `fuse()` + `add(mode=SUBTRACT)` does not cut through-holes
+
+Fusing multiple standalone Parts (e.g., hole cylinders) and then subtracting
+the fused result with `add(fused, mode=Mode.SUBTRACT)` produces **incomplete
+boolean cuts**. The hole starts from one face but stops partway through the
+solid, even though each cylinder extends past both faces.
+
+This is especially dangerous because `inner_diameter_at_z` at mid-depth passes,
+making the hole appear correct in validation — only a section check near the
+bottom or top face reveals the hole is not through.
+
+```python
+# ❌ WRONG — hole stops partway through
+holes = []
+for px, py in positions:
+    with BuildPart(mode=Mode.PRIVATE) as hole:
+        Cylinder(radius=r, height=depth, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    holes.append(hole.part.moved(Location((px, py, 0))))
+fused = holes[0]
+for h in holes[1:]:
+    fused = fused.fuse(h)
+add(fused, mode=Mode.SUBTRACT)
+
+# ✅ CORRECT — subtract each cylinder in-context with overshoot
+overshoot = 1.0
+for px, py in positions:
+    with Locations((px, py, -overshoot / 2)):
+        Cylinder(
+            radius=r,
+            height=depth + overshoot,
+            align=(Align.CENTER, Align.CENTER, Align.MIN),
+            mode=Mode.SUBTRACT,
+        )
+```
+
+Rule: **for through-holes, always use `Locations` + `Cylinder(mode=Mode.SUBTRACT)`
+directly inside the BuildPart context.** Never fuse standalone Parts and then
+subtract the fused result.
+
+The feature helpers `MountingHoles.cut()` and `SteppedBore.cut()` already use
+the correct pattern.
