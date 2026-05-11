@@ -77,6 +77,11 @@ with BuildPart() as bp:
     add(cm.moved(Location((0, 0, plate_t))), mode=Mode.SUBTRACT)
 
     # Register non-cutting features
+    b.add(feature={"id": "base", "description": "prismoid base plate"}, checks=[
+        {"id": "base_bbox", "type": "bbox_size",
+         "expected": [plate_w, plate_d, plate_t + 12], "tolerance": 1.0,
+         "feature_ref": "base"},
+    ])
     b.add(feature={"id": "spacer", "description": "tube OD=16 ID=8 h=12"}, checks=[
         {"id": "spacer_od", "type": "outer_diameter_at_z", "z": plate_t + 8,
          "center": [0, 0], "expected": 16, "tolerance": 0.5, "feature_ref": "spacer"},
@@ -86,6 +91,15 @@ with BuildPart() as bp:
     b.add(feature={"id": "fdm_hole", "description": "teardrop d=6 angle=45"}, checks=[
         {"id": "fdm_hole_id", "type": "inner_diameter_at_z", "z": plate_t / 2,
          "center": [0, 0], "expected": 6, "tolerance": 0.5, "feature_ref": "fdm_hole"},
+    ])
+    b.add(feature={"id": "gussets", "description": "4 wedge gussets"}, checks=[
+        {"id": "gusset_height", "type": "outer_diameter_at_z", "z": plate_t + 8,
+         "center": [0, 0], "expected": 16, "tolerance": 0.5, "feature_ref": "gussets"},
+    ])
+    b.add(feature={"id": "chamfer", "description": "top edge chamfer"}, checks=[
+        {"id": "chamfer_section", "type": "section_bbox_at_z", "z": plate_t + 0.5,
+         "center": [0, 0], "expected_max": [plate_w - 4, plate_d - 4],
+         "tolerance": 1.0, "feature_ref": "chamfer"},
     ])
 
 result = bp.part

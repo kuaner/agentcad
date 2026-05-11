@@ -1,0 +1,269 @@
+{
+  "features": [
+    {
+      "id": "screw_0",
+      "description": "M3_cap counterbore, depth 10.0mm",
+      "checks": [
+        "screw_0_through",
+        "screw_0_recess"
+      ]
+    },
+    {
+      "id": "screw_1",
+      "description": "M3_cap counterbore, depth 10.0mm",
+      "checks": [
+        "screw_1_through",
+        "screw_1_recess"
+      ]
+    },
+    {
+      "id": "screw_2",
+      "description": "M3_cap counterbore, depth 10.0mm",
+      "checks": [
+        "screw_2_through",
+        "screw_2_recess"
+      ]
+    },
+    {
+      "id": "screw_3",
+      "description": "M3_cap counterbore, depth 10.0mm",
+      "checks": [
+        "screw_3_through",
+        "screw_3_recess"
+      ]
+    },
+    {
+      "id": "nut_trap",
+      "description": "nut_trap M3_cap depth=5mm orient=top",
+      "checks": [
+        "nut_trap_hex"
+      ]
+    },
+    {
+      "id": "base",
+      "description": "prismoid base plate",
+      "checks": [
+        "base_bbox"
+      ]
+    },
+    {
+      "id": "spacer",
+      "description": "tube OD=16 ID=8 h=12",
+      "checks": [
+        "spacer_od",
+        "spacer_id"
+      ]
+    },
+    {
+      "id": "fdm_hole",
+      "description": "teardrop d=6 angle=45",
+      "checks": [
+        "fdm_hole_id"
+      ]
+    },
+    {
+      "id": "gussets",
+      "description": "4 wedge gussets",
+      "checks": [
+        "gusset_height"
+      ]
+    },
+    {
+      "id": "chamfer",
+      "description": "top edge chamfer",
+      "checks": [
+        "chamfer_section"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "screw_0_through",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [
+        -25,
+        -20
+      ],
+      "expected": 3.3000000000000003,
+      "tolerance": 0.3,
+      "feature_ref": "screw_0"
+    },
+    {
+      "id": "screw_0_recess",
+      "type": "inner_diameter_at_z",
+      "z": 8.4,
+      "center": [
+        -25,
+        -20
+      ],
+      "expected": 5.9,
+      "tolerance": 0.3,
+      "feature_ref": "screw_0"
+    },
+    {
+      "id": "screw_1_through",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [
+        25,
+        -20
+      ],
+      "expected": 3.3000000000000003,
+      "tolerance": 0.3,
+      "feature_ref": "screw_1"
+    },
+    {
+      "id": "screw_1_recess",
+      "type": "inner_diameter_at_z",
+      "z": 8.4,
+      "center": [
+        25,
+        -20
+      ],
+      "expected": 5.9,
+      "tolerance": 0.3,
+      "feature_ref": "screw_1"
+    },
+    {
+      "id": "screw_2_through",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [
+        -25,
+        20
+      ],
+      "expected": 3.3000000000000003,
+      "tolerance": 0.3,
+      "feature_ref": "screw_2"
+    },
+    {
+      "id": "screw_2_recess",
+      "type": "inner_diameter_at_z",
+      "z": 8.4,
+      "center": [
+        -25,
+        20
+      ],
+      "expected": 5.9,
+      "tolerance": 0.3,
+      "feature_ref": "screw_2"
+    },
+    {
+      "id": "screw_3_through",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [
+        25,
+        20
+      ],
+      "expected": 3.3000000000000003,
+      "tolerance": 0.3,
+      "feature_ref": "screw_3"
+    },
+    {
+      "id": "screw_3_recess",
+      "type": "inner_diameter_at_z",
+      "z": 8.4,
+      "center": [
+        25,
+        20
+      ],
+      "expected": 5.9,
+      "tolerance": 0.3,
+      "feature_ref": "screw_3"
+    },
+    {
+      "id": "nut_trap_hex",
+      "type": "section_bbox_at_z",
+      "z": 2.5,
+      "center": [
+        0,
+        -20
+      ],
+      "expected_max": [
+        3.3,
+        3.3
+      ],
+      "tolerance": 0.5,
+      "feature_ref": "nut_trap"
+    },
+    {
+      "id": "base_bbox",
+      "type": "bbox_size",
+      "expected": [
+        80.0,
+        60.0,
+        22.0
+      ],
+      "tolerance": 1.0,
+      "feature_ref": "base"
+    },
+    {
+      "id": "spacer_od",
+      "type": "outer_diameter_at_z",
+      "z": 18.0,
+      "center": [
+        0,
+        0
+      ],
+      "expected": 16,
+      "tolerance": 0.5,
+      "feature_ref": "spacer"
+    },
+    {
+      "id": "spacer_id",
+      "type": "inner_diameter_at_z",
+      "z": 18.0,
+      "center": [
+        0,
+        0
+      ],
+      "expected": 8,
+      "tolerance": 0.3,
+      "feature_ref": "spacer"
+    },
+    {
+      "id": "fdm_hole_id",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [
+        0,
+        0
+      ],
+      "expected": 6,
+      "tolerance": 0.5,
+      "feature_ref": "fdm_hole"
+    },
+    {
+      "id": "gusset_height",
+      "type": "outer_diameter_at_z",
+      "z": 18.0,
+      "center": [
+        0,
+        0
+      ],
+      "expected": 16,
+      "tolerance": 0.5,
+      "feature_ref": "gussets"
+    },
+    {
+      "id": "chamfer_section",
+      "type": "section_bbox_at_z",
+      "z": 10.5,
+      "center": [
+        0,
+        0
+      ],
+      "expected_max": [
+        76.0,
+        56.0
+      ],
+      "tolerance": 1.0,
+      "feature_ref": "chamfer"
+    }
+  ],
+  "schema": "design-spec.v1",
+  "units": "mm",
+  "intent": "mounting bracket demo using all new feature helpers"
+}
