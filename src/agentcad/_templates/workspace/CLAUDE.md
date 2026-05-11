@@ -91,6 +91,8 @@ Read only the references needed for the current stage.
 | Requirements, ambiguity, user choices | `references/discovery.md` |
 | Topology options, tradeoffs, concept choice | `references/concept-design.md` |
 | `design.json`, feature coverage, check selection | `references/contract-design.md` |
+| Feature helpers overview and index | `references/feature/index.md` |
+| Hardware database (screws, nuts, washers, inserts) | `references/feature/hardware.md` |
 | Checks-first implementation loop | `references/cad-tdd.md` |
 | Check details, tolerances, probe usage, validation failures | `references/validation-strategy.md` |
 | build123d API patterns and geometry construction | `references/build123d-guide.md` |

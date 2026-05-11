@@ -1,0 +1,14 @@
+{
+  "fan_frame_size": 80.0,
+  "fan_depth": 25.0,
+  "fan_mount_spacing": 71.5,
+  "flange_size": 86.0,
+  "flange_thickness": 5.0,
+  "flange_corner_radius": 5.0,
+  "fan_air_opening_diameter": 74.0,
+  "duct_inner_diameter": 80.0,
+  "duct_socket_outer_diameter": 79.4,
+  "duct_socket_length": 28.0,
+  "duct_wall_thickness": 2.4,
+  "lead_in_chamfer": 1.0
+}

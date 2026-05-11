@@ -1,0 +1,22 @@
+{
+  "schema": "agentcad.part.metadata.v1",
+  "units": "mm",
+  "model": "fan_duct_adapter_v2",
+  "mounting": {
+    "hole_count": 4,
+    "pattern_spacing_mm": 71.5,
+    "screw_spec": "M4_cap",
+    "screw_clearance_diameter_mm": 4.4
+  },
+  "duct": {
+    "inner_diameter_mm": 80.0,
+    "socket_outer_diameter_mm": 79.4,
+    "socket_inner_diameter_mm": 74.60000000000001,
+    "socket_length_mm": 28.0
+  },
+  "bbox_expected_mm": [
+    86.0,
+    86.0,
+    33.0
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "stage": "build",
+  "model": "fan_duct_adapter_v2",
+  "sourceHash": "0da9a1d5617603ad",
+  "startedAt": "2026-05-11T06:37:43.030544+00:00",
+  "endedAt": "2026-05-11T06:37:44.350812+00:00",
+  "artifacts": {
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_v2/outputs/fan_duct_adapter_v2.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_v2/outputs/fan_duct_adapter_v2.stl",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_v2/outputs/build.json",
+    "metadata": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_v2/metadata.json"
+  },
+  "stdout": "",
+  "stderr": "",
+  "message": "model built"
+}
