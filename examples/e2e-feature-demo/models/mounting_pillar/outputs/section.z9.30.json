@@ -1,0 +1,181 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z9.30.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 9.3,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 1032,
+  "point_count": 2064,
+  "bbox": {
+    "u_min": -40.0,
+    "u_max": 40.0,
+    "v_min": -30.0,
+    "v_max": 30.0,
+    "u_size": 80.0,
+    "v_size": 60.0
+  },
+  "total_segment_length_mm": 516.9815,
+  "component_count": 7,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 8,
+      "point_count": 8,
+      "bbox": {
+        "u_min": -40.0,
+        "u_max": 40.0,
+        "v_min": -30.0,
+        "v_max": 30.0,
+        "u_size": 80.0,
+        "v_size": 60.0
+      },
+      "centroid": [
+        -8.6,
+        -6.45
+      ],
+      "total_segment_length_mm": 280.0,
+      "hull_area_estimate_mm2": 4800.0,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 1,
+      "segment_count": 8,
+      "point_count": 8,
+      "bbox": {
+        "u_min": -15.0,
+        "u_max": 15.0,
+        "v_min": 17.0,
+        "v_max": 23.0,
+        "u_size": 30.0,
+        "v_size": 6.0
+      },
+      "centroid": [
+        -2.0,
+        19.6
+      ],
+      "total_segment_length_mm": 72.0,
+      "hull_area_estimate_mm2": 180.0,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 2,
+      "segment_count": 8,
+      "point_count": 8,
+      "bbox": {
+        "u_min": -15.0,
+        "u_max": 15.0,
+        "v_min": -23.0,
+        "v_max": -17.0,
+        "u_size": 30.0,
+        "v_size": 6.0
+      },
+      "centroid": [
+        -2.0,
+        -20.4
+      ],
+      "total_segment_length_mm": 72.0,
+      "hull_area_estimate_mm2": 180.0,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 3,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": 26.3,
+        "u_max": 33.7,
+        "v_min": -23.6989,
+        "v_max": -16.3011,
+        "u_size": 7.4,
+        "v_size": 7.3978
+      },
+      "centroid": [
+        30.001,
+        -19.9975
+      ],
+      "total_segment_length_mm": 23.2454,
+      "hull_area_estimate_mm2": 42.9908,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 4,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": -33.7,
+        "u_max": -26.3,
+        "v_min": -23.6989,
+        "v_max": -16.3011,
+        "u_size": 7.4,
+        "v_size": 7.3978
+      },
+      "centroid": [
+        -29.999,
+        -19.9975
+      ],
+      "total_segment_length_mm": 23.2454,
+      "hull_area_estimate_mm2": 42.9908,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 5,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": 26.3,
+        "u_max": 33.7,
+        "v_min": 16.3011,
+        "v_max": 23.6989,
+        "u_size": 7.4,
+        "v_size": 7.3978
+      },
+      "centroid": [
+        30.001,
+        20.0025
+      ],
+      "total_segment_length_mm": 23.2454,
+      "hull_area_estimate_mm2": 42.9908,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 6,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": -33.7,
+        "u_max": -26.3,
+        "v_min": 16.3011,
+        "v_max": 23.6989,
+        "u_size": 7.4,
+        "v_size": 7.3978
+      },
+      "centroid": [
+        -29.999,
+        20.0025
+      ],
+      "total_segment_length_mm": 23.2454,
+      "hull_area_estimate_mm2": 42.9908,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    }
+  ],
+  "warnings": [
+    "multiple_section_components"
+  ]
+}

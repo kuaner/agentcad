@@ -1,0 +1,49 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z10.00.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 10.0,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 504,
+  "point_count": 1008,
+  "bbox": {
+    "u_min": -10.0,
+    "u_max": 10.0,
+    "v_min": -9.9969,
+    "v_max": 9.9969,
+    "u_size": 20.0,
+    "v_size": 19.9938
+  },
+  "total_segment_length_mm": 1239.2043,
+  "component_count": 1,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 504,
+      "point_count": 252,
+      "bbox": {
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.9969,
+        "v_max": 9.9969,
+        "u_size": 20.0,
+        "v_size": 19.9938
+      },
+      "centroid": [
+        0.0,
+        0.0
+      ],
+      "total_segment_length_mm": 1239.2043,
+      "hull_area_estimate_mm2": 314.0292,
+      "closed_vertex_ratio": 0.0556,
+      "endpoint_count": 0,
+      "branch_vertex_count": 238
+    }
+  ],
+  "warnings": [
+    "open_section_component"
+  ]
+}

@@ -9,3 +9,13 @@ __pycache__/
 
 # Validation history (contains machine-specific paths)
 **/outputs/validation-history/
+
+# Debug SVGs and section artifacts (generated during validation)
+**/outputs/debug.*
+**/outputs/section.*
+
+# Generated model outputs (STL, STEP, JSON artifacts)
+**/outputs/*.step
+**/outputs/*.stl
+**/outputs/*.json
+**/outputs/*.svg

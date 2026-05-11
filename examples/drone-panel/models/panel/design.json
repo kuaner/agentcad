@@ -1,0 +1,130 @@
+{
+  "schema": "design-spec.v1",
+  "model": "panel",
+  "units": "mm",
+  "intent": "Lightweight drone frame panel: solid base plate with filleted (pie_slice) corners, rect_tube border reinforcement, sparse_wall grid infill core, hex_panel honeycomb heat dissipation zone, and torus seal ring groove.",
+  "features": [
+    {
+      "id": "corner_cutouts",
+      "intent": "Fillet on four vertical corner edges for rounded corners (pie_slice equivalent)",
+      "checks": ["corner_void_bl", "corner_void_br", "corner_void_tl", "corner_void_tr"]
+    },
+    {
+      "id": "border_reinforcement",
+      "intent": "rect_tube edge reinforcement: solid border walls with inner cavity filled by infill, with lip above infill for cover seating",
+      "checks": ["border_inner_solid_top", "cover_lip_void"]
+    },
+    {
+      "id": "sparse_core",
+      "intent": "sparse_wall grid infill for weight reduction inside the border cavity",
+      "checks": ["sparse_core_volume", "sparse_core_strut_solid"]
+    },
+    {
+      "id": "hex_dissipation",
+      "intent": "hex_panel honeycomb heat dissipation zone in center",
+      "checks": ["hex_cell_void"]
+    },
+    {
+      "id": "seal_groove",
+      "intent": "torus seal ring groove at edge for panel-to-panel mating",
+      "checks": ["seal_id"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/panel.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/panel.stl"
+    },
+    {
+      "id": "corner_void_bl",
+      "type": "section_bbox_at_z",
+      "z": 2.5,
+      "region": [[-40.0, -30.0], [-39.0, -29.0]],
+      "expected": "void",
+      "param_ref": "corner_radius"
+    },
+    {
+      "id": "corner_void_br",
+      "type": "section_bbox_at_z",
+      "z": 2.5,
+      "region": [[39.0, -30.0], [40.0, -29.0]],
+      "expected": "void",
+      "param_ref": "corner_radius"
+    },
+    {
+      "id": "corner_void_tl",
+      "type": "section_bbox_at_z",
+      "z": 2.5,
+      "region": [[-40.0, 29.0], [-39.0, 30.0]],
+      "expected": "void",
+      "param_ref": "corner_radius"
+    },
+    {
+      "id": "corner_void_tr",
+      "type": "section_bbox_at_z",
+      "z": 2.5,
+      "region": [[39.0, 29.0], [40.0, 30.0]],
+      "expected": "void",
+      "param_ref": "corner_radius"
+    },
+    {
+      "id": "border_inner_solid_top",
+      "type": "section_bbox_at_z",
+      "z": 6.5,
+      "region": [[-30.0, -20.0], [30.0, 20.0]],
+      "expected": "void",
+      "param_ref": "border_wall"
+    },
+    {
+      "id": "sparse_core_volume",
+      "type": "volume_range",
+      "min": 7680.0,
+      "max": 34560.0,
+      "param_ref": "panel_width"
+    },
+    {
+      "id": "sparse_core_strut_solid",
+      "type": "section_bbox_at_z",
+      "z": 2.5,
+      "region": [[-2.0, 0.0], [0.0, 2.0]],
+      "expected": "solid",
+      "param_ref": "sparse_strut"
+    },
+    {
+      "id": "hex_cell_void",
+      "type": "section_bbox_at_z",
+      "z": 2.5,
+      "region": [[11.0, 5.0], [13.0, 7.0]],
+      "expected": "void",
+      "param_ref": "hex_spacing"
+    },
+    {
+      "id": "cover_lip_void",
+      "type": "section_bbox_at_z",
+      "z": 5.5,
+      "region": [[-10.0, -5.0], [10.0, 5.0]],
+      "expected": "void",
+      "param_ref": "infill_height"
+    },
+    {
+      "id": "seal_id",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "expected": 47.0,
+      "tolerance": 2.0,
+      "center": [0, -25.0],
+      "param_ref": "seal_major_radius"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "stage": "render",
+  "model": "mounting_pillar",
+  "view": "side",
+  "artifacts": {
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/preview.side.svg",
+    "render": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/render.side.json"
+  },
+  "message": "preview rendered"
+}

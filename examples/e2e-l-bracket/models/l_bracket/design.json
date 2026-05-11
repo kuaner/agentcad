@@ -1,69 +1,132 @@
 {
-  "schema": "design-spec.v1",
-  "model": "l_bracket",
-  "units": "mm",
-  "intent": "L-shaped mounting bracket with two M5 through-holes on the base",
-  "assumptions": [
-    "Base sits on XY plane at Z=0",
-    "Flange rises in +Z from the back edge (+Y side)",
-    "Holes are centered along Y, spaced symmetrically on X"
-  ],
   "features": [
     {
       "id": "base_plate",
-      "intent": "flat rectangular base plate for mounting",
-      "checks": ["base_bbox", "watertight"]
+      "description": "base plate 60.0x40.0x5.0mm",
+      "checks": [
+        "base_bbox",
+        "watertight"
+      ]
     },
     {
       "id": "vertical_flange",
-      "intent": "vertical flange rising from back edge",
-      "checks": ["flange_bbox"]
+      "description": "vertical flange 60.0x5.0x30.0mm",
+      "checks": [
+        "flange_bbox"
+      ]
     },
     {
       "id": "mounting_holes",
-      "intent": "two M5 through-holes on the base",
-      "checks": ["left_hole_dia", "right_hole_dia"]
+      "description": "M5_cap linear pattern, 2 holes, spacing 40.0mm",
+      "checks": [
+        "mounting_holes_dia_0",
+        "mounting_holes_access_0",
+        "mounting_holes_dia_1",
+        "mounting_holes_access_1"
+      ]
+    },
+    {
+      "id": "deliverable_artifacts",
+      "description": "STEP and STL exports",
+      "checks": [
+        "step_artifact",
+        "stl_artifact"
+      ]
     }
   ],
   "checks": [
     {
       "id": "base_bbox",
       "type": "bbox_size",
-      "expected": [60.0, 40.0, 30.0],
-      "tolerance": 1.0
+      "expected": [
+        60.0,
+        40.0,
+        30.0
+      ],
+      "tolerance": 1.0,
+      "feature_ref": "base_plate"
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true,
+      "feature_ref": "base_plate"
     },
     {
       "id": "flange_bbox",
       "type": "bbox_size",
-      "expected": [60.0, 40.0, 30.0],
-      "tolerance": 1.0
+      "expected": [
+        60.0,
+        40.0,
+        30.0
+      ],
+      "tolerance": 1.0,
+      "feature_ref": "vertical_flange"
     },
     {
-      "id": "watertight",
-      "type": "watertight"
-    },
-    {
-      "id": "min_tri",
-      "type": "min_triangles",
-      "min": 100
-    },
-    {
-      "id": "left_hole_dia",
+      "id": "mounting_holes_dia_0",
       "type": "inner_diameter_at_z",
       "z": 2.5,
-      "expected": 5.0,
+      "center": [
+        -20.0,
+        0.0
+      ],
+      "expected": 5.3,
       "tolerance": 0.3,
-      "center": [-20.0, 0.0],
-      "param_ref": "hole_diameter"
+      "feature_ref": "mounting_holes"
     },
     {
-      "id": "right_hole_dia",
+      "id": "mounting_holes_access_0",
+      "type": "hole_accessibility",
+      "z": 5.5,
+      "center": [
+        -20.0,
+        0.0
+      ],
+      "hole_diameter": 5.3,
+      "clearance_diameter": 9.5,
+      "approach_axis": "z",
+      "feature_ref": "mounting_holes"
+    },
+    {
+      "id": "mounting_holes_dia_1",
       "type": "inner_diameter_at_z",
       "z": 2.5,
-      "expected": 5.0,
+      "center": [
+        20.0,
+        0.0
+      ],
+      "expected": 5.3,
       "tolerance": 0.3,
-      "center": [20.0, 0.0],
-      "param_ref": "hole_diameter"
+      "feature_ref": "mounting_holes"
+    },
+    {
+      "id": "mounting_holes_access_1",
+      "type": "hole_accessibility",
+      "z": 5.5,
+      "center": [
+        20.0,
+        0.0
+      ],
+      "hole_diameter": 5.3,
+      "clearance_diameter": 9.5,
+      "approach_axis": "z",
+      "feature_ref": "mounting_holes"
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/l_bracket.step",
+      "feature_ref": "deliverable_artifacts"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/l_bracket.stl",
+      "feature_ref": "deliverable_artifacts"
     }
-  ]
+  ],
+  "schema": "design-spec.v1",
+  "units": "mm",
+  "intent": "L-shaped mounting bracket with two M5 through-holes on the base"
 }

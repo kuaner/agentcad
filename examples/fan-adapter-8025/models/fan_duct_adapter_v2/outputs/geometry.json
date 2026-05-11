@@ -1,0 +1,58 @@
+{
+  "ok": true,
+  "stage": "measure",
+  "model": "fan_duct_adapter_v2",
+  "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_v2/outputs/fan_duct_adapter_v2.stl",
+  "geometry": {
+    "bbox": {
+      "min": [
+        -43.0,
+        -43.0,
+        0.0
+      ],
+      "max": [
+        43.0,
+        43.0,
+        33.0
+      ],
+      "size": [
+        86.0,
+        86.0,
+        33.0
+      ],
+      "center": [
+        0.0,
+        0.0,
+        16.5
+      ]
+    },
+    "mesh": {
+      "triangles": 5836,
+      "vertices": 17508,
+      "unique_edges": 8754,
+      "boundary_or_nonmanifold_edges": 0,
+      "watertight": true
+    },
+    "mass_properties": {
+      "surface_area": 22548.86413559931,
+      "volume": 32991.14694311829
+    }
+  },
+  "structure": {
+    "has_internal_void": true,
+    "void_start_z": 5.94,
+    "step_changes": [
+      {
+        "pos": 5.94,
+        "delta_u": -6.6,
+        "delta_v": -6.625,
+        "delta_point_count": -2040,
+        "hint": "section shrinks — possible cavity start or wall end"
+      }
+    ]
+  },
+  "artifacts": {
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_v2/outputs/geometry.json"
+  },
+  "message": "model measured"
+}

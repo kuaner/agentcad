@@ -1,0 +1,251 @@
+{
+  "features": [
+    {
+      "id": "base_plate",
+      "description": "base plate 80.0x60.0x10.0mm",
+      "checks": [
+        "overall_bbox",
+        "watertight"
+      ]
+    },
+    {
+      "id": "center_boss",
+      "description": "boss OD=20.0mm h=15.0mm ID=8.0mm",
+      "checks": [
+        "center_boss_hole"
+      ]
+    },
+    {
+      "id": "mount_hole_0",
+      "description": "M4_cap counterbore, depth 10.0mm",
+      "checks": [
+        "mount_hole_0_through",
+        "mount_hole_0_recess"
+      ]
+    },
+    {
+      "id": "mount_hole_1",
+      "description": "M4_cap counterbore, depth 10.0mm",
+      "checks": [
+        "mount_hole_1_through",
+        "mount_hole_1_recess"
+      ]
+    },
+    {
+      "id": "mount_hole_2",
+      "description": "M4_cap counterbore, depth 10.0mm",
+      "checks": [
+        "mount_hole_2_through",
+        "mount_hole_2_recess"
+      ]
+    },
+    {
+      "id": "mount_hole_3",
+      "description": "M4_cap counterbore, depth 10.0mm",
+      "checks": [
+        "mount_hole_3_through",
+        "mount_hole_3_recess"
+      ]
+    },
+    {
+      "id": "left_slot",
+      "description": "slot 6.0x3.0x30.0mm along x",
+      "checks": [
+        "left_slot_section"
+      ]
+    },
+    {
+      "id": "right_slot",
+      "description": "slot 6.0x3.0x30.0mm along x",
+      "checks": [
+        "right_slot_section"
+      ]
+    },
+    {
+      "id": "deliverable_artifacts",
+      "description": "STEP and STL exports",
+      "checks": [
+        "step_artifact",
+        "stl_artifact"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "center_boss_hole",
+      "type": "inner_diameter_at_z",
+      "z": 17.5,
+      "center": [
+        0,
+        0
+      ],
+      "expected": 8.0,
+      "tolerance": 0.3,
+      "feature_ref": "center_boss"
+    },
+    {
+      "id": "mount_hole_0_through",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [
+        -30.0,
+        -20.0
+      ],
+      "expected": 4.4,
+      "tolerance": 0.3,
+      "feature_ref": "mount_hole_0"
+    },
+    {
+      "id": "mount_hole_0_recess",
+      "type": "inner_diameter_at_z",
+      "z": 7.9,
+      "center": [
+        -30.0,
+        -20.0
+      ],
+      "expected": 7.4,
+      "tolerance": 0.3,
+      "feature_ref": "mount_hole_0"
+    },
+    {
+      "id": "mount_hole_1_through",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [
+        30.0,
+        -20.0
+      ],
+      "expected": 4.4,
+      "tolerance": 0.3,
+      "feature_ref": "mount_hole_1"
+    },
+    {
+      "id": "mount_hole_1_recess",
+      "type": "inner_diameter_at_z",
+      "z": 7.9,
+      "center": [
+        30.0,
+        -20.0
+      ],
+      "expected": 7.4,
+      "tolerance": 0.3,
+      "feature_ref": "mount_hole_1"
+    },
+    {
+      "id": "mount_hole_2_through",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [
+        -30.0,
+        20.0
+      ],
+      "expected": 4.4,
+      "tolerance": 0.3,
+      "feature_ref": "mount_hole_2"
+    },
+    {
+      "id": "mount_hole_2_recess",
+      "type": "inner_diameter_at_z",
+      "z": 7.9,
+      "center": [
+        -30.0,
+        20.0
+      ],
+      "expected": 7.4,
+      "tolerance": 0.3,
+      "feature_ref": "mount_hole_2"
+    },
+    {
+      "id": "mount_hole_3_through",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [
+        30.0,
+        20.0
+      ],
+      "expected": 4.4,
+      "tolerance": 0.3,
+      "feature_ref": "mount_hole_3"
+    },
+    {
+      "id": "mount_hole_3_recess",
+      "type": "inner_diameter_at_z",
+      "z": 7.9,
+      "center": [
+        30.0,
+        20.0
+      ],
+      "expected": 7.4,
+      "tolerance": 0.3,
+      "feature_ref": "mount_hole_3"
+    },
+    {
+      "id": "left_slot_section",
+      "type": "section_bbox_at_z",
+      "z": 8.5,
+      "region": [
+        [
+          -12.0,
+          -22.4
+        ],
+        [
+          12.0,
+          -17.6
+        ]
+      ],
+      "expected": "void",
+      "tolerance": 0.3,
+      "feature_ref": "left_slot"
+    },
+    {
+      "id": "right_slot_section",
+      "type": "section_bbox_at_z",
+      "z": 8.5,
+      "region": [
+        [
+          -12.0,
+          17.6
+        ],
+        [
+          12.0,
+          22.4
+        ]
+      ],
+      "expected": "void",
+      "tolerance": 0.3,
+      "feature_ref": "right_slot"
+    },
+    {
+      "id": "overall_bbox",
+      "type": "bbox_size",
+      "expected": [
+        80.0,
+        60.0,
+        25.0
+      ],
+      "tolerance": 0.6,
+      "feature_ref": "base_plate"
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true,
+      "feature_ref": "base_plate"
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/mounting_pillar.step",
+      "feature_ref": "deliverable_artifacts"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/mounting_pillar.stl",
+      "feature_ref": "deliverable_artifacts"
+    }
+  ],
+  "schema": "design-spec.v1",
+  "units": "mm",
+  "intent": "Mounting pillar: plate + boss + stepped_bore + slot"
+}

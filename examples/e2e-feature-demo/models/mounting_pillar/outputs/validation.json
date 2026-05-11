@@ -1,0 +1,1020 @@
+{
+  "ok": true,
+  "stage": "validate",
+  "model": "mounting_pillar",
+  "validatedAt": "2026-05-11T07:35:15.095225+00:00",
+  "checks": [
+    {
+      "name": "build",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "measure",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "render",
+      "type": "stage",
+      "ok": true
+    },
+    {
+      "name": "feature_coverage:base_plate",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "base_plate",
+      "checks": [
+        "overall_bbox",
+        "watertight"
+      ],
+      "matchedChecks": [
+        "overall_bbox",
+        "watertight"
+      ]
+    },
+    {
+      "name": "feature_coverage:center_boss",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "center_boss",
+      "checks": [
+        "center_boss_hole"
+      ],
+      "matchedChecks": [
+        "center_boss_hole"
+      ]
+    },
+    {
+      "name": "feature_coverage:mount_hole_0",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "mount_hole_0",
+      "checks": [
+        "mount_hole_0_through",
+        "mount_hole_0_recess"
+      ],
+      "matchedChecks": [
+        "mount_hole_0_through",
+        "mount_hole_0_recess"
+      ]
+    },
+    {
+      "name": "feature_coverage:mount_hole_1",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "mount_hole_1",
+      "checks": [
+        "mount_hole_1_through",
+        "mount_hole_1_recess"
+      ],
+      "matchedChecks": [
+        "mount_hole_1_through",
+        "mount_hole_1_recess"
+      ]
+    },
+    {
+      "name": "feature_coverage:mount_hole_2",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "mount_hole_2",
+      "checks": [
+        "mount_hole_2_through",
+        "mount_hole_2_recess"
+      ],
+      "matchedChecks": [
+        "mount_hole_2_through",
+        "mount_hole_2_recess"
+      ]
+    },
+    {
+      "name": "feature_coverage:mount_hole_3",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "mount_hole_3",
+      "checks": [
+        "mount_hole_3_through",
+        "mount_hole_3_recess"
+      ],
+      "matchedChecks": [
+        "mount_hole_3_through",
+        "mount_hole_3_recess"
+      ]
+    },
+    {
+      "name": "feature_coverage:left_slot",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "left_slot",
+      "checks": [
+        "left_slot_section"
+      ],
+      "matchedChecks": [
+        "left_slot_section"
+      ]
+    },
+    {
+      "name": "feature_coverage:right_slot",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "right_slot",
+      "checks": [
+        "right_slot_section"
+      ],
+      "matchedChecks": [
+        "right_slot_section"
+      ]
+    },
+    {
+      "name": "feature_coverage:deliverable_artifacts",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "deliverable_artifacts",
+      "checks": [
+        "step_artifact",
+        "stl_artifact"
+      ],
+      "matchedChecks": [
+        "step_artifact",
+        "stl_artifact"
+      ]
+    },
+    {
+      "name": "center_boss_hole",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 17.5,
+      "expected": 8.0,
+      "actual": 7.99751327415281,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 17.5,
+        "point_count": 1008,
+        "radius_min": 3.9987566250274216,
+        "radius_max": 10.000000399613228,
+        "radius_mean": 6.998912124306505,
+        "radius_outer_estimate": 10.000000325054913,
+        "radius_inner_estimate": 3.998756637076405,
+        "diameter_outer_estimate": 20.000000650109826,
+        "diameter_inner_estimate": 7.99751327415281
+      }
+    },
+    {
+      "name": "mount_hole_0_through",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 5.0,
+      "expected": 4.4,
+      "actual": 4.399349063540437,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 5.0,
+        "point_count": 3532,
+        "radius_min": 2.1996735803890513,
+        "radius_max": 86.02325267042627,
+        "radius_mean": 40.479419611494315,
+        "radius_outer_estimate": 74.10885612396228,
+        "radius_inner_estimate": 2.1996745317702184,
+        "diameter_outer_estimate": 148.21771224792457,
+        "diameter_inner_estimate": 4.399349063540437
+      }
+    },
+    {
+      "name": "mount_hole_0_recess",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 7.9,
+      "expected": 7.4,
+      "actual": 7.397699108067595,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 7.9,
+        "point_count": 2064,
+        "radius_min": 3.698848311820942,
+        "radius_max": 86.02325267042627,
+        "radius_mean": 43.9811693291991,
+        "radius_outer_estimate": 75.70627281082594,
+        "radius_inner_estimate": 3.6988495540337976,
+        "diameter_outer_estimate": 151.41254562165187,
+        "diameter_inner_estimate": 7.397699108067595
+      }
+    },
+    {
+      "name": "mount_hole_1_through",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 5.0,
+      "expected": 4.4,
+      "actual": 4.399349063540437,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 5.0,
+        "point_count": 3532,
+        "radius_min": 2.1996735803890513,
+        "radius_max": 86.02325267042627,
+        "radius_mean": 40.47651057327048,
+        "radius_outer_estimate": 74.10885612396228,
+        "radius_inner_estimate": 2.1996745317702184,
+        "diameter_outer_estimate": 148.21771224792457,
+        "diameter_inner_estimate": 4.399349063540437
+      }
+    },
+    {
+      "name": "mount_hole_1_recess",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 7.9,
+      "expected": 7.4,
+      "actual": 7.3976991080676004,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 7.9,
+        "point_count": 2064,
+        "radius_min": 3.698848311820942,
+        "radius_max": 86.02325267042627,
+        "radius_mean": 44.00670558309584,
+        "radius_outer_estimate": 75.70627281082594,
+        "radius_inner_estimate": 3.6988495540338002,
+        "diameter_outer_estimate": 151.41254562165187,
+        "diameter_inner_estimate": 7.3976991080676004
+      }
+    },
+    {
+      "name": "mount_hole_2_through",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 5.0,
+      "expected": 4.4,
+      "actual": 4.399349063540437,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 5.0,
+        "point_count": 3532,
+        "radius_min": 2.1996735803890513,
+        "radius_max": 86.02325267042627,
+        "radius_mean": 40.469340256985866,
+        "radius_outer_estimate": 74.11476173367329,
+        "radius_inner_estimate": 2.1996745317702184,
+        "diameter_outer_estimate": 148.22952346734658,
+        "diameter_inner_estimate": 4.399349063540437
+      }
+    },
+    {
+      "name": "mount_hole_2_recess",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 7.9,
+      "expected": 7.4,
+      "actual": 7.397699108067595,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 7.9,
+        "point_count": 2064,
+        "radius_min": 3.698848311820942,
+        "radius_max": 86.02325267042627,
+        "radius_mean": 44.013975947928685,
+        "radius_outer_estimate": 75.7126782598115,
+        "radius_inner_estimate": 3.6988495540337976,
+        "diameter_outer_estimate": 151.425356519623,
+        "diameter_inner_estimate": 7.397699108067595
+      }
+    },
+    {
+      "name": "mount_hole_3_through",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 5.0,
+      "expected": 4.4,
+      "actual": 4.399349063540437,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 5.0,
+        "point_count": 3532,
+        "radius_min": 2.1996735803890513,
+        "radius_max": 86.02325267042627,
+        "radius_mean": 40.46717876787145,
+        "radius_outer_estimate": 74.10885612396228,
+        "radius_inner_estimate": 2.1996745317702184,
+        "diameter_outer_estimate": 148.21771224792457,
+        "diameter_inner_estimate": 4.399349063540437
+      }
+    },
+    {
+      "name": "mount_hole_3_recess",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 7.9,
+      "expected": 7.4,
+      "actual": 7.3976991080676004,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 7.9,
+        "point_count": 2064,
+        "radius_min": 3.698848311820942,
+        "radius_max": 86.02325267042627,
+        "radius_mean": 44.03951220182068,
+        "radius_outer_estimate": 75.7126782611852,
+        "radius_inner_estimate": 3.6988495540338002,
+        "diameter_outer_estimate": 151.4253565223704,
+        "diameter_inner_estimate": 7.3976991080676004
+      }
+    },
+    {
+      "name": "left_slot_section",
+      "type": "section_bbox_at_z",
+      "ok": true,
+      "z": 8.5,
+      "region": [
+        [
+          -12.0,
+          -22.4
+        ],
+        [
+          12.0,
+          -17.6
+        ]
+      ],
+      "expected": "void",
+      "actual": "void",
+      "region_point_count": 0,
+      "section": {
+        "ok": true,
+        "z": 8.5,
+        "point_count": 2064,
+        "bbox": {
+          "x_min": -40.0,
+          "x_max": 40.0,
+          "y_min": -30.0,
+          "y_max": 30.0
+        },
+        "region": {
+          "x_min": -12.0,
+          "y_min": -22.4,
+          "x_max": 12.0,
+          "y_max": -17.6
+        },
+        "region_point_count": 0,
+        "region_has_points": false
+      }
+    },
+    {
+      "name": "right_slot_section",
+      "type": "section_bbox_at_z",
+      "ok": true,
+      "z": 8.5,
+      "region": [
+        [
+          -12.0,
+          17.6
+        ],
+        [
+          12.0,
+          22.4
+        ]
+      ],
+      "expected": "void",
+      "actual": "void",
+      "region_point_count": 0,
+      "section": {
+        "ok": true,
+        "z": 8.5,
+        "point_count": 2064,
+        "bbox": {
+          "x_min": -40.0,
+          "x_max": 40.0,
+          "y_min": -30.0,
+          "y_max": 30.0
+        },
+        "region": {
+          "x_min": -12.0,
+          "y_min": 17.6,
+          "x_max": 12.0,
+          "y_max": 22.4
+        },
+        "region_point_count": 0,
+        "region_has_points": false
+      }
+    },
+    {
+      "name": "overall_bbox",
+      "type": "bbox_size",
+      "ok": true,
+      "expected": [
+        80.0,
+        60.0,
+        25.0
+      ],
+      "actual": [
+        80.0,
+        60.0,
+        25.0
+      ],
+      "tolerance": 0.6
+    },
+    {
+      "name": "watertight",
+      "type": "watertight",
+      "ok": true,
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "step_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/mounting_pillar.step"
+    },
+    {
+      "name": "stl_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/mounting_pillar.stl"
+    }
+  ],
+  "artifacts": {
+    "validation": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/validation.json",
+    "build": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/build.json",
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/geometry.json",
+    "step": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/mounting_pillar.step",
+    "stl": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/mounting_pillar.stl",
+    "preview_iso": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/preview.iso.svg",
+    "preview_front": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/preview.front.svg",
+    "preview_top": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/preview.top.svg",
+    "preview_side": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/preview.side.svg",
+    "preview_back": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/preview.back.svg",
+    "section_z4_50": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z4.50.svg",
+    "section_z9_30": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z9.30.svg",
+    "section_z4_50_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z4.50.json",
+    "section_z9_30_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z9.30.json",
+    "observability": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/observability.json",
+    "preview_page": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/preview.html"
+  },
+  "message": "validation passed",
+  "warnings": [
+    {
+      "feature": "base_plate",
+      "linkedCheckTypes": [
+        "bbox_size",
+        "watertight"
+      ],
+      "message": "feature 'base_plate' has no geometry checks — geometry is not verified",
+      "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks"
+    },
+    {
+      "feature": "deliverable_artifacts",
+      "linkedCheckTypes": [
+        "artifact_exists"
+      ],
+      "message": "feature 'deliverable_artifacts' has no geometry checks — geometry is not verified",
+      "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks"
+    }
+  ],
+  "auto_scan": {
+    "ok": true,
+    "axis": "Z",
+    "plane_label": "XY plane",
+    "u_label": "X (mm)",
+    "v_label": "Y (mm)",
+    "pos_range": [
+      0.0,
+      25.0
+    ],
+    "profile": [
+      {
+        "pos": 0.5,
+        "point_count": 2536,
+        "u_size": 80.0,
+        "v_size": 60.0,
+        "u_min": -40.0,
+        "u_max": 40.0,
+        "v_min": -30.0,
+        "v_max": 30.0
+      },
+      {
+        "pos": 2.1,
+        "point_count": 2536,
+        "u_size": 80.0,
+        "v_size": 60.0,
+        "u_min": -40.0,
+        "u_max": 40.0,
+        "v_min": -30.0,
+        "v_max": 30.0
+      },
+      {
+        "pos": 3.7,
+        "point_count": 2536,
+        "u_size": 80.0,
+        "v_size": 60.0,
+        "u_min": -40.0,
+        "u_max": 40.0,
+        "v_min": -30.0,
+        "v_max": 30.0
+      },
+      {
+        "pos": 5.3,
+        "point_count": 2032,
+        "u_size": 80.0,
+        "v_size": 60.0,
+        "u_min": -40.0,
+        "u_max": 40.0,
+        "v_min": -30.0,
+        "v_max": 30.0
+      },
+      {
+        "pos": 6.9,
+        "point_count": 2032,
+        "u_size": 80.0,
+        "v_size": 60.0,
+        "u_min": -40.0,
+        "u_max": 40.0,
+        "v_min": -30.0,
+        "v_max": 30.0
+      },
+      {
+        "pos": 8.5,
+        "point_count": 2064,
+        "u_size": 80.0,
+        "v_size": 60.0,
+        "u_min": -40.0,
+        "u_max": 40.0,
+        "v_min": -30.0,
+        "v_max": 30.0
+      },
+      {
+        "pos": 10.1,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      },
+      {
+        "pos": 11.7,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      },
+      {
+        "pos": 13.3,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      },
+      {
+        "pos": 14.9,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      },
+      {
+        "pos": 16.5,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      },
+      {
+        "pos": 18.1,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      },
+      {
+        "pos": 19.7,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      },
+      {
+        "pos": 21.3,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      },
+      {
+        "pos": 22.9,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      },
+      {
+        "pos": 24.5,
+        "point_count": 1008,
+        "u_size": 20.0,
+        "v_size": 19.994,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "v_min": -9.997,
+        "v_max": 9.997
+      }
+    ],
+    "step_changes": [
+      {
+        "pos": 4.5,
+        "delta_u": 0.0,
+        "delta_v": 0.0,
+        "delta_point_count": -504,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      },
+      {
+        "pos": 9.3,
+        "delta_u": -60.0,
+        "delta_v": -40.006,
+        "delta_point_count": -1056,
+        "hint": "section shrinks — possible cavity start or wall end"
+      }
+    ],
+    "section_svgs": {
+      "section_z4_50": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z4.50.svg",
+      "section_z9_30": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z9.30.svg"
+    },
+    "section_analysis_json": {
+      "section_z4_50_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z4.50.json",
+      "section_z9_30_analysis": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z9.30.json"
+    },
+    "section_analyses": {
+      "section_z4_50": {
+        "stage": "section_analysis",
+        "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z4.50.svg",
+        "ok": true,
+        "axis": "Z",
+        "value": 4.5,
+        "plane_label": "XY plane",
+        "u_label": "X (mm)",
+        "v_label": "Y (mm)",
+        "segment_count": 1268,
+        "point_count": 2536,
+        "bbox": {
+          "u_min": -40.0,
+          "u_max": 40.0,
+          "v_min": -30.0,
+          "v_max": 30.0,
+          "u_size": 80.0,
+          "v_size": 60.0
+        },
+        "total_segment_length_mm": 360.4164,
+        "component_count": 6,
+        "components": [
+          {
+            "index": 0,
+            "segment_count": 8,
+            "point_count": 8,
+            "bbox": {
+              "u_min": -40.0,
+              "u_max": 40.0,
+              "v_min": -30.0,
+              "v_max": 30.0,
+              "u_size": 80.0,
+              "v_size": 60.0
+            },
+            "centroid": [
+              1.0,
+              0.75
+            ],
+            "total_segment_length_mm": 280.0,
+            "hull_area_estimate_mm2": 4800.0,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 1,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -4.0,
+              "u_max": 4.0,
+              "v_min": -3.9988,
+              "v_max": 3.9988,
+              "u_size": 8.0,
+              "v_size": 7.9976
+            },
+            "centroid": [
+              -0.0005,
+              0.0004
+            ],
+            "total_segment_length_mm": 25.1301,
+            "hull_area_estimate_mm2": 50.2449,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 2,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 27.8,
+              "u_max": 32.2,
+              "v_min": -22.1993,
+              "v_max": -17.8007,
+              "u_size": 4.4,
+              "v_size": 4.3986
+            },
+            "centroid": [
+              30.0006,
+              -20.0007
+            ],
+            "total_segment_length_mm": 13.8216,
+            "hull_area_estimate_mm2": 15.1991,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 3,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -32.2,
+              "u_max": -27.8,
+              "v_min": -22.1993,
+              "v_max": -17.8007,
+              "u_size": 4.4,
+              "v_size": 4.3986
+            },
+            "centroid": [
+              -29.9994,
+              -20.0007
+            ],
+            "total_segment_length_mm": 13.8216,
+            "hull_area_estimate_mm2": 15.1991,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 4,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 27.8,
+              "u_max": 32.2,
+              "v_min": 17.8007,
+              "v_max": 22.1993,
+              "u_size": 4.4,
+              "v_size": 4.3986
+            },
+            "centroid": [
+              30.0006,
+              19.9993
+            ],
+            "total_segment_length_mm": 13.8216,
+            "hull_area_estimate_mm2": 15.1991,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 5,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -32.2,
+              "u_max": -27.8,
+              "v_min": 17.8007,
+              "v_max": 22.1993,
+              "u_size": 4.4,
+              "v_size": 4.3986
+            },
+            "centroid": [
+              -29.9994,
+              19.9993
+            ],
+            "total_segment_length_mm": 13.8216,
+            "hull_area_estimate_mm2": 15.1991,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          }
+        ],
+        "warnings": [
+          "multiple_section_components"
+        ]
+      },
+      "section_z9_30": {
+        "stage": "section_analysis",
+        "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z9.30.svg",
+        "ok": true,
+        "axis": "Z",
+        "value": 9.3,
+        "plane_label": "XY plane",
+        "u_label": "X (mm)",
+        "v_label": "Y (mm)",
+        "segment_count": 1032,
+        "point_count": 2064,
+        "bbox": {
+          "u_min": -40.0,
+          "u_max": 40.0,
+          "v_min": -30.0,
+          "v_max": 30.0,
+          "u_size": 80.0,
+          "v_size": 60.0
+        },
+        "total_segment_length_mm": 516.9815,
+        "component_count": 7,
+        "components": [
+          {
+            "index": 0,
+            "segment_count": 8,
+            "point_count": 8,
+            "bbox": {
+              "u_min": -40.0,
+              "u_max": 40.0,
+              "v_min": -30.0,
+              "v_max": 30.0,
+              "u_size": 80.0,
+              "v_size": 60.0
+            },
+            "centroid": [
+              -8.6,
+              -6.45
+            ],
+            "total_segment_length_mm": 280.0,
+            "hull_area_estimate_mm2": 4800.0,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 1,
+            "segment_count": 8,
+            "point_count": 8,
+            "bbox": {
+              "u_min": -15.0,
+              "u_max": 15.0,
+              "v_min": 17.0,
+              "v_max": 23.0,
+              "u_size": 30.0,
+              "v_size": 6.0
+            },
+            "centroid": [
+              -2.0,
+              19.6
+            ],
+            "total_segment_length_mm": 72.0,
+            "hull_area_estimate_mm2": 180.0,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 2,
+            "segment_count": 8,
+            "point_count": 8,
+            "bbox": {
+              "u_min": -15.0,
+              "u_max": 15.0,
+              "v_min": -23.0,
+              "v_max": -17.0,
+              "u_size": 30.0,
+              "v_size": 6.0
+            },
+            "centroid": [
+              -2.0,
+              -20.4
+            ],
+            "total_segment_length_mm": 72.0,
+            "hull_area_estimate_mm2": 180.0,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 3,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 26.3,
+              "u_max": 33.7,
+              "v_min": -23.6989,
+              "v_max": -16.3011,
+              "u_size": 7.4,
+              "v_size": 7.3978
+            },
+            "centroid": [
+              30.001,
+              -19.9975
+            ],
+            "total_segment_length_mm": 23.2454,
+            "hull_area_estimate_mm2": 42.9908,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 4,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -33.7,
+              "u_max": -26.3,
+              "v_min": -23.6989,
+              "v_max": -16.3011,
+              "u_size": 7.4,
+              "v_size": 7.3978
+            },
+            "centroid": [
+              -29.999,
+              -19.9975
+            ],
+            "total_segment_length_mm": 23.2454,
+            "hull_area_estimate_mm2": 42.9908,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 5,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": 26.3,
+              "u_max": 33.7,
+              "v_min": 16.3011,
+              "v_max": 23.6989,
+              "u_size": 7.4,
+              "v_size": 7.3978
+            },
+            "centroid": [
+              30.001,
+              20.0025
+            ],
+            "total_segment_length_mm": 23.2454,
+            "hull_area_estimate_mm2": 42.9908,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 6,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -33.7,
+              "u_max": -26.3,
+              "v_min": 16.3011,
+              "v_max": 23.6989,
+              "u_size": 7.4,
+              "v_size": 7.3978
+            },
+            "centroid": [
+              -29.999,
+              20.0025
+            ],
+            "total_segment_length_mm": 23.2454,
+            "hull_area_estimate_mm2": 42.9908,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          }
+        ],
+        "warnings": [
+          "multiple_section_components"
+        ]
+      }
+    }
+  }
+}

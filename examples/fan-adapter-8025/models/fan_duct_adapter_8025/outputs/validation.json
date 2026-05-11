@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "validate",
   "model": "fan_duct_adapter_8025",
-  "validatedAt": "2026-05-06T08:16:00.955389+00:00",
+  "validatedAt": "2026-05-11T07:35:18.443984+00:00",
   "checks": [
     {
       "name": "build",
@@ -34,31 +34,17 @@
       ]
     },
     {
-      "name": "feature_coverage:fan_mounting_holes",
-      "type": "feature_coverage",
-      "ok": true,
-      "feature": "fan_mounting_holes",
-      "checks": [
-        "mount_hole_count",
-        "mount_pattern_spacing"
-      ],
-      "matchedChecks": [
-        "mount_hole_count",
-        "mount_pattern_spacing"
-      ]
-    },
-    {
       "name": "feature_coverage:round_duct_socket",
       "type": "feature_coverage",
       "ok": true,
       "feature": "round_duct_socket",
       "checks": [
-        "duct_inner_diameter_contract",
+        "round_duct_socket_id",
         "socket_outer_diameter_base",
         "socket_outer_diameter_before_chamfer"
       ],
       "matchedChecks": [
-        "duct_inner_diameter_contract",
+        "round_duct_socket_id",
         "socket_outer_diameter_base",
         "socket_outer_diameter_before_chamfer"
       ]
@@ -69,14 +55,36 @@
       "ok": true,
       "feature": "duct_lead_in_chamfer",
       "checks": [
-        "lead_in_outer_diameter_start",
-        "lead_in_outer_diameter_end",
         "lead_in_diameter_decreases"
       ],
       "matchedChecks": [
-        "lead_in_outer_diameter_start",
-        "lead_in_outer_diameter_end",
         "lead_in_diameter_decreases"
+      ]
+    },
+    {
+      "name": "feature_coverage:fan_mounting_holes",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "fan_mounting_holes",
+      "checks": [
+        "fan_mounting_holes_dia_0",
+        "fan_mounting_holes_access_0",
+        "fan_mounting_holes_dia_1",
+        "fan_mounting_holes_access_1",
+        "fan_mounting_holes_dia_2",
+        "fan_mounting_holes_access_2",
+        "fan_mounting_holes_dia_3",
+        "fan_mounting_holes_access_3"
+      ],
+      "matchedChecks": [
+        "fan_mounting_holes_dia_0",
+        "fan_mounting_holes_access_0",
+        "fan_mounting_holes_dia_1",
+        "fan_mounting_holes_access_1",
+        "fan_mounting_holes_dia_2",
+        "fan_mounting_holes_access_2",
+        "fan_mounting_holes_dia_3",
+        "fan_mounting_holes_access_3"
       ]
     },
     {
@@ -117,38 +125,25 @@
       "actual": true
     },
     {
-      "name": "mesh_detail",
-      "type": "min_triangles",
+      "name": "round_duct_socket_id",
+      "type": "inner_diameter_at_z",
       "ok": true,
-      "expected": 100,
-      "actual": 5836
-    },
-    {
-      "name": "mount_hole_count",
-      "type": "metadata_equals",
-      "ok": true,
-      "path": "mounting.hole_count",
-      "expected": 4,
-      "actual": 4,
-      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/metadata.json"
-    },
-    {
-      "name": "mount_pattern_spacing",
-      "type": "metadata_equals",
-      "ok": true,
-      "path": "mounting.pattern_spacing_mm",
-      "expected": 71.5,
-      "actual": 71.5,
-      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/metadata.json"
-    },
-    {
-      "name": "duct_inner_diameter_contract",
-      "type": "metadata_equals",
-      "ok": true,
-      "path": "duct.inner_diameter_mm",
-      "expected": 80.0,
-      "actual": 80.0,
-      "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/metadata.json"
+      "z": 18.5,
+      "expected": 74.0,
+      "actual": 73.97733535976761,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 18.5,
+        "point_count": 1008,
+        "radius_min": 36.98866702309948,
+        "radius_max": 39.70000177057726,
+        "radius_mean": 38.34408237192283,
+        "radius_outer_estimate": 39.70000158365847,
+        "radius_inner_estimate": 36.988667679883804,
+        "diameter_outer_estimate": 79.40000316731694,
+        "diameter_inner_estimate": 73.97733535976761
+      }
     },
     {
       "name": "socket_outer_diameter_base",
@@ -190,48 +185,6 @@
         "radius_inner_estimate": 36.99851648885713,
         "diameter_outer_estimate": 79.40000316731694,
         "diameter_inner_estimate": 73.99703297771426
-      }
-    },
-    {
-      "name": "lead_in_outer_diameter_start",
-      "type": "outer_diameter_at_z",
-      "ok": true,
-      "z": 32.0,
-      "expected": 79.4,
-      "actual": 79.40000354115452,
-      "tolerance": 0.35,
-      "section": {
-        "ok": true,
-        "z": 32.0,
-        "point_count": 2016,
-        "radius_min": 36.99864670726454,
-        "radius_max": 39.70000177057726,
-        "radius_mean": 39.02483114059272,
-        "radius_outer_estimate": 39.70000177057726,
-        "radius_inner_estimate": 36.99864707635199,
-        "diameter_outer_estimate": 79.40000354115452,
-        "diameter_inner_estimate": 73.99729415270399
-      }
-    },
-    {
-      "name": "lead_in_outer_diameter_end",
-      "type": "outer_diameter_at_z",
-      "ok": true,
-      "z": 33.0,
-      "expected": 77.4,
-      "actual": 77.40000197967642,
-      "tolerance": 0.35,
-      "section": {
-        "ok": true,
-        "z": 33.0,
-        "point_count": 3024,
-        "radius_min": 36.99999824894856,
-        "radius_max": 38.700001678310805,
-        "radius_mean": 37.850000001672484,
-        "radius_outer_estimate": 38.70000098983821,
-        "radius_inner_estimate": 36.9999983721482,
-        "diameter_outer_estimate": 77.40000197967642,
-        "diameter_inner_estimate": 73.9999967442964
       }
     },
     {
@@ -289,6 +242,154 @@
       "epsilon": 0.05
     },
     {
+      "name": "fan_mounting_holes_dia_0",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 2.5,
+      "expected": 4.4,
+      "actual": 4.399063524146639,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 2.5,
+        "point_count": 3048,
+        "radius_min": 2.199530738112924,
+        "radius_max": 109.29825022373811,
+        "radius_mean": 61.97458353092808,
+        "radius_outer_estimate": 108.9766580845566,
+        "radius_inner_estimate": 2.1995317620733195,
+        "diameter_outer_estimate": 217.9533161691132,
+        "diameter_inner_estimate": 4.399063524146639
+      }
+    },
+    {
+      "name": "fan_mounting_holes_access_0",
+      "type": "hole_accessibility",
+      "ok": true,
+      "axis": "z",
+      "position": 5.5,
+      "center": [
+        -35.75,
+        -35.75
+      ],
+      "hole_radius": 2.2,
+      "clearance_radius": 4.0,
+      "blocking_point_count": 0,
+      "min_blocking_radius": null,
+      "z": 5.5
+    },
+    {
+      "name": "fan_mounting_holes_dia_1",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 2.5,
+      "expected": 4.4,
+      "actual": 4.399063524146639,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 2.5,
+        "point_count": 3048,
+        "radius_min": 2.199530738112924,
+        "radius_max": 109.29825022373811,
+        "radius_mean": 61.98559551773646,
+        "radius_outer_estimate": 108.9766580845566,
+        "radius_inner_estimate": 2.1995317620733195,
+        "diameter_outer_estimate": 217.9533161691132,
+        "diameter_inner_estimate": 4.399063524146639
+      }
+    },
+    {
+      "name": "fan_mounting_holes_access_1",
+      "type": "hole_accessibility",
+      "ok": true,
+      "axis": "z",
+      "position": 5.5,
+      "center": [
+        35.75,
+        -35.75
+      ],
+      "hole_radius": 2.2,
+      "clearance_radius": 4.0,
+      "blocking_point_count": 0,
+      "min_blocking_radius": null,
+      "z": 5.5
+    },
+    {
+      "name": "fan_mounting_holes_dia_2",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 2.5,
+      "expected": 4.4,
+      "actual": 4.399063524146639,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 2.5,
+        "point_count": 3048,
+        "radius_min": 2.199530738112924,
+        "radius_max": 109.29825022373811,
+        "radius_mean": 61.981334359630935,
+        "radius_outer_estimate": 108.9766580845566,
+        "radius_inner_estimate": 2.1995317620733195,
+        "diameter_outer_estimate": 217.9533161691132,
+        "diameter_inner_estimate": 4.399063524146639
+      }
+    },
+    {
+      "name": "fan_mounting_holes_access_2",
+      "type": "hole_accessibility",
+      "ok": true,
+      "axis": "z",
+      "position": 5.5,
+      "center": [
+        -35.75,
+        35.75
+      ],
+      "hole_radius": 2.2,
+      "clearance_radius": 4.0,
+      "blocking_point_count": 0,
+      "min_blocking_radius": null,
+      "z": 5.5
+    },
+    {
+      "name": "fan_mounting_holes_dia_3",
+      "type": "inner_diameter_at_z",
+      "ok": true,
+      "z": 2.5,
+      "expected": 4.4,
+      "actual": 4.399063524146639,
+      "tolerance": 0.3,
+      "section": {
+        "ok": true,
+        "z": 2.5,
+        "point_count": 3048,
+        "radius_min": 2.199530738112924,
+        "radius_max": 109.29825022373811,
+        "radius_mean": 61.986002654312365,
+        "radius_outer_estimate": 108.9766580845566,
+        "radius_inner_estimate": 2.1995317620733195,
+        "diameter_outer_estimate": 217.9533161691132,
+        "diameter_inner_estimate": 4.399063524146639
+      }
+    },
+    {
+      "name": "fan_mounting_holes_access_3",
+      "type": "hole_accessibility",
+      "ok": true,
+      "axis": "z",
+      "position": 5.5,
+      "center": [
+        35.75,
+        35.75
+      ],
+      "hole_radius": 2.2,
+      "clearance_radius": 4.0,
+      "blocking_point_count": 0,
+      "min_blocking_radius": null,
+      "z": 5.5
+    },
+    {
       "name": "step_artifact",
       "type": "artifact_exists",
       "ok": true,
@@ -307,7 +408,295 @@
     "geometry": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/geometry.json",
     "step": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.step",
     "stl": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.stl",
-    "preview": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.iso.svg"
+    "preview_iso": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.iso.svg",
+    "preview_front": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.front.svg",
+    "preview_top": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.top.svg",
+    "preview_side": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.side.svg",
+    "preview_back": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.back.svg",
+    "section_z5_94": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/section.z5.94.svg",
+    "section_z5_94_analysis": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/section.z5.94.json",
+    "observability": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/observability.json",
+    "preview_page": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.html"
   },
-  "message": "validation passed"
+  "message": "validation passed",
+  "warnings": [
+    {
+      "feature": "square_fan_flange",
+      "linkedCheckTypes": [
+        "bbox_size",
+        "watertight"
+      ],
+      "message": "feature 'square_fan_flange' has no geometry checks — geometry is not verified",
+      "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks"
+    },
+    {
+      "feature": "deliverable_artifacts",
+      "linkedCheckTypes": [
+        "artifact_exists"
+      ],
+      "message": "feature 'deliverable_artifacts' has no geometry checks — geometry is not verified",
+      "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks"
+    }
+  ],
+  "auto_scan": {
+    "ok": true,
+    "axis": "Z",
+    "plane_label": "XY plane",
+    "u_label": "X (mm)",
+    "v_label": "Y (mm)",
+    "pos_range": [
+      0.0,
+      33.0
+    ],
+    "profile": [
+      {
+        "pos": 0.66,
+        "point_count": 3048,
+        "u_size": 86.0,
+        "v_size": 86.0,
+        "u_min": -43.0,
+        "u_max": 43.0,
+        "v_min": -43.0,
+        "v_max": 43.0
+      },
+      {
+        "pos": 2.772,
+        "point_count": 3048,
+        "u_size": 86.0,
+        "v_size": 86.0,
+        "u_min": -43.0,
+        "u_max": 43.0,
+        "v_min": -43.0,
+        "v_max": 43.0
+      },
+      {
+        "pos": 4.884,
+        "point_count": 3048,
+        "u_size": 86.0,
+        "v_size": 86.0,
+        "u_min": -43.0,
+        "u_max": 43.0,
+        "v_min": -43.0,
+        "v_max": 43.0
+      },
+      {
+        "pos": 6.996,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 9.108,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 11.22,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 13.332,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 15.444,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 17.556,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 19.668,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 21.78,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 23.892,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 26.004,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 28.116,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 30.228,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 32.34,
+        "point_count": 1008,
+        "u_size": 78.72,
+        "v_size": 78.696,
+        "u_min": -39.36,
+        "u_max": 39.36,
+        "v_min": -39.348,
+        "v_max": 39.348
+      }
+    ],
+    "step_changes": [
+      {
+        "pos": 5.94,
+        "delta_u": -6.6,
+        "delta_v": -6.625,
+        "delta_point_count": -2040,
+        "hint": "section shrinks — possible cavity start or wall end"
+      }
+    ],
+    "section_svgs": {
+      "section_z5_94": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/section.z5.94.svg"
+    },
+    "section_analysis_json": {
+      "section_z5_94_analysis": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/section.z5.94.json"
+    },
+    "section_analyses": {
+      "section_z5_94": {
+        "stage": "section_analysis",
+        "svg": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/section.z5.94.svg",
+        "ok": true,
+        "axis": "Z",
+        "value": 5.94,
+        "plane_label": "XY plane",
+        "u_label": "X (mm)",
+        "v_label": "Y (mm)",
+        "segment_count": 504,
+        "point_count": 1008,
+        "bbox": {
+          "u_min": -39.7,
+          "u_max": 39.7,
+          "v_min": -39.6877,
+          "v_max": 39.6877,
+          "u_size": 79.4,
+          "v_size": 79.3753
+        },
+        "total_segment_length_mm": 481.8704,
+        "component_count": 2,
+        "components": [
+          {
+            "index": 0,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -39.7,
+              "u_max": 39.7,
+              "v_min": -39.6877,
+              "v_max": 39.6877,
+              "u_size": 79.4,
+              "v_size": 79.3754
+            },
+            "centroid": [
+              0.0084,
+              0.0135
+            ],
+            "total_segment_length_mm": 249.4166,
+            "hull_area_estimate_mm2": 4949.3835,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 1,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -37.0,
+              "u_max": 37.0,
+              "v_min": -36.9885,
+              "v_max": 36.9885,
+              "u_size": 74.0,
+              "v_size": 73.977
+            },
+            "centroid": [
+              -0.0306,
+              -0.0127
+            ],
+            "total_segment_length_mm": 232.4538,
+            "hull_area_estimate_mm2": 4299.0587,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          }
+        ],
+        "warnings": [
+          "multiple_section_components"
+        ]
+      }
+    }
+  }
 }

@@ -1,0 +1,223 @@
+{
+  "features": [
+    {
+      "id": "square_fan_flange",
+      "description": "rounded flange 86.0x86.0x5.0mm",
+      "checks": [
+        "overall_bbox",
+        "watertight_body"
+      ]
+    },
+    {
+      "id": "round_duct_socket",
+      "description": "duct socket OD=79.4 ID=74.0 L=27.0mm",
+      "checks": [
+        "round_duct_socket_id",
+        "socket_od_base",
+        "socket_od_tip_start"
+      ]
+    },
+    {
+      "id": "duct_lead_in",
+      "description": "lead-in chamfer 1.0mm",
+      "checks": [
+        "lead_in_dia_decreases"
+      ]
+    },
+    {
+      "id": "fan_mounting_holes",
+      "description": "M4_cap square pattern, 4 holes, spacing 71.5mm",
+      "checks": [
+        "fan_mounting_holes_dia_0",
+        "fan_mounting_holes_access_0",
+        "fan_mounting_holes_dia_1",
+        "fan_mounting_holes_access_1",
+        "fan_mounting_holes_dia_2",
+        "fan_mounting_holes_access_2",
+        "fan_mounting_holes_dia_3",
+        "fan_mounting_holes_access_3"
+      ]
+    },
+    {
+      "id": "deliverable_artifacts",
+      "description": "STEP and STL exports",
+      "checks": [
+        "step_artifact",
+        "stl_artifact"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "overall_bbox",
+      "type": "bbox_size",
+      "expected": [
+        86.0,
+        86.0,
+        33.0
+      ],
+      "tolerance": 0.6,
+      "feature_ref": "square_fan_flange"
+    },
+    {
+      "id": "watertight_body",
+      "type": "watertight",
+      "expected": true,
+      "feature_ref": "square_fan_flange"
+    },
+    {
+      "id": "round_duct_socket_id",
+      "type": "inner_diameter_at_z",
+      "z": 18.5,
+      "center": [
+        0.0,
+        0.0
+      ],
+      "expected": 74.0,
+      "tolerance": 0.3,
+      "feature_ref": "round_duct_socket"
+    },
+    {
+      "id": "socket_od_base",
+      "type": "outer_diameter_at_z",
+      "z": 6.0,
+      "expected": 79.4,
+      "tolerance": 0.3,
+      "feature_ref": "round_duct_socket"
+    },
+    {
+      "id": "socket_od_tip_start",
+      "type": "outer_diameter_at_z",
+      "z": 32.0,
+      "expected": 79.4,
+      "tolerance": 0.35,
+      "feature_ref": "round_duct_socket"
+    },
+    {
+      "id": "lead_in_dia_decreases",
+      "type": "diameter_decreases_along_z",
+      "z_values": [
+        32.0,
+        32.5,
+        33.0
+      ],
+      "epsilon": 0.05,
+      "feature_ref": "duct_lead_in"
+    },
+    {
+      "id": "fan_mounting_holes_dia_0",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [
+        -35.75,
+        -35.75
+      ],
+      "expected": 4.4,
+      "tolerance": 0.3,
+      "feature_ref": "fan_mounting_holes"
+    },
+    {
+      "id": "fan_mounting_holes_access_0",
+      "type": "hole_accessibility",
+      "z": 5.5,
+      "center": [
+        -35.75,
+        -35.75
+      ],
+      "hole_diameter": 4.4,
+      "clearance_diameter": 8.0,
+      "approach_axis": "z",
+      "feature_ref": "fan_mounting_holes"
+    },
+    {
+      "id": "fan_mounting_holes_dia_1",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [
+        35.75,
+        -35.75
+      ],
+      "expected": 4.4,
+      "tolerance": 0.3,
+      "feature_ref": "fan_mounting_holes"
+    },
+    {
+      "id": "fan_mounting_holes_access_1",
+      "type": "hole_accessibility",
+      "z": 5.5,
+      "center": [
+        35.75,
+        -35.75
+      ],
+      "hole_diameter": 4.4,
+      "clearance_diameter": 8.0,
+      "approach_axis": "z",
+      "feature_ref": "fan_mounting_holes"
+    },
+    {
+      "id": "fan_mounting_holes_dia_2",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [
+        -35.75,
+        35.75
+      ],
+      "expected": 4.4,
+      "tolerance": 0.3,
+      "feature_ref": "fan_mounting_holes"
+    },
+    {
+      "id": "fan_mounting_holes_access_2",
+      "type": "hole_accessibility",
+      "z": 5.5,
+      "center": [
+        -35.75,
+        35.75
+      ],
+      "hole_diameter": 4.4,
+      "clearance_diameter": 8.0,
+      "approach_axis": "z",
+      "feature_ref": "fan_mounting_holes"
+    },
+    {
+      "id": "fan_mounting_holes_dia_3",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [
+        35.75,
+        35.75
+      ],
+      "expected": 4.4,
+      "tolerance": 0.3,
+      "feature_ref": "fan_mounting_holes"
+    },
+    {
+      "id": "fan_mounting_holes_access_3",
+      "type": "hole_accessibility",
+      "z": 5.5,
+      "center": [
+        35.75,
+        35.75
+      ],
+      "hole_diameter": 4.4,
+      "clearance_diameter": 8.0,
+      "approach_axis": "z",
+      "feature_ref": "fan_mounting_holes"
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/fan_duct_adapter_v2.step",
+      "feature_ref": "deliverable_artifacts"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/fan_duct_adapter_v2.stl",
+      "feature_ref": "deliverable_artifacts"
+    }
+  ],
+  "schema": "design-spec.v1",
+  "units": "mm",
+  "intent": "8025 fan to 80mm duct adapter (feature helpers)"
+}

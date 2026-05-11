@@ -1,0 +1,17 @@
+{
+  "schema": "agentcad.part.metadata.v1",
+  "units": "mm",
+  "model": "mounting_pillar",
+  "features_used": [
+    "plate",
+    "boss",
+    "stepped_bore",
+    "slot"
+  ],
+  "screw_spec": "M4_cap",
+  "bbox_expected_mm": [
+    80.0,
+    60.0,
+    25.0
+  ]
+}

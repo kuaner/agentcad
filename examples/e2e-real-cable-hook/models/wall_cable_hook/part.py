@@ -1,4 +1,6 @@
-"""FDM-printable wall-mounted cable hook.
+"""FDM-printable wall-mounted cable hook — feature helper version.
+
+Uses rib() from agentcad.features for the twin web ribs.
 
 Coordinate frame:
 - +X right
@@ -11,10 +13,20 @@ floating top-plate form.
 import json
 from pathlib import Path
 
-from build123d import *
+from build123d import (
+    Align,
+    Box,
+    BuildPart,
+    Cylinder,
+    Location,
+    Locations,
+    Mode,
+    add,
+)
 
+from agentcad.features import rib
 
-PARAMS = json.loads((Path(__file__).with_name("params.json")).read_text(encoding="utf-8"))
+PARAMS = json.loads(Path(__file__).with_name("params.json").read_text(encoding="utf-8"))
 
 plate_w = float(PARAMS["back_plate_width"])
 plate_h = float(PARAMS["back_plate_height"])
@@ -48,7 +60,7 @@ lip_center_y = hook_front_y - lip_depth / 2
 lip_center_z = hook_bottom_z - join_overlap + (lip_height + join_overlap) / 2
 rib_center_y = (-rib_length + hook_overlap) / 2
 rib_center_z = (hook_top_z - join_overlap + plate_h + join_overlap) / 2
-rib_height = (plate_h + join_overlap) - (hook_top_z - join_overlap)
+rib_h = (plate_h + join_overlap) - (hook_top_z - join_overlap)
 screw_positions = [(-screw_x_offset, screw_z), (screw_x_offset, screw_z)]
 
 
@@ -70,10 +82,16 @@ def build():
         with Locations((0, lip_center_y, lip_center_z)):
             Box(hook_w, lip_depth, lip_height + join_overlap)
 
-        # Twin web ribs connecting the hook arm to the back plate.
+        # Twin web ribs connecting hook arm to back plate (feature helper).
+        rib_base_z = rib_center_z - rib_h / 2
         for x in (-rib_spacing / 2, rib_spacing / 2):
-            with Locations((x, rib_center_y, rib_center_z)):
-                Box(rib_w, rib_length + hook_overlap, rib_height)
+            r = rib(
+                length=rib_length + hook_overlap,
+                height=rib_h,
+                thickness=rib_w,
+                direction="y",
+            )
+            add(r.moved(Location((x, rib_center_y, rib_base_z))))
 
         # Screw clearance holes through the vertical plate.
         for x, z in screw_positions:

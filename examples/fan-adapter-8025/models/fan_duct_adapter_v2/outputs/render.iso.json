@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "stage": "render",
+  "model": "fan_duct_adapter_v2",
+  "view": "iso",
+  "artifacts": {
+    "preview": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_v2/outputs/preview.iso.svg",
+    "render": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_v2/outputs/render.iso.json"
+  },
+  "message": "preview rendered"
+}

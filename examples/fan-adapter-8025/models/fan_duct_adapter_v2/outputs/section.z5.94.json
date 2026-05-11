@@ -1,0 +1,71 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_v2/outputs/section.z5.94.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 5.94,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 504,
+  "point_count": 1008,
+  "bbox": {
+    "u_min": -39.7,
+    "u_max": 39.7,
+    "v_min": -39.6877,
+    "v_max": 39.6877,
+    "u_size": 79.4,
+    "v_size": 79.3753
+  },
+  "total_segment_length_mm": 481.8704,
+  "component_count": 2,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.6877,
+        "v_max": 39.6877,
+        "u_size": 79.4,
+        "v_size": 79.3754
+      },
+      "centroid": [
+        0.0084,
+        0.0135
+      ],
+      "total_segment_length_mm": 249.4166,
+      "hull_area_estimate_mm2": 4949.3835,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 1,
+      "segment_count": 252,
+      "point_count": 252,
+      "bbox": {
+        "u_min": -37.0,
+        "u_max": 37.0,
+        "v_min": -36.9885,
+        "v_max": 36.9885,
+        "u_size": 74.0,
+        "v_size": 73.977
+      },
+      "centroid": [
+        -0.0306,
+        -0.0127
+      ],
+      "total_segment_length_mm": 232.4538,
+      "hull_area_estimate_mm2": 4299.0587,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    }
+  ],
+  "warnings": [
+    "multiple_section_components"
+  ]
+}

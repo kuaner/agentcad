@@ -71,8 +71,8 @@ agentcad precheck <model>                        # Static design solve before wr
 agentcad build <model>[:<variant>]                       # Build + export STEP/STL
 agentcad measure <model>[:<variant>]                     # Measure STL geometry
 agentcad render <model>                          # SVG preview from STL
-agentcad preview <name>[:<variant>]                      # Start local server + interactive browser preview
-agentcad preview <name> --static                         # Self-contained offline HTML preview
+agentcad preview <name>[:<variant>]                      # Start local server + interactive browser preview (auto-opens browser)
+agentcad preview <name> --static                         # Self-contained offline HTML preview (auto-opens browser, no server needed)
 agentcad preview <name> --kind assembly          # Disambiguate if a model and assembly share a name
 agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
 agentcad validate <model>[:<variant>]                    # Full validation pipeline
@@ -133,6 +133,12 @@ project/
 - Units are millimeters unless explicitly stated otherwise
 - Generated artifacts live only under `models/<name>/outputs/` or `assemblies/<name>/outputs/`
 - After building and validating a model, always run `agentcad preview <name>` and let the human review the 3D result. Do NOT claim the model is complete until the human confirms it looks correct.
+
+## build123d Pitfalls
+
+- **Never use `fuse()` + `add(mode=Mode.SUBTRACT)` for through-holes.** The boolean subtraction on fused Parts produces incomplete cuts — holes that stop partway through the solid even when the cylinder geometry extends past both faces. Use `Locations` + `Cylinder(mode=Mode.SUBTRACT)` directly inside the `BuildPart` context instead. The feature helpers `MountingHoles.cut()` and `SteppedBore.cut()` already use this pattern.
+- **Always add overshoot to subtraction cylinders.** A cylinder exactly matching the material thickness leaves paper-thin faces at the boundaries. Add 1mm overshoot and offset the start by 0.5mm so the cylinder extends past both faces.
+- **`inner_diameter_at_z` at mid-Z can pass even when holes are shallow.** A through-hole check at Z=depth/2 only proves the hole exists at that Z level. Verify with sections at Z near 0 (bottom) and Z near top to confirm full penetration.
 
 ## Validation Check Types
 

@@ -1,0 +1,30 @@
+{
+  "schema": "agentcad.part.metadata.v1",
+  "units": "mm",
+  "visual_parts": {
+    "nut_body": "M4_nut",
+    "screw": "M4_cap"
+  },
+  "anchors": {
+    "origin": [
+      0,
+      0,
+      0
+    ],
+    "z_min": [
+      0,
+      0,
+      0
+    ],
+    "z_max": [
+      0,
+      0,
+      40.0
+    ],
+    "center": [
+      0,
+      0,
+      20.0
+    ]
+  }
+}

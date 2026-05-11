@@ -1,0 +1,93 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-real-cable-hook/models/wall_cable_hook/outputs/section.z37.95.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 37.951,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 75,
+  "point_count": 150,
+  "bbox": {
+    "u_min": -30.0,
+    "u_max": 30.0,
+    "v_min": -29.0,
+    "v_max": 5.0,
+    "u_size": 60.0,
+    "v_size": 34.0
+  },
+  "total_segment_length_mm": 248.0098,
+  "component_count": 3,
+  "components": [
+    {
+      "index": 0,
+      "segment_count": 32,
+      "point_count": 32,
+      "bbox": {
+        "u_min": -17.7512,
+        "u_max": 17.7512,
+        "v_min": -29.0,
+        "v_max": 5.0,
+        "u_size": 35.5024,
+        "v_size": 34.0
+      },
+      "centroid": [
+        0.1243,
+        -5.7684
+      ],
+      "total_segment_length_mm": 197.0049,
+      "hull_area_estimate_mm2": 935.7944,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 1,
+      "segment_count": 22,
+      "point_count": 22,
+      "bbox": {
+        "u_min": -30.0,
+        "u_max": -22.2488,
+        "v_min": 0.0,
+        "v_max": 5.0,
+        "u_size": 7.7512,
+        "v_size": 5.0
+      },
+      "centroid": [
+        -24.255,
+        2.7294
+      ],
+      "total_segment_length_mm": 25.5024,
+      "hull_area_estimate_mm2": 36.506,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    },
+    {
+      "index": 2,
+      "segment_count": 21,
+      "point_count": 21,
+      "bbox": {
+        "u_min": 22.2488,
+        "u_max": 30.0,
+        "v_min": -0.0,
+        "v_max": 5.0,
+        "u_size": 7.7512,
+        "v_size": 5.0
+      },
+      "centroid": [
+        24.2651,
+        2.7877
+      ],
+      "total_segment_length_mm": 25.5024,
+      "hull_area_estimate_mm2": 36.506,
+      "closed_vertex_ratio": 1.0,
+      "endpoint_count": 0,
+      "branch_vertex_count": 0
+    }
+  ],
+  "warnings": [
+    "multiple_section_components"
+  ]
+}

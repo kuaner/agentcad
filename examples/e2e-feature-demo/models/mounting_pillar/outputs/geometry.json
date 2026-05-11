@@ -1,0 +1,65 @@
+{
+  "ok": true,
+  "stage": "measure",
+  "model": "mounting_pillar",
+  "source": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/mounting_pillar.stl",
+  "geometry": {
+    "bbox": {
+      "min": [
+        -40.0,
+        -30.0,
+        0.0
+      ],
+      "max": [
+        40.0,
+        30.0,
+        25.0
+      ],
+      "size": [
+        80.0,
+        60.0,
+        25.0
+      ],
+      "center": [
+        0.0,
+        0.0,
+        12.5
+      ]
+    },
+    "mesh": {
+      "triangles": 5604,
+      "vertices": 16812,
+      "unique_edges": 8406,
+      "boundary_or_nonmanifold_edges": 0,
+      "watertight": true
+    },
+    "mass_properties": {
+      "surface_area": 14866.573712510537,
+      "volume": 49550.68439781416
+    }
+  },
+  "structure": {
+    "has_internal_void": true,
+    "void_start_z": 9.3,
+    "step_changes": [
+      {
+        "pos": 4.5,
+        "delta_u": 0.0,
+        "delta_v": 0.0,
+        "delta_point_count": -504,
+        "hint": "fewer interior surfaces — inner cavity or features end here"
+      },
+      {
+        "pos": 9.3,
+        "delta_u": -60.0,
+        "delta_v": -40.006,
+        "delta_point_count": -1056,
+        "hint": "section shrinks — possible cavity start or wall end"
+      }
+    ]
+  },
+  "artifacts": {
+    "geometry": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/geometry.json"
+  },
+  "message": "model measured"
+}

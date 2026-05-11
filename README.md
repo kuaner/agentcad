@@ -139,6 +139,25 @@ The default generated model is a simple build123d cuboid. Agent rules and
 common-error catalog live in `AGENTS.md`, `CLAUDE.md`, and `references/`
 (always-on reference docs for build123d patterns and validation strategy).
 
+## Feature helpers
+
+AgentCAD ships a library of geometry helpers that build common mechanical
+features and optionally emit contract checks via `ContractBuilder`:
+
+| Helper | What it makes | Tier |
+|---|---|---|
+| `plate`, `boss`, `rib`, `slot` | Base plate, raised boss, reinforcing rib, routing slot | 1 |
+| `duct_socket`, `mounting_pattern`, `stepped_bore`, `knurl`, `sinusoidal_thread` | Cylindrical socket, screw hole pattern, counterbore/countersink, knurled grip, helical thread | 1 |
+| `tube`, `prismoid`, `wedge`, `teardrop`, `chamfer_mask`, `nut_trap`, `screw_hole` | Hollow tube, tapered prism, wedge cut, teardrop hole, chamfer edge mask, hex nut pocket, screw clearance hole | 2 |
+| `living_hinge_mask`, `threaded_rod`, `dovetail`, `hex_panel`, `snap_pin` + `snap_pin_socket`, `spur_gear` | Flexible hinge cutout, threaded shaft, interlocking dovetail, honeycomb panel, snap-fit pin pair, involute gear | 2 |
+| `rounding_mask`, `torus`, `rect_tube`, `pie_slice`, `nut_body`, `nema_mount` | Fillet edge mask, torus ring, rectangular tube, cylindrical sector, hex nut solid, NEMA motor mount | 3 |
+| `screw`, `threaded_nut`, `sparse_wall`, `ring_gear` | Screw/bolt solid, threaded nut solid, grid infill wall, internal ring gear | 3 |
+
+The helpers use `ContractBuilder` to auto-emit checks (inner_diameter,
+section_bbox, volume_range, etc.) so every feature gets validation coverage
+without manual check authoring. A hardware dimension database (`agentcad.hardware`)
+provides ISO/DIN specs for screws, nuts, washers, and heat-set inserts.
+
 ## Examples
 
 | Path | What it shows |
@@ -149,6 +168,9 @@ common-error catalog live in `AGENTS.md`, `CLAUDE.md`, and `references/`
 | `examples/e2e-real-cable-hook/` | Real e2e surface-mounted cable hook with concept + quality review artifacts |
 | `examples/e2e-bit-holder/` | Two-part body/lid design that motivated first-class assembly validation |
 | `examples/e2e-l-bracket/` | L-shaped bracket demonstrating variants, diff, and fix suggestions |
+| `examples/drone-panel/` | Lightweight drone panel with sparse_wall, hex_panel, torus seal, cover lip |
+| `examples/gear-housing/` | Spur + ring gear housing demonstrating gear helpers |
+| `examples/pipe-coupling/` | Pipe coupling with tube, dovetail, and chamfer_mask helpers |
 
 Re-run any example:
 

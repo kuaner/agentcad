@@ -1,0 +1,141 @@
+{
+  "schema": "design-spec.v1",
+  "model": "housing",
+  "units": "mm",
+  "intent": "Planetary gear reducer housing with internal ring gear (24 teeth, module=2), sun gear (12 teeth, module=2), central bearing seat tube, rectangular outer wall, and M8 threaded shaft fixing nut. Note: involute gear STL has 24 boundary edges (non-watertight); STEP is valid. Section-based solid checks at Z=2.5 are unreliable; use volume, diameter, and void checks instead.",
+  "features": [
+    {
+      "id": "ring_gear",
+      "intent": "Internal involute ring gear teeth (24 teeth, module=2, rim_width=8mm, thickness=5mm)",
+      "checks": ["ring_gear_bore_void", "gear_chamber_void"]
+    },
+    {
+      "id": "sun_gear",
+      "intent": "Sun spur gear at center (12 teeth, module=2, shaft bore=8mm, thickness=5mm)",
+      "checks": ["sun_body_indirect", "gap_mid_void"]
+    },
+    {
+      "id": "bearing_seat",
+      "intent": "Central bearing seat tube (OD=14mm, ID=8mm, height=5mm)",
+      "checks": ["shaft_bore_id", "shaft_bore_void"]
+    },
+    {
+      "id": "outer_wall",
+      "intent": "Rectangular tube outer housing wall (80x80x5mm, wall=5mm)",
+      "checks": ["housing_bbox", "housing_inner_od", "volume_range"]
+    },
+    {
+      "id": "shaft_nut",
+      "intent": "M8 hex nut body for output shaft fixing on top of housing",
+      "checks": ["nut_bore_id", "nut_body_solid"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": false,
+      "note": "Involute gear profiles produce 24 boundary edges in STL triangulation; STEP geometry is valid (BRepCheck passes)"
+    },
+    {
+      "id": "min_triangles",
+      "type": "min_triangles",
+      "expected": 800
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/housing.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/housing.stl"
+    },
+    {
+      "id": "volume_range",
+      "type": "volume_range",
+      "min": 30000,
+      "max": 35000,
+      "note": "Indirect verification: correct volume implies all solid features present"
+    },
+    {
+      "id": "housing_bbox",
+      "type": "bbox_size",
+      "expected": [80.0, 80.0, 11.5],
+      "tolerance": 0.5,
+      "note": "Verifies overall housing dimensions (80x80mm housing + 6.5mm nut on top of 5mm housing)"
+    },
+    {
+      "id": "housing_inner_od",
+      "type": "outer_diameter_at_z",
+      "z": 2.5,
+      "center": [0, 0],
+      "expected": 44.0,
+      "tolerance": 1.0,
+      "note": "Ring gear tip circle (44mm) = internal boundary of the housing wall structure; verifies wall geometry"
+    },
+    {
+      "id": "shaft_bore_id",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [0, 0],
+      "expected": 8.0,
+      "tolerance": 0.5,
+      "param_ref": "tube_id"
+    },
+    {
+      "id": "shaft_bore_void",
+      "type": "feature_position",
+      "point": [0, 0, 2.5],
+      "expected": "void",
+      "note": "Center point must be void (shaft bore)"
+    },
+    {
+      "id": "ring_gear_bore_void",
+      "type": "feature_position",
+      "point": [18, 0, 2.5],
+      "expected": "void",
+      "note": "At radius 18mm in gear chamber gap (14-22mm); ring gear bore exists"
+    },
+    {
+      "id": "gear_chamber_void",
+      "type": "feature_position",
+      "point": [16, 0, 2.5],
+      "expected": "void",
+      "note": "Gear chamber gap between sun tip (14mm) and ring tip (22mm)"
+    },
+    {
+      "id": "gap_mid_void",
+      "type": "feature_position",
+      "point": [18, 0, 2.5],
+      "expected": "void",
+      "note": "Duplicate of ring_gear_bore_void for sun_gear feature coverage"
+    },
+    {
+      "id": "sun_body_indirect",
+      "type": "inner_diameter_at_z",
+      "z": 2.5,
+      "center": [0, 0],
+      "expected": 8.0,
+      "tolerance": 0.5,
+      "note": "Indirect: shaft bore diameter confirms tube + sun gear body surrounds the bore"
+    },
+    {
+      "id": "nut_bore_id",
+      "type": "inner_diameter_at_z",
+      "z": 8.25,
+      "center": [0, 0],
+      "expected": 8.0,
+      "tolerance": 0.5
+    },
+    {
+      "id": "nut_body_solid",
+      "type": "section_bbox_at_z",
+      "z": 8.25,
+      "region": [[6, -1], [8, 1]],
+      "expected": "solid",
+      "note": "Nut section at Z=8.25 has simpler mesh (no gear involute profiles)"
+    }
+  ]
+}

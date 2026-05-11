@@ -1,0 +1,19 @@
+{
+  "stage": "section_analysis",
+  "svg": "/Users/kuaner/Documents/code/agentcad/examples/e2e-feature-demo/models/mounting_pillar/outputs/section.z5.93.svg",
+  "ok": true,
+  "axis": "Z",
+  "value": 5.928,
+  "plane_label": "XY plane",
+  "u_label": "X (mm)",
+  "v_label": "Y (mm)",
+  "segment_count": 0,
+  "point_count": 0,
+  "bbox": null,
+  "total_segment_length_mm": 0.0,
+  "component_count": 0,
+  "components": [],
+  "warnings": [
+    "empty_section"
+  ]
+}

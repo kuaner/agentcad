@@ -1,0 +1,289 @@
+{
+  "schema": "design-spec.v1",
+  "model": "coupling",
+  "units": "mm",
+  "intent": "Pipe coupling for 20mm OD pipe: two duct sockets, tube body, O-ring seal groove, M4 flange bolts with nut traps, and visual nut/screw references.",
+  "features": [
+    {
+      "id": "bottom_socket",
+      "intent": "Bottom duct socket for 20mm OD pipe insertion (Z=0 to 10).",
+      "checks": [
+        "bottom_socket_id",
+        "bottom_socket_od",
+        "watertight"
+      ]
+    },
+    {
+      "id": "center_tube",
+      "intent": "Center tube body connecting both sockets (Z=10 to 30).",
+      "checks": [
+        "center_tube_od",
+        "center_tube_id",
+        "center_tube_wall"
+      ]
+    },
+    {
+      "id": "top_socket",
+      "intent": "Top duct socket for 20mm OD pipe insertion (Z=30 to 40).",
+      "checks": [
+        "top_socket_id",
+        "top_socket_od"
+      ]
+    },
+    {
+      "id": "oring_groove",
+      "intent": "O-ring seal groove (annular ring subtracted at mid-Z) on outer surface.",
+      "checks": [
+        "oring_groove_void",
+        "oring_groove_depth"
+      ]
+    },
+    {
+      "id": "flange",
+      "intent": "Square flange plates at both ends for bolt attachment.",
+      "checks": [
+        "flange_solid_bottom",
+        "flange_solid_top",
+        "volume_range"
+      ]
+    },
+    {
+      "id": "screw_hole",
+      "intent": "M4 clearance screw holes for flange bolts on both sides.",
+      "checks": [
+        "screw_hole_plus_x_diameter",
+        "screw_hole_minus_x_diameter",
+        "screw_hole_plus_x_edge",
+        "screw_hole_minus_x_edge",
+        "screw_hole_plus_x_access",
+        "screw_hole_minus_x_access"
+      ]
+    },
+    {
+      "id": "nut_trap",
+      "intent": "M4 hex nut trap pockets in flange for embedded nuts.",
+      "checks": [
+        "nut_trap_plus_y_hex",
+        "nut_trap_minus_y_hex",
+        "nut_trap_plus_y_edge",
+        "nut_trap_minus_y_edge"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "volume_range",
+      "type": "volume_range",
+      "min": 5000,
+      "max": 30000,
+      "param_ref": "coupling_od"
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/coupling.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/coupling.stl"
+    },
+    {
+      "id": "bottom_socket_id",
+      "type": "inner_diameter_at_z",
+      "z": 5.0,
+      "center": [0, 0],
+      "expected": 20.0,
+      "tolerance": 0.5,
+      "param_ref": "pipe_od"
+    },
+    {
+      "id": "bottom_socket_od",
+      "type": "outer_diameter_at_z",
+      "z": 5.0,
+      "center": [0, 0],
+      "expected": 30.0,
+      "tolerance": 0.5,
+      "param_ref": "coupling_od"
+    },
+    {
+      "id": "center_tube_od",
+      "type": "outer_diameter_at_z",
+      "z": 15.0,
+      "center": [0, 0],
+      "expected": 30.0,
+      "tolerance": 0.5,
+      "param_ref": "coupling_od"
+    },
+    {
+      "id": "center_tube_id",
+      "type": "inner_diameter_at_z",
+      "z": 15.0,
+      "center": [0, 0],
+      "expected": 18.0,
+      "tolerance": 0.5,
+      "param_ref": "coupling_id"
+    },
+    {
+      "id": "center_tube_wall",
+      "type": "section_bbox_at_z",
+      "z": 15.0,
+      "region": [[9, -9], [15, 9]],
+      "expected": "solid"
+    },
+    {
+      "id": "top_socket_id",
+      "type": "inner_diameter_at_z",
+      "z": 35.0,
+      "center": [0, 0],
+      "expected": 20.0,
+      "tolerance": 0.5,
+      "param_ref": "pipe_od"
+    },
+    {
+      "id": "top_socket_od",
+      "type": "outer_diameter_at_z",
+      "z": 35.0,
+      "center": [0, 0],
+      "expected": 30.0,
+      "tolerance": 0.5,
+      "param_ref": "coupling_od"
+    },
+    {
+      "id": "oring_groove_void",
+      "type": "section_bbox_at_z",
+      "z": 20.0,
+      "region": [[13.0, -1.5], [14.5, 1.5]],
+      "expected": "void"
+    },
+    {
+      "id": "oring_groove_depth",
+      "type": "outer_diameter_at_z",
+      "z": 20.0,
+      "center": [0, 0],
+      "expected": 24.0,
+      "tolerance": 2.0
+    },
+    {
+      "id": "flange_solid_bottom",
+      "type": "section_bbox_at_z",
+      "z": 2.0,
+      "region": [[-22, -22], [22, 22]],
+      "expected": "solid"
+    },
+    {
+      "id": "flange_solid_top",
+      "type": "section_bbox_at_z",
+      "z": 38.0,
+      "region": [[-22, -22], [22, 22]],
+      "expected": "solid"
+    },
+    {
+      "id": "screw_hole_plus_x_diameter",
+      "type": "inner_diameter_at_z",
+      "z": 2.0,
+      "center": [14, 0],
+      "expected": 4.4,
+      "tolerance": 0.5,
+      "param_ref": "m4_clearance_diameter"
+    },
+    {
+      "id": "screw_hole_minus_x_diameter",
+      "type": "inner_diameter_at_z",
+      "z": 2.0,
+      "center": [-14, 0],
+      "expected": 4.4,
+      "tolerance": 0.5,
+      "param_ref": "m4_clearance_diameter"
+    },
+    {
+      "id": "screw_hole_plus_x_edge",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "center": [14, 0], "radius": 2.2, "z_range": [0, 4]},
+      "feature_b": {"type": "box", "x_range": [19, 22], "y_range": [-5, 5], "z_range": [0, 4]},
+      "min_mm": 1.0
+    },
+    {
+      "id": "screw_hole_minus_x_edge",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "center": [-14, 0], "radius": 2.2, "z_range": [0, 4]},
+      "feature_b": {"type": "box", "x_range": [-22, -19], "y_range": [-5, 5], "z_range": [0, 4]},
+      "min_mm": 1.0
+    },
+    {
+      "id": "screw_hole_plus_x_access",
+      "type": "hole_accessibility",
+      "z": -0.5,
+      "center": [14, 0],
+      "hole_radius": 2.2,
+      "clearance_radius": 5.5
+    },
+    {
+      "id": "screw_hole_minus_x_access",
+      "type": "hole_accessibility",
+      "z": -0.5,
+      "center": [-14, 0],
+      "hole_radius": 2.2,
+      "clearance_radius": 5.5
+    },
+    {
+      "id": "nut_trap_plus_y_hex",
+      "type": "section_bbox_at_z",
+      "z": 2.0,
+      "center": [14, 14],
+      "expected_max": [4.0, 4.0],
+      "tolerance": 1.5
+    },
+    {
+      "id": "nut_trap_minus_y_hex",
+      "type": "section_bbox_at_z",
+      "z": 2.0,
+      "center": [-14, -14],
+      "expected_max": [4.0, 4.0],
+      "tolerance": 1.5
+    },
+    {
+      "id": "nut_trap_plus_y_edge",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "center": [14, 14], "radius": 3.5, "z_range": [0, 4]},
+      "feature_b": {"type": "box", "x_range": [19, 22], "y_range": [19, 22], "z_range": [0, 4]},
+      "min_mm": 1.0
+    },
+    {
+      "id": "nut_trap_minus_y_edge",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "axis": "z", "center": [-14, -14], "radius": 3.5, "z_range": [0, 4]},
+      "feature_b": {"type": "box", "x_range": [-22, -19], "y_range": [-22, -19], "z_range": [0, 4]},
+      "min_mm": 1.0
+    },
+    {
+      "id": "metadata_nut_body",
+      "type": "metadata_equals",
+      "path": "visual_parts.nut_body",
+      "expected": "M4_nut"
+    },
+    {
+      "id": "metadata_screw",
+      "type": "metadata_equals",
+      "path": "visual_parts.screw",
+      "expected": "M4_cap"
+    },
+    {
+      "id": "nut_body_anchor",
+      "type": "metadata_equals",
+      "path": "anchors.origin",
+      "expected": [0, 0, 0]
+    },
+    {
+      "id": "screw_anchor",
+      "type": "metadata_equals",
+      "path": "anchors.z_max",
+      "expected": [0, 0, 40]
+    }
+  ]
+}

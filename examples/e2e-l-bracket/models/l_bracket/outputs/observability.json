@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "observe",
   "model": "l_bracket",
-  "observedAt": "2026-05-10T04:35:33.899766+00:00",
+  "observedAt": "2026-05-11T07:34:02.013572+00:00",
   "geometry": {
     "ok": true,
     "stage": "measure",
@@ -39,8 +39,8 @@
         "watertight": true
       },
       "mass_properties": {
-        "surface_area": 9128.556088038136,
-        "volume": 19303.731808618024
+        "surface_area": 9128.276390771785,
+        "volume": 19279.473070843895
       }
     },
     "structure": {
@@ -338,7 +338,7 @@
           "u_size": 60.0,
           "v_size": 40.0
         },
-        "total_segment_length_mm": 4965.4065,
+        "total_segment_length_mm": 4936.4213,
         "component_count": 1,
         "components": [
           {
@@ -357,7 +357,7 @@
               0.0,
               0.1931
             ],
-            "total_segment_length_mm": 4965.4065,
+            "total_segment_length_mm": 4936.4213,
             "hull_area_estimate_mm2": 2400.0,
             "closed_vertex_ratio": 0.2819,
             "endpoint_count": 0,
@@ -402,7 +402,7 @@
       },
       "segment_count": 518,
       "component_count": 1,
-      "total_segment_length_mm": 4965.4065,
+      "total_segment_length_mm": 4936.4213,
       "warnings": [
         "open_section_component"
       ]

@@ -2,7 +2,7 @@
   "ok": true,
   "stage": "validate",
   "model": "l_bracket",
-  "validatedAt": "2026-05-10T04:35:33.900162+00:00",
+  "validatedAt": "2026-05-11T07:34:02.013927+00:00",
   "checks": [
     {
       "name": "build",
@@ -51,32 +51,34 @@
       "ok": true,
       "feature": "mounting_holes",
       "checks": [
-        "left_hole_dia",
-        "right_hole_dia"
+        "mounting_holes_dia_0",
+        "mounting_holes_access_0",
+        "mounting_holes_dia_1",
+        "mounting_holes_access_1"
       ],
       "matchedChecks": [
-        "left_hole_dia",
-        "right_hole_dia"
+        "mounting_holes_dia_0",
+        "mounting_holes_access_0",
+        "mounting_holes_dia_1",
+        "mounting_holes_access_1"
+      ]
+    },
+    {
+      "name": "feature_coverage:deliverable_artifacts",
+      "type": "feature_coverage",
+      "ok": true,
+      "feature": "deliverable_artifacts",
+      "checks": [
+        "step_artifact",
+        "stl_artifact"
+      ],
+      "matchedChecks": [
+        "step_artifact",
+        "stl_artifact"
       ]
     },
     {
       "name": "base_bbox",
-      "type": "bbox_size",
-      "ok": true,
-      "expected": [
-        60.0,
-        40.0,
-        30.0
-      ],
-      "actual": [
-        60.0,
-        40.0,
-        30.0
-      ],
-      "tolerance": 1.0
-    },
-    {
-      "name": "flange_bbox",
       "type": "bbox_size",
       "ok": true,
       "expected": [
@@ -99,53 +101,106 @@
       "actual": true
     },
     {
-      "name": "min_tri",
-      "type": "min_triangles",
+      "name": "flange_bbox",
+      "type": "bbox_size",
       "ok": true,
-      "expected": 0,
-      "actual": 1044
+      "expected": [
+        60.0,
+        40.0,
+        30.0
+      ],
+      "actual": [
+        60.0,
+        40.0,
+        30.0
+      ],
+      "tolerance": 1.0
     },
     {
-      "name": "left_hole_dia",
+      "name": "mounting_holes_dia_0",
       "type": "inner_diameter_at_z",
       "ok": true,
       "z": 2.5,
-      "expected": 5.0,
-      "actual": 4.998445397813137,
+      "expected": 5.3,
+      "actual": 5.298352092829214,
       "tolerance": 0.3,
       "section": {
         "ok": true,
         "z": 2.5,
         "point_count": 1032,
-        "radius_min": 2.499222612799508,
+        "radius_min": 2.649175893018224,
         "radius_max": 53.85164807134504,
-        "radius_mean": 21.577990653138826,
-        "radius_outer_estimate": 42.492645632902025,
-        "radius_inner_estimate": 2.4992226989065687,
-        "diameter_outer_estimate": 84.98529126580405,
-        "diameter_inner_estimate": 4.998445397813137
+        "radius_mean": 21.653593466626997,
+        "radius_outer_estimate": 42.642228018720246,
+        "radius_inner_estimate": 2.649176046414607,
+        "diameter_outer_estimate": 85.28445603744049,
+        "diameter_inner_estimate": 5.298352092829214
       }
     },
     {
-      "name": "right_hole_dia",
+      "name": "mounting_holes_access_0",
+      "type": "hole_accessibility",
+      "ok": true,
+      "axis": "z",
+      "position": 5.5,
+      "center": [
+        -20.0,
+        0.0
+      ],
+      "hole_radius": 2.65,
+      "clearance_radius": 4.75,
+      "blocking_point_count": 0,
+      "min_blocking_radius": null,
+      "z": 5.5
+    },
+    {
+      "name": "mounting_holes_dia_1",
       "type": "inner_diameter_at_z",
       "ok": true,
       "z": 2.5,
-      "expected": 5.0,
-      "actual": 4.998445397813137,
+      "expected": 5.3,
+      "actual": 5.298352092829214,
       "tolerance": 0.3,
       "section": {
         "ok": true,
         "z": 2.5,
         "point_count": 1032,
-        "radius_min": 2.499222612799508,
+        "radius_min": 2.649175893018224,
         "radius_max": 53.85164807134504,
-        "radius_mean": 21.564394488047423,
-        "radius_outer_estimate": 42.492645632902025,
-        "radius_inner_estimate": 2.4992226989065687,
-        "diameter_outer_estimate": 84.98529126580405,
-        "diameter_inner_estimate": 4.998445397813137
+        "radius_mean": 21.639997301535594,
+        "radius_outer_estimate": 42.642228018720246,
+        "radius_inner_estimate": 2.649176046414607,
+        "diameter_outer_estimate": 85.28445603744049,
+        "diameter_inner_estimate": 5.298352092829214
       }
+    },
+    {
+      "name": "mounting_holes_access_1",
+      "type": "hole_accessibility",
+      "ok": true,
+      "axis": "z",
+      "position": 5.5,
+      "center": [
+        20.0,
+        0.0
+      ],
+      "hole_radius": 2.65,
+      "clearance_radius": 4.75,
+      "blocking_point_count": 0,
+      "min_blocking_radius": null,
+      "z": 5.5
+    },
+    {
+      "name": "step_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/l_bracket.step"
+    },
+    {
+      "name": "stl_artifact",
+      "type": "artifact_exists",
+      "ok": true,
+      "path": "/Users/kuaner/Documents/code/agentcad/examples/e2e-l-bracket/models/l_bracket/outputs/l_bracket.stl"
     }
   ],
   "artifacts": {
@@ -183,6 +238,14 @@
         "bbox_size"
       ],
       "message": "feature 'vertical_flange' has no geometry checks — geometry is not verified",
+      "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks"
+    },
+    {
+      "feature": "deliverable_artifacts",
+      "linkedCheckTypes": [
+        "artifact_exists"
+      ],
+      "message": "feature 'deliverable_artifacts' has no geometry checks — geometry is not verified",
       "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks"
     }
   ],
@@ -449,7 +512,7 @@
           "u_size": 60.0,
           "v_size": 40.0
         },
-        "total_segment_length_mm": 4965.4065,
+        "total_segment_length_mm": 4936.4213,
         "component_count": 1,
         "components": [
           {
@@ -468,7 +531,7 @@
               0.0,
               0.1931
             ],
-            "total_segment_length_mm": 4965.4065,
+            "total_segment_length_mm": 4936.4213,
             "hull_area_estimate_mm2": 2400.0,
             "closed_vertex_ratio": 0.2819,
             "endpoint_count": 0,

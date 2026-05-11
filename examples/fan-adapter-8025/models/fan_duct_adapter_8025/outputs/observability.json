@@ -1,0 +1,367 @@
+{
+  "ok": true,
+  "stage": "observe",
+  "model": "fan_duct_adapter_8025",
+  "observedAt": "2026-05-11T07:35:18.443638+00:00",
+  "geometry": {
+    "ok": true,
+    "stage": "measure",
+    "model": "fan_duct_adapter_8025",
+    "source": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/fan_duct_adapter_8025.stl",
+    "geometry": {
+      "bbox": {
+        "min": [
+          -43.0,
+          -43.0,
+          0.0
+        ],
+        "max": [
+          43.0,
+          43.0,
+          33.0
+        ],
+        "size": [
+          86.0,
+          86.0,
+          33.0
+        ],
+        "center": [
+          0.0,
+          0.0,
+          16.5
+        ]
+      },
+      "mesh": {
+        "triangles": 5836,
+        "vertices": 17508,
+        "unique_edges": 8754,
+        "boundary_or_nonmanifold_edges": 0,
+        "watertight": true
+      },
+      "mass_properties": {
+        "surface_area": 22548.86413559931,
+        "volume": 32991.14694311828
+      }
+    },
+    "structure": {
+      "has_internal_void": true,
+      "void_start_z": 5.94,
+      "step_changes": [
+        {
+          "pos": 5.94,
+          "delta_u": -6.6,
+          "delta_v": -6.625,
+          "delta_point_count": -2040,
+          "hint": "section shrinks — possible cavity start or wall end"
+        }
+      ]
+    },
+    "artifacts": {
+      "geometry": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/geometry.json"
+    },
+    "message": "model measured"
+  },
+  "previews": {
+    "preview_iso": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.iso.svg",
+    "preview_front": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.front.svg",
+    "preview_top": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.top.svg",
+    "preview_side": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.side.svg",
+    "preview_back": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/preview.back.svg"
+  },
+  "scan": {
+    "ok": true,
+    "axis": "Z",
+    "plane_label": "XY plane",
+    "u_label": "X (mm)",
+    "v_label": "Y (mm)",
+    "pos_range": [
+      0.0,
+      33.0
+    ],
+    "profile": [
+      {
+        "pos": 0.66,
+        "point_count": 3048,
+        "u_size": 86.0,
+        "v_size": 86.0,
+        "u_min": -43.0,
+        "u_max": 43.0,
+        "v_min": -43.0,
+        "v_max": 43.0
+      },
+      {
+        "pos": 2.772,
+        "point_count": 3048,
+        "u_size": 86.0,
+        "v_size": 86.0,
+        "u_min": -43.0,
+        "u_max": 43.0,
+        "v_min": -43.0,
+        "v_max": 43.0
+      },
+      {
+        "pos": 4.884,
+        "point_count": 3048,
+        "u_size": 86.0,
+        "v_size": 86.0,
+        "u_min": -43.0,
+        "u_max": 43.0,
+        "v_min": -43.0,
+        "v_max": 43.0
+      },
+      {
+        "pos": 6.996,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 9.108,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 11.22,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 13.332,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 15.444,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 17.556,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 19.668,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 21.78,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 23.892,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 26.004,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 28.116,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 30.228,
+        "point_count": 1008,
+        "u_size": 79.4,
+        "v_size": 79.375,
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.688,
+        "v_max": 39.688
+      },
+      {
+        "pos": 32.34,
+        "point_count": 1008,
+        "u_size": 78.72,
+        "v_size": 78.696,
+        "u_min": -39.36,
+        "u_max": 39.36,
+        "v_min": -39.348,
+        "v_max": 39.348
+      }
+    ],
+    "step_changes": [
+      {
+        "pos": 5.94,
+        "delta_u": -6.6,
+        "delta_v": -6.625,
+        "delta_point_count": -2040,
+        "hint": "section shrinks — possible cavity start or wall end"
+      }
+    ],
+    "section_svgs": {
+      "section_z5_94": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/section.z5.94.svg"
+    },
+    "section_analysis_json": {
+      "section_z5_94_analysis": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/section.z5.94.json"
+    },
+    "section_analyses": {
+      "section_z5_94": {
+        "stage": "section_analysis",
+        "svg": "/Users/kuaner/Documents/code/agentcad/examples/fan-adapter-8025/models/fan_duct_adapter_8025/outputs/section.z5.94.svg",
+        "ok": true,
+        "axis": "Z",
+        "value": 5.94,
+        "plane_label": "XY plane",
+        "u_label": "X (mm)",
+        "v_label": "Y (mm)",
+        "segment_count": 504,
+        "point_count": 1008,
+        "bbox": {
+          "u_min": -39.7,
+          "u_max": 39.7,
+          "v_min": -39.6877,
+          "v_max": 39.6877,
+          "u_size": 79.4,
+          "v_size": 79.3753
+        },
+        "total_segment_length_mm": 481.8704,
+        "component_count": 2,
+        "components": [
+          {
+            "index": 0,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -39.7,
+              "u_max": 39.7,
+              "v_min": -39.6877,
+              "v_max": 39.6877,
+              "u_size": 79.4,
+              "v_size": 79.3754
+            },
+            "centroid": [
+              0.0084,
+              0.0135
+            ],
+            "total_segment_length_mm": 249.4166,
+            "hull_area_estimate_mm2": 4949.3835,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          },
+          {
+            "index": 1,
+            "segment_count": 252,
+            "point_count": 252,
+            "bbox": {
+              "u_min": -37.0,
+              "u_max": 37.0,
+              "v_min": -36.9885,
+              "v_max": 36.9885,
+              "u_size": 74.0,
+              "v_size": 73.977
+            },
+            "centroid": [
+              -0.0306,
+              -0.0127
+            ],
+            "total_segment_length_mm": 232.4538,
+            "hull_area_estimate_mm2": 4299.0587,
+            "closed_vertex_ratio": 1.0,
+            "endpoint_count": 0,
+            "branch_vertex_count": 0
+          }
+        ],
+        "warnings": [
+          "multiple_section_components"
+        ]
+      }
+    }
+  },
+  "section_summaries": [
+    {
+      "key": "section_z5_94",
+      "axis": "Z",
+      "value": 5.94,
+      "bbox": {
+        "u_min": -39.7,
+        "u_max": 39.7,
+        "v_min": -39.6877,
+        "v_max": 39.6877,
+        "u_size": 79.4,
+        "v_size": 79.3753
+      },
+      "segment_count": 504,
+      "component_count": 2,
+      "total_segment_length_mm": 481.8704,
+      "warnings": [
+        "multiple_section_components"
+      ]
+    }
+  ],
+  "summary": {
+    "section_count": 1,
+    "max_component_count": 2,
+    "multi_component_sections": [
+      "section_z5_94"
+    ],
+    "warning_count": 1
+  },
+  "warnings": [
+    {
+      "section": "section_z5_94",
+      "warning": "multiple_section_components"
+    }
+  ]
+}
