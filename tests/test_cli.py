@@ -13,6 +13,7 @@ from agentcad.cli import main
 @pytest.fixture(autouse=True)
 def _no_serve(monkeypatch):
     monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
+    monkeypatch.setattr(cli_mod, "open_preview", lambda *a, **kw: None)
 
 
 def test_new_auto_init(tmp_path, monkeypatch):
@@ -319,3 +320,22 @@ def test_project_flag_rejects_invalid(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     result = main(["--project", str(tmp_path / "nonexistent"), "build", "x"])
     assert result == 1
+
+
+def test_preview_static_uses_open_preview(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main(["init", "project", "--model", "box"])
+    monkeypatch.chdir(tmp_path / "project")
+    opened = {}
+
+    def fake_model_preview(project_path, target, **kwargs):
+        return {"ok": True, "stage": "preview", "kind": "model", "name": target,
+                "artifacts": {"preview_page": str(tmp_path / "project" / "models" / "box" / "outputs" / "preview.html")}}
+
+    monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
+    monkeypatch.setattr(cli_mod, "open_preview", lambda p: opened.setdefault("path", str(p)))
+    monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
+
+    result = main(["preview", "box", "--static"])
+    assert result == 0
+    assert "path" in opened

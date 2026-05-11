@@ -11,7 +11,7 @@ from functools import lru_cache
 from pathlib import Path
 from . import templates
 from .jsonio import read_json
-from .workspace import model_dir, normalize_model_name, outputs_dir, outputs_dir_for_variant
+from .workspace import find_project, model_dir, normalize_model_name, outputs_dir, outputs_dir_for_variant
 
 THREE_VERSION = "0.164.1"
 
@@ -158,11 +158,11 @@ def write_assembly_preview(
 
 
 def serve_preview(preview_path: Path, *, port: int = 0) -> None:
-    directory = str(preview_path.parent.resolve())
+    directory = str(_find_serve_root(preview_path))
     handler = _make_handler(directory)
-    with _ReusableThreadedServer(("", port), handler) as httpd:
+    with _ReusableThreadedServer(("127.0.0.1", port), handler) as httpd:
         actual_port = httpd.server_address[1]
-        url = f"http://localhost:{actual_port}/{preview_path.name}"
+        url = f"http://localhost:{actual_port}/{_rel_link(preview_path, Path(directory))}"
         print(f"Serving preview at {url}  (Ctrl+C to stop)")
         webbrowser.open(url)
         try:
@@ -177,6 +177,18 @@ def open_preview(preview_path: Path) -> None:
 
 class _ReusableThreadedServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
+
+
+def _find_serve_root(preview_path: Path) -> Path:
+    """Find the best directory root for serving preview assets.
+
+    Tries the project root (so relative links like ../design.json work),
+    falls back to the preview file's parent directory.
+    """
+    try:
+        return find_project(preview_path.parent)
+    except FileNotFoundError:
+        return preview_path.parent.resolve()
 
 
 def _make_handler(directory: str):

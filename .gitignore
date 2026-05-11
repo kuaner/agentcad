@@ -6,3 +6,6 @@ __pycache__/
 
 # Generated preview pages
 **/outputs/preview.html
+
+# Validation history (contains machine-specific paths)
+**/outputs/validation-history/
