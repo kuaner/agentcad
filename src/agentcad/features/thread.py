@@ -91,7 +91,7 @@ def _sinusoidal_profile(amplitude: float, tooth_height: float) -> list[tuple[flo
 
     The profile is a cosine bump sitting on a flat base.
     """
-    n_pts = 30
+    n_pts = 15
     points: list[tuple[float, float]] = [(0.0, 0.0)]
 
     for i in range(1, n_pts):

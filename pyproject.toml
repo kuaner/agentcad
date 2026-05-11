@@ -30,3 +30,6 @@ dev = ["pytest"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "slow: tests that take >30s (run with -m slow explicitly)",
+]

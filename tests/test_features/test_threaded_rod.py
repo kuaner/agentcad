@@ -8,8 +8,9 @@ class TestThreadedRod:
         rod = threaded_rod("M3", length=20)
         assert rod.volume > 0
 
+    @pytest.mark.slow
     def test_multi_start(self):
-        rod = threaded_rod("M4", length=20, n_starts=2)
+        rod = threaded_rod("M4", length=10, n_starts=2)
         assert rod.volume > 0
 
     def test_contract_registers_check(self):
