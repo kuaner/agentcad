@@ -555,6 +555,10 @@
             <button class="seg-btn" id="rot-y" type="button" title="Rotate 90° around Y">Y</button>
             <button class="seg-btn" id="rot-reset" type="button" title="Reset orientation">Reset</button>
           </div>
+          <div class="seg" role="group" aria-label="Toggle overlays">
+            <button class="seg-btn active" id="toggle-grid" type="button" aria-pressed="true">Grid</button>
+            <button class="seg-btn active" id="toggle-axes" type="button" aria-pressed="true">Axes</button>
+          </div>
           <div class="seg" role="group" aria-label="Camera actions">
             <button class="seg-btn" id="fit" type="button">Fit</button>
             <button class="seg-btn" id="show-all" type="button">All</button>
@@ -639,7 +643,8 @@
     const grid = new THREE.GridHelper(160, 32, 0xc7ccd6, 0xdde0e6);
     grid.rotation.x = Math.PI / 2;
     scene.add(grid);
-    scene.add(new THREE.AxesHelper(36));
+    const axes = new THREE.AxesHelper(36);
+    scene.add(axes);
 
     const loader = new STLLoader();
     const entries = [];
@@ -1170,6 +1175,16 @@
     document.getElementById("rot-reset").addEventListener("click", () => {
       root.rotation.copy(origRotation);
       fitCamera(activeView, null, { preserveViewState: true, markFit: true });
+    });
+    document.getElementById("toggle-grid").addEventListener("click", function() {
+      grid.visible = !grid.visible;
+      this.classList.toggle("active");
+      this.setAttribute("aria-pressed", grid.visible);
+    });
+    document.getElementById("toggle-axes").addEventListener("click", function() {
+      axes.visible = !axes.visible;
+      this.classList.toggle("active");
+      this.setAttribute("aria-pressed", axes.visible);
     });
     document.querySelector(".svg-modal").addEventListener("click", (e) => { if (e.target.classList.contains("svg-modal")) e.target.classList.remove("open"); });
     document.querySelector(".svg-modal-close").addEventListener("click", () => document.getElementById("svg-modal").classList.remove("open"));
