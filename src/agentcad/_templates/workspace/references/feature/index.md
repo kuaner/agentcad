@@ -48,6 +48,8 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `hex_panel` | Honeycomb-core lightweight panel | `references/feature/hex-panel.md` |
 | `snap_pin` / `snap_pin_socket` | Double-ended snap-fit pin + socket | `references/feature/snap-pin.md` |
 | `spur_gear` | Involute spur gear | `references/feature/spur-gear.md` |
+| `rounding_mask` | Edge roundover/fillet (subtract) | `references/feature/rounding.md` |
+| `torus` | Donut ring shape | `references/feature/torus.md` |
 
 ## Hardware Database
 

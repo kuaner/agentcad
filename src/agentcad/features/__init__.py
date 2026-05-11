@@ -20,6 +20,7 @@ from .stepped_bore import SteppedBore, stepped_bore
 from .teardrop import teardrop
 from .thread import sinusoidal_thread
 from .threaded_rod import threaded_rod
+from .torus import torus
 from .tube import tube
 from .wedge import wedge
 
@@ -50,6 +51,7 @@ __all__ = [
     "teardrop",
     "sinusoidal_thread",
     "threaded_rod",
+    "torus",
     "tube",
     "wedge",
 ]
