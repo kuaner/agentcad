@@ -45,6 +45,7 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `nema_mount` | NEMA stepper motor mount pattern | `references/feature/nema-mount.md` |
 | `nut_trap` | Hex nut pocket (subtract) | `references/feature/nut-trap.md` |
 | `nut_body` | Hex nut 3D solid (visual) | `references/feature/nut-body.md` |
+| `screw` | Screw/bolt 3D solid (visual) | `references/feature/screw.md` |
 | `screw_hole` | Full parametric screw hole | `references/feature/screw-hole.md` |
 | `living_hinge_mask` | FDM-printable flex hinge | `references/feature/living-hinge.md` |
 | `threaded_rod` | ISO-standard threaded rod | `references/feature/threaded-rod.md` |
@@ -52,7 +53,6 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `hex_panel` | Honeycomb-core lightweight panel | `references/feature/hex-panel.md` |
 | `snap_pin` / `snap_pin_socket` | Double-ended snap-fit pin + socket | `references/feature/snap-pin.md` |
 | `spur_gear` | Involute spur gear | `references/feature/spur-gear.md` |
-| `rounding_mask` | Edge roundover/fillet (subtract) | `references/feature/rounding.md` |
 | `torus` | Donut ring shape | `references/feature/torus.md` |
 
 ## Hardware Database

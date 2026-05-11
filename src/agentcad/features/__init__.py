@@ -11,6 +11,7 @@ from .living_hinge import living_hinge_mask
 from .mounting_pattern import MountingHoles, mounting_pattern
 from .nema_mount import nema_mount
 from .nut_trap import nut_trap
+from .screw import screw
 from .nut_body import nut_body
 from .plate import plate
 from .pie_slice import pie_slice
@@ -60,6 +61,7 @@ __all__ = [
     "threaded_rod",
     "torus",
     "nema_mount",
+    "screw",
     "tube",
     "wedge",
 ]
