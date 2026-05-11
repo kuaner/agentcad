@@ -18,6 +18,7 @@ from .pie_slice import pie_slice
 from .prismoid import prismoid
 from .rect_tube import rect_tube
 from .rib import rib
+from .ring_gear import ring_gear
 from .rounding import rounding_mask
 from .screw_hole import ScrewHole, screw_hole
 from .slot import slot
@@ -52,6 +53,7 @@ __all__ = [
     "prismoid",
     "rect_tube",
     "rib",
+    "ring_gear",
     "rounding_mask",
     "ScrewHole",
     "screw_hole",

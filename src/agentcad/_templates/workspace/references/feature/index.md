@@ -32,6 +32,7 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `stepped_bore` | Through-hole + counterbore | `references/feature/stepped-bore.md` |
 | `boss` | Raised cylinder | `references/feature/boss.md` |
 | `rib` | Reinforcing thin wall | `references/feature/rib.md` |
+| `ring_gear` | Internal involute ring gear | `references/feature/ring-gear.md` |
 | `duct_socket` | Cylindrical pipe socket | `references/feature/duct-socket.md` |
 | `slot` | Rectangular channel | `references/feature/slot.md` |
 | `tube` | Hollow cylinder (spacer, bushing) | `references/feature/tube.md` |
