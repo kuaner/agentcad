@@ -43,6 +43,7 @@ Run `agentcad validate <name>` — auto-generated checks run alongside manual ch
 | `screw_hole` | Full parametric screw hole | `references/feature/screw-hole.md` |
 | `living_hinge_mask` | FDM-printable flex hinge | `references/feature/living-hinge.md` |
 | `threaded_rod` | ISO-standard threaded rod | `references/feature/threaded-rod.md` |
+| `dovetail` | Interlocking dovetail joint | `references/feature/dovetail.md` |
 
 ## Hardware Database
 

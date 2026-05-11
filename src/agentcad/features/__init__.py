@@ -2,6 +2,7 @@ from .boss import boss
 from .chamfer import chamfer_mask
 from .contract import ContractBuilder
 from .duct_socket import duct_socket
+from .dovetail import dovetail
 from .knurl import helical_knurl
 from .living_hinge import living_hinge_mask
 from .mounting_pattern import MountingHoles, mounting_pattern
@@ -22,6 +23,7 @@ __all__ = [
     "ContractBuilder",
     "boss",
     "chamfer_mask",
+    "dovetail",
     "duct_socket",
     "helical_knurl",
     "living_hinge_mask",
