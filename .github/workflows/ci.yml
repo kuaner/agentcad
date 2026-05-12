@@ -33,3 +33,11 @@ jobs:
 
       - name: Smoke test CLI entrypoint
         run: uv run agentcad --help
+
+      - name: Batch validation smoke test
+        run: |
+          cd /tmp && mkdir batch-smoke && cd batch-smoke
+          uv run --project $GITHUB_WORKSPACE agentcad init batch_demo
+          cd batch_demo
+          uv run --project $GITHUB_WORKSPACE agentcad build batch_demo
+          uv run --project $GITHUB_WORKSPACE agentcad validate all

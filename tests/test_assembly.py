@@ -28,10 +28,11 @@ def _pin_source() -> str:
         "    'model': 'pin',\n"
         "    'interfaces': {\n"
         "        'pin': {\n"
+        "            'kind': 'cylindrical_male',\n"
         "            'axis': {'point': [0, 0, 0], 'direction': [0, 0, 1]},\n"
         "            'outer_cylinder': {\n"
         "                'type': 'cylinder', 'axis': 'z', 'center': [0, 0],\n"
-        "                'radius_mm': 5.0, 'z_range': [1.0, 9.0],\n"
+        "                'radius': 5.0, 'z_range': [1.0, 9.0],\n"
         "                'surface': 'outer', 'tolerance_mm': 0.25,\n"
         "            },\n"
         "        }\n"
@@ -54,10 +55,11 @@ def _socket_source() -> str:
         "    'model': 'socket',\n"
         "    'interfaces': {\n"
         "        'socket': {\n"
+        "            'kind': 'cylindrical_female',\n"
         "            'axis': {'point': [0, 0, 0], 'direction': [0, 0, 1]},\n"
         "            'inner_cylinder': {\n"
         "                'type': 'cylinder', 'axis': 'z', 'center': [0, 0],\n"
-        "                'radius_mm': 5.3, 'z_range': [1.0, 7.0],\n"
+        "                'radius': 5.3, 'z_range': [1.0, 7.0],\n"
         "                'surface': 'inner', 'tolerance_mm': 0.25,\n"
         "            },\n"
         "        }\n"
@@ -78,6 +80,7 @@ def _box_source(name: str) -> str:
         f"    'model': '{name}',\n"
         "    'interfaces': {\n"
         "        'body': {\n"
+        "            'kind': 'planar',\n"
         "            'box': {\n"
         "                'type': 'box',\n"
         "                'x_range': [-5, 5],\n"
@@ -348,3 +351,25 @@ def test_assembly_validate_rejects_component_ids_that_are_not_mjcf_safe(tmp_path
 
     assert result["ok"] is False
     assert result["error"]["type"] == "ComponentIdInvalid"
+
+
+def test_assembly_metadata_schema_checks_invalid_interface(tmp_path):
+    """Assembly validation reports metadata_schema checks for invalid interfaces."""
+    project = _project_with_pin_socket(tmp_path)
+    # First run validation normally (build generates valid metadata).
+    result = validate_assembly(project, "pin_socket")
+    assert result["ok"] is True
+    # Now corrupt the pin metadata after build: interface with missing kind.
+    pin_metadata = project / "models" / "pin" / "metadata.json"
+    pin_metadata.write_text(json.dumps({
+        "schema": "agentcad.part.metadata.v1",
+        "interfaces": {
+            "pin": {},  # missing kind
+        },
+    }), encoding="utf-8")
+    # Re-validate: build is cached (won't overwrite), but metadata is now invalid.
+    # The reference resolution should fail and produce a metadata_schema check.
+    result2 = validate_assembly(project, "pin_socket")
+    # The reference to pin.interfaces.pin.axis won't resolve because
+    # the interface has no kind/axis, so the assembly should fail.
+    assert result2["ok"] is False

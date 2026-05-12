@@ -48,6 +48,12 @@ src/agentcad/          # Main package
   report.py             # Markdown validation report
   jsonio.py             # JSON read/write/print helpers
   templates.py          # Loads template files from _templates/ package
+  batch.py              # Batch validation: target discovery + workspace-level orchestration
+  snapshot.py           # Regression snapshots: write, load, compare normalized validation data
+  doctor.py             # Workflow state diagnostics: severity-graded findings + recommended next commands
+  suggest.py             # Suggest missing checks based on design contract feature classification
+  metadata.py           # Metadata interface schema validation and resolution
+  clean.py              # Artifact cleanup: validation history, debug SVGs, retention policy
   _templates/           # Template files (md, json, py) for workspace/model scaffolding
   features/             # Helper library: reusable CAD primitives + ContractBuilder integration
   hardware/             # Screw, nut, washer, heat-set insert dimension tables
@@ -83,6 +89,10 @@ agentcad preview <name> --static                         # Self-contained offlin
 agentcad preview <name> --kind assembly          # Disambiguate if a model and assembly share a name
 agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
 agentcad validate <model>[:<variant>]                    # Full validation pipeline
+agentcad validate all [--models] [--assemblies] [--include-variants] \
+  [--include-slow] [--fail-fast] [--output <path>]      # Batch validate all workspace targets
+agentcad snapshot write [--target <name>]                # Write regression snapshots
+agentcad snapshot compare [--target <name>]              # Compare current vs baseline snapshots
 agentcad diff <model> [--last]                   # Compare validation runs
 agentcad review <model>                          # Pre-delivery checklist + relations matrix
 agentcad deliver <model>[:<variant>]                     # Delivery manifest
@@ -90,6 +100,9 @@ agentcad probe <model> --z <z> --cx <x> --cy <y> # Radial center aliases
 agentcad probe <model> --scan --axis z|x|y       # Profile scan for step changes / void detection
 agentcad inspect <model>                         # Three-axis scan + section SVGs + suggested probes
 agentcad report <model>                                 # Markdown validation report
+agentcad suggest-checks <model>                 # Suggest missing checks based on design contract
+agentcad doctor <model>[:<variant>]               # Workflow state diagnostics: gaps, severity, next command
+agentcad clean [--model <name>] [--dry-run] [--debug] [--previews]  # Remove debug/history artifacts
 agentcad assembly init/list/validate/review      # Optional multi-model assembly workflow
 ```
 
@@ -130,6 +143,33 @@ project/
       <name>.mjcf.xml
 ```
 
+## Documentation Maintenance
+
+This project has **two CLAUDE.md files** serving different audiences. When you
+make changes to the project (new commands, new modules, changed conventions),
+you must update **both** — not just one.
+
+1. **Root `CLAUDE.md`** (this file) — audience: agents **developing** the
+   agentcad project. Covers tech stack, project structure, CLI reference,
+   conventions, pitfalls, release process, running tests. Update this file when:
+   - Adding new modules (update Project Structure)
+   - Adding new CLI commands (update CLI Commands)
+   - Changing test count (update Running Tests)
+   - Adding new pitfalls or conventions
+
+2. **Template `CLAUDE.md`**
+   (`src/agentcad/_templates/workspace/CLAUDE.md`) — audience: agents **using**
+   agentcad to create CAD models. Covers 14-stage workflow, iteration loop, hard
+   rules, workspace layout, CLI quick reference. Update this file when:
+   - Adding new CLI commands (update CLI Quick Reference)
+   - Changing workflow stages or hard rules
+   - Changing workspace layout or conventions that affect modeling behavior
+
+The template file is copied into every new workspace via `agentcad init` and
+propagated to existing workspaces via `agentcad sync`. The root file stays in
+the project repo only. If you add a command but forget the template, users will
+never discover it — so always check both files after a change.
+
 ## Key Conventions
 
 - `part.py` must assign the final build123d object to a global variable named `result`
@@ -155,10 +195,23 @@ Existing: `bbox_size`, `watertight`, `min_triangles`, `artifact_exists`, `metada
 **Geometric relations (new):**
 - `min_clearance` — declarative shape pair clearance ≥ N mm (no STL needed; runs in `agentcad precheck`)
 - `hole_accessibility` — tool/bolt envelope can reach a hole at given Z without obstruction
-- `min_wall_thickness` — minimum wall thickness in a region at Z
+- `min_wall_thickness` — minimum wall thickness in a region at Z; supports range mode (axis + range + samples) for multi-slice evaluation
 - `feature_position` — a 3D point is in expected solid/void state
 
 Section checks use STL triangle-plane intersections for validating ducts, tapers, sockets, and chamfers. `min_clearance` is a pure-shape check evaluated at design time before any code is written, catching the most common interference bugs (hole edge under a wall, hole-to-edge break, hole-to-hole pitch too tight).
+
+Schema validation now uses structured `SchemaIssue` with field-level error paths, severity (error/warning), and hints. `section_bbox_at_z` with `expected: "void"` emits a warning if `region` is missing (false-pass risk on empty slices). `min_wall_thickness` validates single-plane vs range-mode schema before evaluation.
+
+Weak-check warnings are now categorized with severity levels:
+- Features without any checks or without geometry checks → `severity: "blocking"` (gates delivery in review)
+- Hole-like features without `hole_accessibility` → `severity: "blocking"`
+- Load-bearing attachment features (rib/boss/tab) without root/interface checks → `severity: "warning"` (deferred followup)
+
+Feature classification (`classify_feature`) uses keyword matching on feature id, intent, and description to tag features as `hole`, `load_bearing_attachment`, or `interface`. Review promotes blocking-severity warnings to checklist items that gate `ready_to_deliver`.
+
+Metadata interface schema (`metadata.py`) validates the `interfaces` and `anchors` sections of `metadata.json` with structured `SchemaIssue` error paths. Supported interface kinds: `cylindrical_male`, `cylindrical_female`, `screw_axis`, `dovetail_rail`, `snap_pin`, `snap_socket`, `gear_axis`, `planar`. Assembly validation converts metadata schema errors into `metadata_schema` checks. `ContractBuilder.add_interface()` accumulates interface entries and `write_metadata_to()` writes/merges them into `metadata.json`.
+
+Feature helpers that auto-emit interfaces when a builder is provided: `tube` (outer_sleeve + inner_bore), `duct_socket` (socket), `SteppedBore/ScrewHole` (screw_axis), `snap_pin` (pin), `snap_pin_socket` (socket).
 
 ## Feature Helpers
 
@@ -182,10 +235,15 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests currently collect 376 cases. Coverage includes CLI dispatch, workspace
+Tests currently collect 657 cases. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
-hardware lookup tables, variants, diff, assemblies, precheck, and review.
+hardware lookup tables, variants, diff, assemblies, precheck, review, batch
+validation, regression snapshots, contract schema hardening, min_wall_thickness
+range mode, negative regression fixtures, review blocking gates, metadata
+interface schema, ContractBuilder interface emission, doctor diagnostics,
+suggest-checks, improved suggested_fix payloads, timing instrumentation,
+section cache, executable helper cookbook, and artifact cleanup.
 
 Integration validation through example models:
 

@@ -11,7 +11,7 @@ matrices live in [`ROADMAP_EXECUTION_PLAN.md`](ROADMAP_EXECUTION_PLAN.md).
 
 ## Current Position
 
-AgentCAD already has a strong single-model and early assembly loop:
+AgentCAD now has a full-scale, production-grade workflow:
 
 - workspace scaffolding, model variants, sync, build, measure, render, preview,
   validate, diff, review, report, and deliver
@@ -22,13 +22,16 @@ AgentCAD already has a strong single-model and early assembly loop:
   tables
 - first-class assembly validation with transforms, mates, clearance,
   interference evidence, MJCF export, and interactive preview
+- batch validation (`agentcad validate all`) with regression snapshots
+- contract/schema hardening with field-level errors, weak-check severity
+  grading, review blocking gates, and metadata interface schema
+- agent authoring UX: `doctor`, `suggest-checks`, improved `suggested_fix`
+  payloads, and executable helper cookbook
+- timing instrumentation, section cache, and artifact cleanup (`agentcad clean`)
 - fast/slow GitHub Actions workflows and PyPI publishing
 
-The biggest remaining gap is not "more CAD primitives". The useful next step is
-to make AgentCAD reliable at project scale: every example and workspace should
-be batch-validatable, regressions should be reviewable in CI, contracts should
-be harder to write incorrectly, and agents should get clearer feedback when a
-model is valid but mechanically weak.
+The core roadmap (P0–P4) is complete. Remaining work is optional integrations
+(P5) and incremental improvements.
 
 ## Roadmap Principles
 
@@ -47,12 +50,12 @@ model is valid but mechanically weak.
 
 | Priority | Theme | Status | Primary outcome |
 |---|---|---|---|
-| P0 | Batch validation and regression CI | Next | `agentcad validate all` plus reviewable geometry/check drift |
-| P1 | Contract and schema hardening | Next | Fewer false passes and clearer machine-readable contract errors |
-| P2 | Assembly productization | Next | Assemblies move from working feature to trusted product workflow |
-| P3 | Agent authoring UX | Next | Agents need fewer manual probes and write stronger checks by default |
-| P4 | Performance and artifact hygiene | Opportunistic | Faster section/render/validation runs with cleaner outputs |
-| P5 | Optional integrations | Deferred | MCP and extra export formats after CLI invariants are stable |
+| P0 | Batch validation and regression CI | **Done** | `agentcad validate all` plus reviewable geometry/check drift |
+| P1 | Contract and schema hardening | **Done** | Fewer false passes and clearer machine-readable contract errors |
+| P2 | Assembly productization | **Done** | Assemblies move from working feature to trusted product workflow |
+| P3 | Agent authoring UX | **Done** | Agents need fewer manual probes and write stronger checks by default |
+| P4 | Performance and artifact hygiene | **Done** | Faster section/render/validation runs with cleaner outputs |
+| P5 | Optional integrations | Next | MCP and extra export formats after CLI invariants are stable |
 
 ---
 

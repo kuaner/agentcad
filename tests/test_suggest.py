@@ -1,0 +1,199 @@
+"""Tests for P3.2 suggest-checks command: missing check suggestions."""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from agentcad.suggest import suggest_checks
+from agentcad.workspace import init_workspace, new_model, model_dir
+
+
+@pytest.fixture()
+def project(tmp_path):
+    init_workspace(tmp_path)
+    new_model(tmp_path, "thing")
+    return tmp_path
+
+
+def _write_design(mdir: Path, design: dict) -> None:
+    (mdir / "design.json").write_text(json.dumps(design), encoding="utf-8")
+
+
+def _write_params(mdir: Path, params: dict) -> None:
+    (mdir / "params.json").write_text(json.dumps(params), encoding="utf-8")
+
+
+class TestSuggestChecksBasic:
+    def test_no_design_returns_error(self, project):
+        mdir = model_dir(project, "thing")
+        design_path = mdir / "design.json"
+        if design_path.exists():
+            design_path.unlink()
+        result = suggest_checks(project, "thing")
+        assert result["ok"] is False
+        assert result["design_found"] is False
+        assert result["suggestions"] == []
+
+    def test_empty_features_no_suggestions(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {"features": [], "checks": []})
+        result = suggest_checks(project, "thing")
+        assert result["ok"] is True
+        assert result["suggestions"] == []
+
+    def test_feature_with_no_checks_gets_any_check_suggestion(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "shell", "checks": []}],
+            "checks": [],
+        })
+        result = suggest_checks(project, "thing")
+        assert len(result["suggestions"]) == 1
+        s = result["suggestions"][0]
+        assert s["feature"] == "shell"
+        assert s["missing"] == "any_check"
+
+    def test_feature_with_only_bbox_gets_geometry_suggestion(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "shell", "checks": ["shell_bbox"]}],
+            "checks": [{"id": "shell_bbox", "type": "bbox_size", "expected": [10, 10, 10], "tolerance": 0.1}],
+        })
+        result = suggest_checks(project, "thing")
+        assert len(result["suggestions"]) == 1
+        s = result["suggestions"][0]
+        assert s["missing"] == "geometry_check"
+        assert "type" in s["template"]
+
+
+class TestSuggestHoleChecks:
+    def test_hole_with_diameter_but_no_access(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "mounting_holes", "checks": ["hole_dia"]}],
+            "checks": [{"id": "hole_dia", "type": "inner_diameter_at_z", "z": 5, "expected": 4.0, "tolerance": 0.1}],
+        })
+        result = suggest_checks(project, "thing")
+        suggestions = result["suggestions"]
+        assert any(s["missing"] == "hole_accessibility" for s in suggestions)
+        hole_s = next(s for s in suggestions if s["missing"] == "hole_accessibility")
+        assert hole_s["template"]["type"] == "hole_accessibility"
+
+    def test_hole_with_access_already_present_no_suggestion(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "mounting_holes", "checks": ["hole_dia", "hole_access"]}],
+            "checks": [
+                {"id": "hole_dia", "type": "inner_diameter_at_z", "z": 5, "expected": 4.0, "tolerance": 0.1},
+                {"id": "hole_access", "type": "hole_accessibility", "axis": "z"},
+            ],
+        })
+        result = suggest_checks(project, "thing")
+        assert not any(s["missing"] == "hole_accessibility" for s in result["suggestions"])
+
+    def test_hole_feature_infers_diameter_from_params(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "mounting_holes", "checks": ["hole_dia"]}],
+            "checks": [{"id": "hole_dia", "type": "inner_diameter_at_z", "z": 5, "expected": 4.0, "tolerance": 0.1}],
+        })
+        _write_params(mdir, {"hole_diameter": 4.0, "hole_clearance": 8.0})
+        result = suggest_checks(project, "thing")
+        hole_s = next(s for s in result["suggestions"] if s["missing"] == "hole_accessibility")
+        assert hole_s["template"]["hole_diameter"] == "4.0"
+        assert hole_s["template"]["clearance_diameter"] == "8.0"
+
+    def test_non_hole_cylinder_is_not_suggested_as_hole(self, project):
+        """Non-hole cylinders (e.g., 'bearing_seat') should not get hole_accessibility suggestion
+        unless classified as a hole."""
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "bearing_seat", "checks": ["seat_dia"]}],
+            "checks": [{"id": "seat_dia", "type": "inner_diameter_at_z", "z": 5, "expected": 10.0, "tolerance": 0.1}],
+        })
+        result = suggest_checks(project, "thing")
+        # "bearing_seat" does not match HOLE_WORDS (no hole, bore, screw, etc.)
+        assert not any(s["missing"] == "hole_accessibility" for s in result["suggestions"])
+
+
+class TestSuggestAttachmentChecks:
+    def test_rib_with_no_root_check(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "support_rib", "checks": ["rib_bbox"]}],
+            "checks": [{"id": "rib_bbox", "type": "bbox_size", "expected": [5, 3, 10], "tolerance": 0.1}],
+        })
+        result = suggest_checks(project, "thing")
+        suggestions = result["suggestions"]
+        # rib_bbox is only bbox, no geometry check → should get geometry_check suggestion
+        # AND rib is load_bearing → should get root_interface_check if geometry checks exist
+        # But bbox_size is not in GEOMETRY_CHECK_TYPES, so first suggestion is geometry_check
+        assert any(s["missing"] == "geometry_check" for s in suggestions)
+
+    def test_rib_with_section_but_no_wall_thickness(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "support_rib", "checks": ["rib_section"]}],
+            "checks": [{"id": "rib_section", "type": "section_bbox_at_z", "z": 5, "expected": [5, 3], "tolerance": 0.1}],
+        })
+        result = suggest_checks(project, "thing")
+        assert any(s["missing"] == "root_interface_check" for s in result["suggestions"])
+        root_s = next(s for s in result["suggestions"] if s["missing"] == "root_interface_check")
+        assert root_s["template"]["type"] in ("min_wall_thickness", "min_clearance")
+
+    def test_rib_with_wall_thickness_no_suggestion(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "support_rib", "checks": ["rib_section", "rib_wall"]}],
+            "checks": [
+                {"id": "rib_section", "type": "section_bbox_at_z", "z": 5, "expected": [5, 3], "tolerance": 0.1},
+                {"id": "rib_wall", "type": "min_wall_thickness", "axis": "z", "min_mm": 1.5},
+            ],
+        })
+        result = suggest_checks(project, "thing")
+        assert not any(s["missing"] == "root_interface_check" for s in result["suggestions"])
+
+
+class TestSuggestTemplateQuality:
+    def test_hole_no_checks_gets_accessibility_template(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "mounting_hole", "checks": []}],
+            "checks": [],
+        })
+        result = suggest_checks(project, "thing")
+        s = result["suggestions"][0]
+        assert s["template"]["type"] == "hole_accessibility"
+
+    def test_interface_no_checks_gets_clearance_template(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "snap_socket", "checks": []}],
+            "checks": [],
+        })
+        result = suggest_checks(project, "thing")
+        s = result["suggestions"][0]
+        assert s["template"]["type"] == "min_clearance"
+
+    def test_unclassified_no_checks_gets_bbox_template(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "body", "checks": []}],
+            "checks": [],
+        })
+        result = suggest_checks(project, "thing")
+        s = result["suggestions"][0]
+        assert s["template"]["type"] == "bbox_size"
+
+    def test_wall_thickness_infers_from_params(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "support_rib", "checks": ["rib_section"]}],
+            "checks": [{"id": "rib_section", "type": "section_bbox_at_z", "z": 5, "expected": [5, 3], "tolerance": 0.1}],
+        })
+        _write_params(mdir, {"wall_thickness": 2.0})
+        result = suggest_checks(project, "thing")
+        root_s = next(s for s in result["suggestions"] if s["missing"] == "root_interface_check")
+        assert root_s["template"]["min_mm"] == "2.0"

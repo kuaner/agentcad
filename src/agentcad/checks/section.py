@@ -4,6 +4,7 @@ from ..section import (
     AXIS_X,
     AXIS_Y,
     AXIS_Z,
+    SectionCache,
     analyze_section_segments,
     section_segments,
     write_section_svg,
@@ -14,6 +15,25 @@ from . import CheckContext, POST_BUILD, register_check
 
 def _triangles(ctx: CheckContext):
     return ctx.get_triangles()
+
+
+def _cached_segments(ctx: CheckContext, axis: int, position: float) -> list:
+    """Get section segments from cache if available, otherwise compute directly."""
+    triangles = _triangles(ctx)
+    cache = ctx.section_cache
+    if isinstance(cache, SectionCache):
+        return cache.segments(triangles, axis, position)
+    return section_segments(triangles, axis, position)
+
+
+def _cached_analysis(ctx: CheckContext, axis: int, position: float) -> dict:
+    """Get section analysis from cache if available, otherwise compute directly."""
+    triangles = _triangles(ctx)
+    cache = ctx.section_cache
+    if isinstance(cache, SectionCache):
+        return cache.analysis(triangles, axis, position)
+    segs = section_segments(triangles, axis, position)
+    return analyze_section_segments(segs, axis, position)
 
 
 _AXIS_BY_NAME = {"x": AXIS_X, "y": AXIS_Y, "z": AXIS_Z}
@@ -143,9 +163,7 @@ def evaluate_section_component_count(check: dict, ctx: CheckContext) -> dict:
     position = float(raw_position)
     expected = int(check["expected"])
     tolerance = int(check.get("tolerance", 0))
-    triangles = _triangles(ctx)
-    segs = section_segments(triangles, axis, position)
-    analysis = analyze_section_segments(segs, axis, position)
+    analysis = _cached_analysis(ctx, axis, position)
     actual = int(analysis.get("component_count", 0))
     ok = abs(actual - expected) <= tolerance
     payload = {
@@ -161,7 +179,7 @@ def evaluate_section_component_count(check: dict, ctx: CheckContext) -> dict:
     }
     if not ok:
         svg_path = ctx.out_dir / f"debug.{check_id}.{axis_name}{position:.2f}.svg"
-        info = write_section_svg(triangles, axis, position, svg_path)
+        info = write_section_svg(_triangles(ctx), axis, position, svg_path)
         payload["debug_svg"] = info.get("svg")
         payload["debug_analysis_json"] = info.get("analysis_json")
     return payload

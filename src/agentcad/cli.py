@@ -19,6 +19,8 @@ from .review import review_model
 from .runner import build_model
 from .section import AXIS_X, AXIS_Y, AXIS_Z, write_section_svg
 from .stl import read_stl
+from .batch import validate_all
+from .snapshot import compare_snapshot, load_snapshot, snapshot_target, write_snapshot
 from .validate import deliver_model, validate_model
 from .workspace import find_project, init_workspace, model_dir, new_model, normalize_model_name, outputs_dir, outputs_dir_for_variant, sync_workspace
 
@@ -95,7 +97,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     preview.add_argument("--static", action="store_true", help="generate self-contained HTML with embedded assets (for offline use)")
 
-    validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
+    validate = sub.add_parser("validate", help="build, measure, render, and validate a model or all targets")
     validate.add_argument("model")
     validate.add_argument("--view", choices=["iso", "front", "top", "side", "back"], default="iso")
     validate.add_argument(
@@ -103,6 +105,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="comma-separated list of views to render during validation (default: iso,front,top,side,back)",
     )
+    validate.add_argument("--models", action="store_true", help="when validating all, include models")
+    validate.add_argument("--assemblies", action="store_true", help="when validating all, include assemblies")
+    validate.add_argument("--include-variants", action="store_true", help="when validating all, include model variants")
+    validate.add_argument("--include-slow", action="store_true", help="when validating all, include slow targets")
+    validate.add_argument("--fail-fast", action="store_true", help="stop after first validation failure")
+    validate.add_argument("--output", type=Path, default=None, help="path for batch validation report (default: .agentcad/validation/all.json)")
 
     deliver = sub.add_parser("deliver", help="write a delivery manifest")
     deliver.add_argument("model")
@@ -147,6 +155,19 @@ def build_parser() -> argparse.ArgumentParser:
     sync.add_argument("--only", default=None, help="sync only one template path prefix (e.g. references/)")
     sync.add_argument("--prune-deprecated", action="store_true", help="remove deprecated scaffold paths like skills/")
 
+    doctor_cmd = sub.add_parser("doctor", help="diagnose workspace state and recommend next command")
+    doctor_cmd.add_argument("model", help="model name to diagnose (supports model:variant syntax)")
+
+    suggest_cmd = sub.add_parser("suggest-checks", help="suggest missing checks based on design contract")
+    suggest_cmd.add_argument("model", help="model name to analyze")
+
+    clean_cmd = sub.add_parser("clean", help="remove accumulated debug and history artifacts")
+    clean_cmd.add_argument("--model", default=None, help="clean only one model (default: all)")
+    clean_cmd.add_argument("--validation-history", action=argparse.BooleanOptionalAction, default=True, help="clean old validation history files (default: on; use --no-validation-history to skip)")
+    clean_cmd.add_argument("--debug", action=argparse.BooleanOptionalAction, default=True, help="clean debug SVGs and JSONs (default: on; use --no-debug to skip)")
+    clean_cmd.add_argument("--previews", action="store_true", default=False, help="also clean preview SVGs")
+    clean_cmd.add_argument("--dry-run", action="store_true", default=False, help="report deletions without deleting")
+
     assembly = sub.add_parser("assembly", help="create, validate, and review multi-model assemblies")
     assembly_sub = assembly.add_subparsers(dest="assembly_command", required=True)
     assembly_init = assembly_sub.add_parser("init", help="create an assembly contract")
@@ -157,6 +178,15 @@ def build_parser() -> argparse.ArgumentParser:
     assembly_validate.add_argument("assembly")
     assembly_review = assembly_sub.add_parser("review", help="run assembly delivery gates")
     assembly_review.add_argument("assembly")
+
+    snapshot = sub.add_parser("snapshot", help="regression snapshot management")
+    snapshot_sub = snapshot.add_subparsers(dest="snapshot_command", required=True)
+    snapshot_write = snapshot_sub.add_parser("write", help="write regression snapshots for validated targets")
+    snapshot_write.add_argument("--target", default=None, help="specific model or assembly name (default: all)")
+    snapshot_write.add_argument("--include-variants", action="store_true", help="include model variants")
+    snapshot_compare = snapshot_sub.add_parser("compare", help="compare current results against baseline snapshots")
+    snapshot_compare.add_argument("--target", default=None, help="specific model or assembly name (default: all)")
+    snapshot_compare.add_argument("--include-variants", action="store_true", help="include model variants")
 
     return parser
 
@@ -267,6 +297,22 @@ def dispatch(args: argparse.Namespace) -> dict:
             static=getattr(args, "static", False),
         )
     if args.command == "validate":
+        if args.model == "all":
+            include_models = getattr(args, "models", False)
+            include_assemblies = getattr(args, "assemblies", False)
+            # If neither --models nor --assemblies is specified, include both.
+            if not include_models and not include_assemblies:
+                include_models = True
+                include_assemblies = True
+            return validate_all(
+                project,
+                include_models=include_models,
+                include_assemblies=include_assemblies,
+                include_variants=getattr(args, "include_variants", False),
+                include_slow=getattr(args, "include_slow", False),
+                fail_fast=getattr(args, "fail_fast", False),
+                output=getattr(args, "output", None),
+            )
         model_name, variant_name = _parse_model_target(args.model)
         views_arg = getattr(args, "views", None)
         render_views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS] if views_arg else None
@@ -317,6 +363,29 @@ def dispatch(args: argparse.Namespace) -> dict:
         return precheck_model(project, args.model)
     if args.command == "review":
         return review_model(project, args.model)
+    if args.command == "doctor":
+        from .doctor import run_model_doctor
+        model_name, variant_name = _parse_model_target(args.model)
+        return run_model_doctor(project, model_name, variant=variant_name)
+    if args.command == "suggest-checks":
+        from .suggest import suggest_checks
+        return suggest_checks(project, args.model)
+    if args.command == "clean":
+        from .clean import clean_model, _clean_all
+        if args.model:
+            return clean_model(project, args.model,
+                               dry_run=args.dry_run,
+                               validation_history=args.validation_history,
+                               debug=args.debug,
+                               previews=args.previews)
+        return _clean_all(project,
+                          dry_run=args.dry_run,
+                          validation_history=args.validation_history,
+                          debug=args.debug,
+                          previews=args.previews)
+
+    if args.command == "snapshot":
+        return _dispatch_snapshot(project, args)
 
     raise ValueError(f"unknown command: {args.command}")
 
@@ -369,6 +438,69 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: 
             serve_preview(preview_path)
 
     return result
+
+
+def _validation_json_path(project: Path, target) -> Path:
+    """Resolve validation.json path for a ValidationTarget."""
+    from .workspace import outputs_dir_for_variant
+    from .assembly import assembly_outputs_dir
+    if target.kind == "model":
+        return outputs_dir_for_variant(project, target.name, target.variant) / "validation.json"
+    return assembly_outputs_dir(project, target.name) / "assembly_validation.json"
+
+
+def _dispatch_snapshot(project: Path, args: argparse.Namespace) -> dict:
+    from .batch import discover_validation_targets
+    from .jsonio import read_json
+
+    targets = discover_validation_targets(project, include_variants=getattr(args, "include_variants", False))
+    target_name = getattr(args, "target", None)
+    if target_name:
+        targets = [t for t in targets if t.name == target_name]
+    if not targets:
+        return {"ok": False, "stage": f"snapshot_{args.snapshot_command}", "error": {"type": "NoTargets", "message": "no validation targets found"}}
+
+    # Load payloads for all targets with existing validation results.
+    loaded: list[tuple[dict, dict]] = []
+    for t in targets:
+        v_path = _validation_json_path(project, t)
+        payload = read_json(v_path, default=None)
+        if payload is None:
+            continue
+        target_dict = {"kind": t.kind, "name": t.name, "variant": t.variant}
+        loaded.append((target_dict, payload))
+
+    if args.snapshot_command == "write":
+        paths = []
+        for target_dict, payload in loaded:
+            path = write_snapshot(project, target_dict, payload)
+            paths.append(str(path))
+        return {
+            "ok": True,
+            "stage": "snapshot_write",
+            "project": str(project),
+            "snapshots_written": len(paths),
+            "paths": paths,
+        }
+
+    if args.snapshot_command == "compare":
+        comparisons = []
+        for target_dict, payload in loaded:
+            current = snapshot_target(project, target_dict, payload)
+            baseline = load_snapshot(project, target_dict)
+            if baseline is None:
+                comparisons.append({"target": target_dict, "ok": False, "error": "no baseline snapshot"})
+                continue
+            comparisons.append(compare_snapshot(current, baseline))
+        ok = all(c.get("ok", True) for c in comparisons)
+        return {
+            "ok": ok,
+            "stage": "snapshot_compare",
+            "project": str(project),
+            "comparisons": comparisons,
+        }
+
+    raise ValueError(f"unknown snapshot command: {args.snapshot_command}")
 
 
 def _preview_not_found(target: str, *, kind: str) -> dict:

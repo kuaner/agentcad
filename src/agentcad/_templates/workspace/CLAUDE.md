@@ -3,7 +3,7 @@
 You are working in an AgentCAD workspace. Your job is to create and refine CAD
 models using the `agentcad` CLI and build123d geometry library.
 
-## Workflow (14 stages, do not skip)
+## Workflow (16 stages, do not skip)
 
 1. **Understand**: read the user request, identify every feature, and pass the
    Discovery Gate in `references/discovery.md`.
@@ -12,29 +12,33 @@ models using the `agentcad` CLI and build123d geometry library.
    the contract.
 3. **Contract**: write `models/<name>/design.json` with features and checks.
    Load `references/contract-design.md` before editing the contract.
-4. **Params**: put tunable dimensions in `models/<name>/params.json`.
-5. **Precheck**: run `agentcad precheck <name>`. Do not write `part.py` while
+4. **Suggest**: run `agentcad suggest-checks <name>` to find missing checks.
+   Paste suggested templates into `design.json` after filling concrete values.
+5. **Params**: put tunable dimensions in `models/<name>/params.json`.
+6. **Precheck**: run `agentcad precheck <name>`. Do not write `part.py` while
    precheck fails.
-6. **Implement**: write `models/<name>/part.py` using build123d. The final
+7. **Implement**: write `models/<name>/part.py` using build123d. The final
    object must be assigned to global variable `result`.
-7. **Build**: run `agentcad build <name>`.
-8. **Measure**: run `agentcad measure <name>`.
-9. **Render**: run `agentcad render <name> --views iso,front,top,side,back`.
-10. **Validate**: run `agentcad validate <name>`. It must pass.
-11. **Review**: run `agentcad review <name>` and inspect every `must_view`
+8. **Build**: run `agentcad build <name>`.
+9. **Measure**: run `agentcad measure <name>`.
+10. **Render**: run `agentcad render <name> --views iso,front,top,side,back`.
+11. **Validate**: run `agentcad validate <name>`. It must pass.
+12. **Review**: run `agentcad review <name>` and inspect every `must_view`
     artifact.
-12. **Preview**: run `agentcad preview <name>` to launch an interactive 3D
+13. **Preview**: run `agentcad preview <name>` to launch an interactive 3D
     preview — it auto-opens the browser. `--static` generates a self-contained
     HTML file (no server). Do NOT manually `open` the preview file; the command
     already opens it. Use the 3D view to
     inspect topology, section SVGs, geometry values, and failing checks. For an
     assembly, run `agentcad preview <name>` (auto-detected). Add `--static` to
     generate a self-contained HTML file that works offline without a server.
-13. **Quality Review**: apply `references/design-quality-review.md`. If the
+14. **Quality Review**: apply `references/design-quality-review.md`. If the
     model is merely valid but not good, revise the concept, contract, or
     geometry and repeat validation.
-14. **Deliver**: run `agentcad deliver <name>` only after review and quality
+15. **Deliver**: run `agentcad deliver <name>` only after review and quality
     review pass.
+16. **Resume**: if interrupted at any stage, run `agentcad doctor <name>` to
+    diagnose workflow gaps and get the next command to run.
 
 Do not manually export STEP/STL from `part.py`. The runner owns all exports.
 
@@ -43,15 +47,21 @@ Do not manually export STEP/STL from `part.py`. The runner owns all exports.
 When `agentcad validate` fails, use the iteration tools to converge:
 
 1. Read the `checks` array in the JSON output. Each failing check includes a
-   `suggested_fix` object with actionable guidance.
+   `suggested_fix` object with actionable guidance, `likely_source`
+   (geometry/contract/artifact), and `next_commands` to investigate.
 2. If `suggested_fix.confidence` is `"high"` and a `param` key is provided,
    update that param in `params.json` to the `suggested` value.
 3. If `suggested_fix.confidence` is `"low"`, the param may not directly control
    the dimension. Inspect the check center/axis and the geometry before changing
-   params.
-4. Re-run `agentcad validate <name>`.
-5. Run `agentcad diff <name>` to see which checks were fixed, which regressed,
+   params. If `param_candidates` is present, try those params.
+4. Run the `next_commands` from `suggested_fix` to inspect the geometry (probe,
+   render section, measure) before making changes.
+5. Re-run `agentcad validate <name>`.
+6. Run `agentcad diff <name>` to see which checks were fixed, which regressed,
    and whether geometry drifted between iterations.
+
+If you are unsure where you left off, run `agentcad doctor <name>` to get the
+workflow state and the next recommended command.
 
 ## Model Variants
 
@@ -123,7 +133,7 @@ Read only the references needed for the current stage.
 - Every hole needs a `min_clearance` check for each surrounding wall, adjacent
   solid, or relevant edge.
 - Every hole also needs a `hole_accessibility` check on the real tool/fastener
-  approach plane.
+  approach plane. Missing hole_accessibility is a blocking review gate.
 - Every load-bearing attached feature needs at least one interface/root check
   in addition to a body-exists check. A lip, rib, boss, tab, wall, hook, or
   bracket arm that only touches at an edge is a blocker even if validate passes.
@@ -131,6 +141,13 @@ Read only the references needed for the current stage.
   detached in any orthographic view is not deliverable until the contract
   contains a check that would catch that failure.
 - Reason edge-to-edge, never center-to-face.
+- `section_bbox_at_z` with `expected: "void"` must include a `region` field
+  `[[x0,y0],[x1,y1]]` to avoid false passes on empty slices where the STL has
+  no mesh at that Z. Without region, an empty global slice passes as void even
+  if solid material exists nearby.
+- `min_wall_thickness` supports range mode: use `axis`, `range` `[start, end]`,
+  `samples`, `region`, and `min_mm` instead of a single `z` plane. Range mode
+  evaluates multiple slices and reports the worst result.
 
 ## Workspace Layout
 
@@ -197,6 +214,17 @@ agentcad diff <model> --last
 agentcad review <model>
 agentcad deliver <model>
 
+# Batch validation and regression
+agentcad validate all                       # Validate all models and assemblies in workspace
+agentcad validate all --models              # Only models
+agentcad validate all --assemblies          # Only assemblies
+agentcad validate all --include-variants    # Include model variants
+agentcad validate all --fail-fast           # Stop after first failure
+agentcad snapshot write                     # Write regression snapshots for all validated targets
+agentcad snapshot write --target <name>     # Write snapshot for one target
+agentcad snapshot compare                   # Compare current vs baseline snapshots
+agentcad snapshot compare --target <name>   # Compare one target
+
 # Preview (auto-opens browser — do NOT manually run `open`)
 agentcad preview <name>                  # Start local server + auto-open browser
 agentcad preview <name> --static         # Self-contained HTML + auto-open browser
@@ -220,6 +248,9 @@ agentcad render <model> --section-x <x>
 agentcad render <model> --section-y <y>
 agentcad inspect <model>
 agentcad report <model>
+agentcad doctor <model>[:<variant>]           # Workflow state diagnostics: gaps, next command
+agentcad suggest-checks <model>               # Suggest missing checks based on design contract
+agentcad clean [--model <name>] [--dry-run]   # Remove debug/history artifacts
 
 # Assembly
 agentcad assembly init <assembly>

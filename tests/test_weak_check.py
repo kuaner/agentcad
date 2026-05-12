@@ -40,7 +40,10 @@ def test_schema_missing_check_id(project):
     })
     errors = validate_design_schema(project, "thing")
     assert len(errors) == 1
-    assert "missing required 'id'" in errors[0]["error"]
+    # Error shape changed from flat string to structured dict.
+    err = errors[0]["error"]
+    msg = err["message"] if isinstance(err, dict) else err
+    assert "missing required 'id'" in msg
 
 
 def test_schema_duplicate_check_id(project):
@@ -52,7 +55,7 @@ def test_schema_duplicate_check_id(project):
         ],
     })
     errors = validate_design_schema(project, "thing")
-    assert any("duplicate id" in e["error"] for e in errors)
+    assert any("duplicate" in (e["error"]["message"] if isinstance(e["error"], dict) else e["error"]) for e in errors)
 
 
 def test_schema_unknown_check_type(project):
@@ -61,7 +64,7 @@ def test_schema_unknown_check_type(project):
         "checks": [{"id": "bad", "type": "nonexistent_type"}],
     })
     errors = validate_design_schema(project, "thing")
-    assert any("unknown type" in e["error"] for e in errors)
+    assert any("unknown type" in (e["error"]["message"] if isinstance(e["error"], dict) else e["error"]) for e in errors)
 
 
 def test_schema_missing_design_json(project):

@@ -9,6 +9,10 @@ Unlike validate (which executes geometry checks) review focuses on
 **meta-quality**: are all the failure modes that have *historically caused
 silent issues* explicitly verified?
 
+Weak-check warnings with severity="blocking" are promoted to review
+checklist items that gate delivery. Warnings at lower severity remain
+as deferred followups.
+
 Output schema (all JSON):
   {
     "ok": bool,
@@ -26,6 +30,7 @@ import itertools
 from pathlib import Path
 from typing import Any
 
+from .contract import evaluate_weak_check_warnings_dict, HOLE_WORDS
 from .geometry import min_clearance_3d, parse_shape
 from .jsonio import read_json, write_json
 from .runner import utc_now
@@ -125,6 +130,25 @@ def review_model(project: Path, name: str) -> dict:
     ))
 
     geom_warnings = (validation or {}).get("warnings") or []
+    # If validation hasn't run, compute weak-check warnings from design directly.
+    if not geom_warnings and design:
+        geom_warnings = evaluate_weak_check_warnings_dict(design)
+    # Promote blocking-severity warnings to review gates.
+    blocking_warnings = [w for w in geom_warnings if w.get("severity") == "blocking"]
+    if blocking_warnings:
+        checklist.append(_item(
+            "blocking_weak_checks_resolved", False,
+            title="blocking weak-check warnings must be resolved before delivery",
+            action="add the missing checks referenced by each blocking warning",
+            evidence={"blocking_warnings": blocking_warnings},
+        ))
+    else:
+        checklist.append(_item(
+            "blocking_weak_checks_resolved", True,
+            title="no blocking weak-check warnings",
+            action=None,
+            evidence={"blocking_warnings": []},
+        ))
     checklist.append(_item(
         "no_open_warnings", not geom_warnings,
         title="no open weak-check warnings",
@@ -208,7 +232,7 @@ def _shape_declares_hole(shape: dict, check_hint: str = "") -> bool:
         if shape.get(key):
             terms.append(str(shape.get(key)).lower())
     text = " ".join(terms)
-    return any(word in text for word in ("hole", "screw", "bolt", "fastener"))
+    return any(word in text for word in HOLE_WORDS)
 
 
 def _distinct_holes_in_design(design: dict) -> list[dict]:
@@ -407,16 +431,22 @@ def _bbox_matches_intent(design: dict, bbox_actual: Any) -> dict:
 
 
 def _deferred_followups(design: dict, validation: dict | None) -> list[dict]:
-    """Suggest next-step actions an agent should consider before delivering."""
+    """Suggest next-step actions an agent should consider before delivering.
+
+    Blocking warnings are already represented as checklist items, so only
+    non-blocking warnings are deferred here.
+    """
     items: list[dict] = []
     weak = (validation or {}).get("warnings") or []
     for w in weak:
+        if w.get("severity") == "blocking":
+            continue  # already a checklist item
         items.append({
             "type": "weak_check",
             "feature": w.get("feature"),
+            "severity": w.get("severity", "warning"),
             "hint": w.get("hint"),
         })
-
     return items
 
 

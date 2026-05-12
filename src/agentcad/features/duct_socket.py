@@ -83,5 +83,17 @@ def duct_socket(
             },
             checks=checks,
         )
+        builder.add_interface(f"{feature_id}_socket", {
+            "kind": "cylindrical_male",
+            "axis": {"point": [cx, cy, base_z], "direction": [0, 0, 1]},
+            "outer_cylinder": {
+                "type": "cylinder", "axis": "z", "center": [cx, cy],
+                "radius": outer_r, "z_range": [base_z, base_z + length],
+            },
+            "inner_cylinder": {
+                "type": "cylinder", "axis": "z", "center": [cx, cy],
+                "radius": inner_r, "z_range": [base_z, base_z + length],
+            },
+        })
 
     return result

@@ -154,6 +154,17 @@ def outputs_dir(project: Path, name: str) -> Path:
     return model_dir(project, name) / "outputs"
 
 
+def list_models(project: Path) -> list[str]:
+    """Return sorted list of model names in the workspace."""
+    models_root = project / "models"
+    if not models_root.is_dir():
+        return []
+    return sorted(
+        entry.name for entry in models_root.iterdir()
+        if entry.is_dir() and (entry / "design.json").exists()
+    )
+
+
 def new_model(project: Path, name: str, force: bool = False) -> dict:
     safe = normalize_model_name(name)
     root = model_dir(project, safe)

@@ -47,6 +47,10 @@ class CheckContext:
         triggers a one-time read.
     out_dir:
         ``models/<name>/outputs/`` — used for writing debug SVGs etc.
+    section_cache:
+        Optional per-validation cache for section segments and analyses.
+        Reduces redundant triangle-plane intersection computation when
+        multiple checks slice the same position.
     """
 
     project: Path
@@ -54,6 +58,7 @@ class CheckContext:
     measure: dict
     get_triangles: Callable[[], list]
     out_dir: Path
+    section_cache: Any = None
 
 
 # Public registry. Mapping of check_type -> {"fn", "layer"}.
