@@ -162,9 +162,9 @@ def _geometry_template(fid: str, categories: set[str]) -> dict:
         "id": f"{fid}_section",
         "type": "section_bbox_at_z",
         "z": "<z>",
-        "expected": ["<width>", "<depth>"],
+        "expected": "solid",
+        "region": [["<x0>", "<y0>"], ["<x1>", "<y1>"]],
         "tolerance": "<tolerance>",
-        "center": ["<x>", "<y>"],
     }
 
 

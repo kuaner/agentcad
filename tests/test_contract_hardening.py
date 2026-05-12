@@ -192,6 +192,13 @@ class TestSectionBboxValidation:
         issues = validate_design_schema_issues(design)
         assert any(i.path == "checks[0].region" for i in issues)
 
+    def test_invalid_expected_value_errors(self):
+        check = {"id": "s1", "type": "section_bbox_at_z", "z": 5, "expected": [10, 10]}
+        issues = _validate_section_bbox_check(check, 0)
+        assert len(issues) == 1
+        assert issues[0].severity == "error"
+        assert issues[0].path == "checks[0].expected"
+
 
 class TestMinWallThicknessValidation:
     def test_single_plane_passes(self):
@@ -253,3 +260,13 @@ class TestMinWallThicknessValidation:
         }
         issues = validate_design_schema_issues(design)
         assert any(i.path == "checks[0]" for i in issues)
+
+    def test_ambiguous_both_modes_errors(self):
+        check = {
+            "id": "w1", "type": "min_wall_thickness",
+            "z": 3.0, "axis": "z", "range": [0, 10],
+            "region": [[0, 0], [10, 10]], "min_mm": 1.0,
+        }
+        issues = _validate_min_wall_thickness_check(check, 0)
+        assert len(issues) == 1
+        assert "both" in issues[0].message

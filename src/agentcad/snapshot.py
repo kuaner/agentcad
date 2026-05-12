@@ -214,9 +214,12 @@ def _snapshot_filename(kind: str, name: str, variant: str | None) -> str:
 
 
 def _drift_list(current: list, baseline: list, tolerance: float) -> list | None:
-    """Return per-element deltas if any exceeds tolerance."""
+    """Return per-element deltas if any exceeds tolerance.
+
+    Length mismatches are treated as drift (shape change).
+    """
     if len(current) != len(baseline):
-        return None
+        return [abs(c - b) for c, b in zip(current, baseline)] or [0.0]
     deltas = [abs(c - b) for c, b in zip(current, baseline)]
     if any(d > tolerance for d in deltas):
         return deltas

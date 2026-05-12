@@ -187,8 +187,15 @@ def _validate_section_bbox_check(check: dict, index: int) -> list[SchemaIssue]:
     pattern, so we warn when region is missing.
     """
     issues: list[SchemaIssue] = []
-    expected = str(check.get("expected", "solid")).lower()
-    if expected == "void" and "region" not in check:
+    expected = check.get("expected", "solid")
+    expected_str = str(expected).lower()
+    if expected_str not in ("solid", "void"):
+        issues.append(_issue(
+            _check_path(index, "expected"),
+            f"expected must be 'solid' or 'void', got {expected!r}",
+            hint="Use expected='solid' or expected='void' with a region.",
+        ))
+    elif expected_str == "void" and "region" not in check:
         issues.append(_issue(
             _check_path(index, "region"),
             "expected='void' requires region to avoid false passes on empty slices",
@@ -207,6 +214,12 @@ def _validate_min_wall_thickness_check(check: dict, index: int) -> list[SchemaIs
     """
     has_single = "z" in check
     has_range = "range" in check and "axis" in check
+    if has_single and has_range:
+        return [_issue(
+            _check_path(index),
+            "min_wall_thickness has both z (single plane) and axis+range (range mode); specify only one",
+            hint="Remove either 'z' for range mode, or 'axis'+'range' for single-plane mode.",
+        )]
     if not has_single and not has_range:
         return [_issue(
             _check_path(index),

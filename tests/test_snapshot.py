@@ -306,6 +306,24 @@ class TestCompareSnapshot:
         result = compare_snapshot(current, baseline)
         assert "triangles_delta" in result["changes"]["geometry_drift"]
 
+    def test_bbox_length_mismatch_is_drift(self):
+        baseline = {
+            "schema": SNAPSHOT_SCHEMA,
+            "target": {},
+            "checks": {},
+            "geometry": {"bbox_size": [40.0, 30.0, 20.0]},
+            "artifacts": {},
+        }
+        current = {
+            "schema": SNAPSHOT_SCHEMA,
+            "target": {},
+            "checks": {},
+            "geometry": {"bbox_size": [40.0, 30.0]},
+            "artifacts": {},
+        }
+        result = compare_snapshot(current, baseline)
+        assert "bbox_size_delta" in result["changes"]["geometry_drift"]
+
     def test_artifact_added(self):
         baseline = {
             "schema": SNAPSHOT_SCHEMA,

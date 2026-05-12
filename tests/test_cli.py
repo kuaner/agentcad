@@ -184,6 +184,7 @@ def test_preview_auto_detects_model(monkeypatch, tmp_path):
 
     def fake_model_preview(project_path, target, **kwargs):
         captured["target"] = target
+        captured["static"] = kwargs.get("static", False)
         return {"ok": True, "stage": "preview", "kind": "model", "name": target}
 
     monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
@@ -191,6 +192,27 @@ def test_preview_auto_detects_model(monkeypatch, tmp_path):
 
     assert result == 0
     assert captured["target"] == "bracket"
+    assert captured["static"] is False
+
+
+def test_preview_static_mode(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    main(["new", "bracket"])
+    monkeypatch.chdir(tmp_path / "bracket")
+    captured = {}
+
+    def fake_model_preview(project_path, target, **kwargs):
+        captured["target"] = target
+        captured["static"] = kwargs.get("static", False)
+        return {"ok": True, "stage": "preview", "kind": "model", "name": target,
+                "artifacts": {"preview_page": "/tmp/fake.html"}}
+
+    monkeypatch.setattr(cli_mod, "open_preview", lambda path: None)
+    monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
+    result = main(["preview", "bracket", "--static"])
+
+    assert result == 0
+    assert captured["static"] is True
 
 
 def test_preview_auto_detects_assembly(monkeypatch, tmp_path):
