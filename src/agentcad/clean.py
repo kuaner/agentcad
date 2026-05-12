@@ -137,15 +137,13 @@ def clean_model(
 
 def _is_protected(f: Path, out_dir: Path) -> bool:
     """Check whether an artifact file is protected from deletion."""
+    model_name = out_dir.parent.name
     if f.name in _PROTECTED_JSON_NAMES:
         return True
-    if f.suffix in _PROTECTED_EXTENSIONS and f.name != f.parent.name + f.suffix:
-        # Allow deletion of debug.json (not a core workflow output).
-        if f.name.startswith("debug."):
-            return False
+    # Protected extensions: .step, .stl, .json, .html — but allow debug.*
+    if f.suffix in _PROTECTED_EXTENSIONS and not f.name.startswith("debug."):
         return True
     # STL and STEP files matching the model name are always protected.
-    model_name = out_dir.parent.name
     if f.name in (f"{model_name}.stl", f"{model_name}.step"):
         return True
     return False

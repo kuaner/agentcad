@@ -91,7 +91,7 @@ agentcad render <model> --section-z <z>                 # Cross-section SVG at Z
 agentcad validate <model>[:<variant>]                    # Full validation pipeline
 agentcad validate all [--models] [--assemblies] [--include-variants] \
   [--include-slow] [--fail-fast] [--output <path>]      # Batch validate all workspace targets
-agentcad snapshot write [--target <name>] [--all]        # Write regression snapshots
+agentcad snapshot write [--target <name>]                # Write regression snapshots
 agentcad snapshot compare [--target <name>]              # Compare current vs baseline snapshots
 agentcad diff <model> [--last]                   # Compare validation runs
 agentcad review <model>                          # Pre-delivery checklist + relations matrix

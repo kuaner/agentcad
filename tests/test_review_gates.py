@@ -12,9 +12,6 @@ from pathlib import Path
 from agentcad.contract import (
     classify_feature,
     evaluate_weak_check_warnings_dict,
-    GEOMETRY_CHECK_TYPES,
-    HOLE_CHECK_TYPES,
-    ROOT_CHECK_TYPES,
 )
 from agentcad.review import review_model
 from agentcad.workspace import init_workspace, new_model, model_dir

@@ -6,7 +6,7 @@ conservative check templates for features that lack essential checks.
 Output schema:
   {
     "ok": bool,
-    "stage": "suggest_checks",
+    "stage": "suggest-checks",
     "model": str,
     "suggestions": [{feature, missing, reason, template}],
     "design_found": bool
@@ -21,8 +21,6 @@ from .contract import (
     classify_feature,
     HOLE_CHECK_TYPES,
     HOLE_WORDS,
-    ATTACHMENT_WORDS,
-    INTERFACE_WORDS,
     ROOT_CHECK_TYPES,
     GEOMETRY_CHECK_TYPES,
 )
@@ -38,7 +36,7 @@ def suggest_checks(project: Path, name: str) -> dict[str, Any]:
     if design is None or not isinstance(design, dict):
         return {
             "ok": False,
-            "stage": "suggest_checks",
+            "stage": "suggest-checks",
             "model": name,
             "suggestions": [],
             "design_found": False,
@@ -114,7 +112,7 @@ def suggest_checks(project: Path, name: str) -> dict[str, Any]:
 
     return {
         "ok": True,
-        "stage": "suggest_checks",
+        "stage": "suggest-checks",
         "model": name,
         "suggestions": suggestions,
         "design_found": True,
@@ -193,7 +191,7 @@ def _attachment_root_template(fid: str, params: dict) -> dict:
         return {
             "id": f"{fid}_wall",
             "type": "min_wall_thickness",
-            "axis": "<z|x|y>",
+            "z": "<z>",
             "region": [["<x0>", "<y0>"], ["<x1>", "<y1>"]],
             "min_mm": wall_hint,
         }
