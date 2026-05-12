@@ -34,7 +34,7 @@ VALID_INTERFACE_KINDS = frozenset({
 # ── Public API ────────────────────────────────────────────────────────────────
 
 
-def validate_part_metadata_dict(metadata: dict[str, Any]) -> list[SchemaIssue]:
+def validate_part_metadata_dict(metadata: Any) -> list[SchemaIssue]:
     """Validate metadata.json schema, focusing on interfaces and anchors."""
     if not isinstance(metadata, dict):
         return [_issue("", "metadata must be a JSON object")]

@@ -100,6 +100,8 @@ def clean_model(
     # Debug artifacts: SVGs and JSONs matching debug.* pattern.
     if debug:
         for f in out_dir.glob(_DEBUG_PATTERN):
+            if not f.is_file():
+                continue
             if _is_protected(f, out_dir):
                 kept.append(str(f))
                 continue

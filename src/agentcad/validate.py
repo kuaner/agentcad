@@ -276,7 +276,7 @@ def timed_stage(timings: dict[str, float], name: str):
     try:
         yield
     finally:
-        timings[f"{name}Ms"] = round((perf_counter() - start) * 1000, 3)
+        timings[f"{name}Ms"] = (perf_counter() - start) * 1000
 
 
 def _observability_payload(

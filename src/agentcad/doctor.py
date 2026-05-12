@@ -182,7 +182,7 @@ def _rule_build_missing(project: Path, name: str, variant: str | None, artifacts
     if not artifacts.get("build_json") or not artifacts.get("stl"):
         return DoctorFinding(
             "build_missing", "blocking",
-            "STL/STEP or build.json is missing — model has not been built",
+            "STL or build.json is missing — model has not been built",
             next_command=f"agentcad build {name}",
         )
     return None
