@@ -159,6 +159,9 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_cmd.add_argument("model", help="model name to diagnose")
     doctor_cmd.add_argument("--variant", default=None, help="variant name")
 
+    suggest_cmd = sub.add_parser("suggest-checks", help="suggest missing checks based on design contract")
+    suggest_cmd.add_argument("model", help="model name to analyze")
+
     assembly = sub.add_parser("assembly", help="create, validate, and review multi-model assemblies")
     assembly_sub = assembly.add_subparsers(dest="assembly_command", required=True)
     assembly_init = assembly_sub.add_parser("init", help="create an assembly contract")
@@ -358,6 +361,9 @@ def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "doctor":
         from .doctor import run_model_doctor
         return run_model_doctor(project, args.model, variant=args.variant)
+    if args.command == "suggest-checks":
+        from .suggest import suggest_checks
+        return suggest_checks(project, args.model)
 
     if args.command == "snapshot":
         return _dispatch_snapshot(project, args)

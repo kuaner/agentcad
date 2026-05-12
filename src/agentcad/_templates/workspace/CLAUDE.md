@@ -241,6 +241,7 @@ agentcad report <model>
 
 # Assembly
 agentcad doctor <model>[:<variant>]           # Workflow state diagnostics: gaps, next command
+agentcad suggest-checks <model>               # Suggest missing checks based on design contract
 
 # Assembly
 agentcad assembly init <assembly>

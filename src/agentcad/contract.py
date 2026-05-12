@@ -29,7 +29,7 @@ INTERFACE_WORDS = frozenset({"socket", "pin", "dovetail", "gear", "mate", "inter
 # Check types that verify hole-specific behavior.
 HOLE_CHECK_TYPES = frozenset({"hole_accessibility", "inner_diameter_at_z", "min_clearance"})
 # Check types that verify attachment root/interface behavior.
-ROOT_CHECK_TYPES = frozenset({"min_wall_thickness", "min_clearance", "section_bbox_at_z", "feature_position"})
+ROOT_CHECK_TYPES = frozenset({"min_wall_thickness", "min_clearance", "feature_position"})
 
 
 @dataclass(frozen=True)
