@@ -2,240 +2,335 @@
 
 Last updated: 2026-05-12
 
-This document is the actionable companion to [`DESIGN.md`](DESIGN.md). It
-takes the high-level milestones (V0 – V6) and breaks them into concrete,
-sequenced engineering tasks with explicit acceptance criteria. The
-ordering reflects current priorities; stages are independent enough that
-ordering can be revisited at the start of each milestone.
+This roadmap is intentionally forward-looking. Historical delivery details live
+in [`STATUS.md`](STATUS.md); this document answers what should be built next,
+why it matters, and how to know each step is done.
 
-For background on what is already shipped, see
-[`STATUS.md`](STATUS.md).
+Detailed PR-level execution plans, module ownership, payload sketches, and test
+matrices live in [`ROADMAP_EXECUTION_PLAN.md`](ROADMAP_EXECUTION_PLAN.md).
 
-## Milestone overview
+## Current Position
 
-| Milestone | Theme | Status | Headline outcome |
+AgentCAD already has a strong single-model and early assembly loop:
+
+- workspace scaffolding, model variants, sync, build, measure, render, preview,
+  validate, diff, review, report, and deliver
+- design-time precheck with relational geometry checks
+- post-build mesh, section, volume, artifact, metadata, and feature coverage
+  checks
+- a broad `agentcad.features` helper library backed by hardware dimension
+  tables
+- first-class assembly validation with transforms, mates, clearance,
+  interference evidence, MJCF export, and interactive preview
+- fast/slow GitHub Actions workflows and PyPI publishing
+
+The biggest remaining gap is not "more CAD primitives". The useful next step is
+to make AgentCAD reliable at project scale: every example and workspace should
+be batch-validatable, regressions should be reviewable in CI, contracts should
+be harder to write incorrectly, and agents should get clearer feedback when a
+model is valid but mechanically weak.
+
+## Roadmap Principles
+
+1. **Evidence before export**: STEP/STL/preview artifacts are deliverables only
+   after contracts, measurements, and review gates agree.
+2. **Batch reliability beats more demos**: one-off examples are useful only when
+   they become repeatable regression fixtures.
+3. **Contracts must get stricter over time**: ambiguous checks that can pass for
+   the wrong reason should become warnings first, then failures.
+4. **Helpers are not a DSL yet**: keep the feature layer Python-first until
+   repeated composition problems justify a declarative schema.
+5. **Integrations come after invariants**: MCP, glTF, and richer viewers should
+   not arrive before validation, regression, and schema guarantees are solid.
+
+## Priority Map
+
+| Priority | Theme | Status | Primary outcome |
 |---|---|---|---|
-| V0 | Minimal agent loop | ✅ delivered | new / build / measure / render / validate / deliver |
-| V1 | Geometry observability | ✅ delivered | three-axis probe + scan, multi-view, debug SVGs |
-| V2 | Design spec standardization | ✅ delivered | check IDs, schema, weak-check warnings, Markdown report |
-| V2.5 | Design-time observability | ✅ delivered | `precheck`, `review`, four relational checks, common-error catalog |
-| V3 | Feature library | ✅ delivered | `agentcad.features`, `ContractBuilder`, hardware tables, helper-driven examples |
-| V4 | Assembly + relations | ✅ delivered | assembly contracts, mate residuals, fit checks, mesh narrow phase, interactive preview, mandatory MJCF |
-| **V5** | **CAD CI** | **partially delivered / next** | **fast/slow GitHub Actions exist; `validate all`, regression snapshots, benchmarks remain** |
-| V6 | Optional integrations | deferred | MCP server, PNG / glTF previews, external viewer handoff |
-
-## V3 — Feature library
-
-Status: delivered in `agentcad.features`.
-
-### Why it was needed
-
-Across the existing examples we already see the same primitives written
-by hand multiple times:
-
-- the fan-adapter has a 71.5 mm bolt pattern;
-- the magnetic outlet plate has the same pattern plus stepped bores;
-- the mounting bracket repeats two M4 through-holes;
-- the iPhone case has rounded plates with multiple rectangular cutouts.
-
-Every one of these required the agent to write the geometry **and** to
-write the matching checks (`bbox_size`, `inner_diameter_at_z`,
-`min_clearance`, `hole_accessibility`). The check side is mechanical and
-prone to omission. Helpers write both halves at once.
-
-### Delivered scope
-
-Exposed as a thin `agentcad.features` module that returns build123d objects
-and can register matching feature/check records through `ContractBuilder`.
-
-Delivered helper set:
-
-| Helper group | Helpers |
-|---|---|
-| base and masks | `plate`, `boss`, `rib`, `slot`, `tube`, `rect_tube`, `prismoid`, `wedge`, `torus`, `pie_slice`, `chamfer_mask`, `rounding_mask` |
-| holes and hardware | `mounting_pattern`, `screw_hole`, `stepped_bore`, `nut_trap`, `nut_body`, `screw`, `threaded_rod`, `threaded_nut`, `sinusoidal_thread` |
-| mechanisms and patterns | `duct_socket`, `living_hinge_mask`, `dovetail`, `hex_panel`, `snap_pin`, `snap_pin_socket`, `sparse_wall`, `nema_mount` |
-| gears and surfaces | `spur_gear`, `ring_gear`, `helical_knurl` |
-
-Each helper:
-
-- accepts a `name` argument that becomes both the build123d label and
-  the `feature_id` in `design.json`;
-- can register feature/check entries into a supplied `ContractBuilder`;
-- emits checks appropriate to the helper class, such as bbox, diameter,
-  section, wall-thickness, volume, or feature-position checks;
-- composes with `agentcad.hardware` lookup tables for screws, nuts, washers,
-  and heat-set inserts where relevant.
-
-### Delivered artifacts
-
-1. `src/agentcad/features/` — public helper modules plus shared geometry code.
-2. `src/agentcad/features/contract.py` — `ContractBuilder` merge/write support.
-3. `src/agentcad/hardware/` — hardware dimension database.
-4. `tests/test_features/` — helper coverage per module.
-5. Helper-driven examples: `e2e-feature-demo`, `e2e-feature-helpers`,
-   `drone-panel`, `gear-housing`, and `pipe-coupling`.
-6. Workspace reference templates include feature usage notes under
-   `references/feature/`.
-
-### Acceptance status
-
-- 30+ helpers ship with focused tests.
-- `ContractBuilder` writes/merges helper records into `design.json` and avoids
-  duplicate scaffold entries.
-- Helper-driven workspaces exercise real model generation and validation.
-- The feature layer remains Python-first; a declarative DSL is still deferred.
-
-### Follow-up questions
-
-- Should more helpers emit structured metadata for assembly interfaces?
-- Which repeated helper combinations deserve composite helpers, and which
-  should stay explicit in `part.py`?
+| P0 | Batch validation and regression CI | Next | `agentcad validate all` plus reviewable geometry/check drift |
+| P1 | Contract and schema hardening | Next | Fewer false passes and clearer machine-readable contract errors |
+| P2 | Assembly productization | Next | Assemblies move from working feature to trusted product workflow |
+| P3 | Agent authoring UX | Next | Agents need fewer manual probes and write stronger checks by default |
+| P4 | Performance and artifact hygiene | Opportunistic | Faster section/render/validation runs with cleaner outputs |
+| P5 | Optional integrations | Deferred | MCP and extra export formats after CLI invariants are stable |
 
 ---
 
-## V4 — Assembly + relations
-
-Detailed design proposal: [`ASSEMBLY_TECHNICAL_PLAN.md`](ASSEMBLY_TECHNICAL_PLAN.md).
-
-Status: V4 validation is delivered in the CLI as
-`agentcad assembly init/list/validate/review` plus the cross-cutting
-`agentcad preview <name>` command for both models and assemblies. The delivered
-workflow includes mesh narrow-phase interference evidence, descriptor-based
-inter-model clearance, assembly section component counts, combined STL export,
-MJCF round-trip validation, and a `fan_with_screen` acceptance fixture.
+## P0 — Batch Validation And Regression CI
 
 ### Why
 
-V3 makes single parts cheap to author. The next ceiling was multi-part
-assemblies: most real CAD work is "this part bolts to that part with X
-clearance and Y mate". V4 gives the agent a shared assembly coordinate system,
-explicit mate/clearance contracts, and generated evidence instead of forcing it
-to compare unrelated model outputs manually. The
-`examples/e2e-bit-holder/` body/lid test remains the regression fixture for
-that workflow.
+The project now has enough examples, helpers, and assembly fixtures that manual
+validation is no longer a good safety net. A change to a helper, section
+analysis, STL parsing, or preview generation can silently affect many models.
+The next valuable milestone is a workspace-scale validation command and CI
+evidence that makes those changes reviewable.
 
 ### Scope
 
-- `cadproject.json` gains an optional `assemblies:` array. Each
-  assembly references models by name, supplies a transform per model,
-  and a list of mate points.
-- New CLI:
-  - `agentcad assembly init <name>` — scaffold an assembly directory.
-  - `agentcad assembly list` — list discovered assemblies.
-  - `agentcad assembly validate <name>` — run inter-model
-    checks, emit combined/exploded SVG previews, generate an explodable
-    component-isolation `preview.html`, and generate MJCF.
-  - `agentcad preview <name>` — regenerate the local interactive Three.js
-    review page for either a model or an assembly. Preview is a universal
-    artifact-viewing command; assembly is optional and should not own it.
-  - `agentcad assembly review <name>` — block delivery on uncovered mates,
-    missing MJCF, stale artifacts, or unresolved component-pair risks.
-- Inter-model relational checks: the existing four geometric-relation
-  checks gain a `feature_a_model` / `feature_b_model` syntax so they can
-  reference shapes declared in two different models.
-- Metadata-to-geometry consistency checks ensure assembly interfaces declared in
-  `metadata.json` match the built STL instead of being trusted blindly.
-- Mandatory MJCF export as a human-verifiable assembly artifact. Optional
-  MuJoCo-derived metrics may augment external viewer workflows, but do not
-  replace AgentCAD's numeric checks.
+- Add `agentcad validate all` for workspace-level validation.
+- Discover models, variants, and assemblies from `cadproject.json` and the
+  filesystem.
+- Support filters such as `--models`, `--assemblies`, `--changed-only`,
+  `--include-slow`, and `--fail-fast`.
+- Emit a project-level report under `outputs/` or `.agentcad/` without creating
+  ambiguous model artifacts.
+- Store normalized validation snapshots for selected examples.
+- Compare current results against snapshots:
+  - check status drift
+  - bbox, volume, triangle count, and section metric drift
+  - STEP/STL hash drift where hash stability is expected
+  - preview/MJCF artifact presence
+- Add a CI workflow step that runs batch validation on representative fixtures.
 
 ### Acceptance
 
-- `examples/fan-adapter-8025/assemblies/fan_with_screen/` combines the existing
-  `fan_duct_adapter_8025` and `outlet_magnetic_screen_plate_8025` models into
-  an assembly that passes descriptor clearance, mesh penetration,
-  section-count, bbox, MJCF, and preview artifact checks.
+- `agentcad validate all` returns stable JSON with totals, per-target status,
+  artifact paths, and a nonzero exit code on failure.
+- The command validates normal models, model variants, and assemblies in one
+  workspace.
+- At least `fan-adapter-8025`, `e2e-bit-holder`, `e2e-feature-helpers`,
+  `drone-panel`, `gear-housing`, and `pipe-coupling` are covered by a batch
+  fixture.
+- A deliberate helper geometry change produces a CI-readable regression report
+  rather than only a failing test name.
+
+### Out Of Scope
+
+- Cloud artifact storage.
+- Full visual snapshot testing.
+- Guaranteeing byte-identical STEP output across all platforms.
 
 ---
 
-## V5 — CAD CI
+## P1 — Contract And Schema Hardening
 
-Delivered:
+### Why
 
-- `.github/workflows/ci.yml` runs the fast test suite on pushes and pull
-  requests, plus a CLI entrypoint smoke test.
-- `.github/workflows/slow-tests.yml` runs slow tests on a daily schedule and
-  manual trigger.
-- `.github/workflows/publish.yml` verifies via CI before building and
-  publishing tagged releases to PyPI.
+The contract layer is now central to correctness, but several checks can still
+be underspecified. The next hardening pass should reduce false passes and make
+invalid contracts fail with precise, actionable errors before any geometry is
+built.
 
-Remaining:
+### Scope
 
-- `agentcad validate all` walks every model in the workspace.
-- Regression snapshots hash STEP / STL outputs and store `validation.json`;
-  PRs that change either are flagged.
-- Benchmark suite tracks build time, validation time, and mesh size per
-  example.
-- Optional batch model generation for example and fixture workspaces.
+- Formalize schemas for:
+  - `design.json`
+  - `metadata.json`
+  - `assembly.json`
+  - validation and review output payloads
+- Add schema-version migration rules or explicit unsupported-version errors.
+- Tighten `section_bbox_at_z` semantics:
+  - require `region` for hollow or void assertions that could pass on an empty
+    slice
+  - distinguish "no mesh at this plane" from "expected void in this region"
+- Extend `min_wall_thickness` from a single plane to a Z-range / axis-range mode
+  that reports the worst slice.
+- Add negative regression fixtures for known failures:
+  - hole-wall interference
+  - hole-to-edge break
+  - hole-to-hole pitch too tight
+  - shallow through-hole
+  - rib or boss blocking tool access
+  - detached lip/tab/rib that passes body-exists checks
+- Make weak-check warnings more specific:
+  - "feature has only envelope checks"
+  - "hole lacks access check"
+  - "load-bearing attachment lacks root/interface check"
+  - "assembly interface declared in metadata but not measured"
 
 ### Acceptance
 
-- A red-vs-green PR demo where a helper change causes one example's
-  mesh hash to drift; CI flags the regression and the diff is
-  human-reviewable.
+- Invalid contracts fail in `precheck` with field-level error paths.
+- Every known common-error fixture fails for the intended reason.
+- The weak-check report can be used by an agent to add a better check without
+  reverse-engineering the validator.
+- No existing valid example becomes red without a documented migration note.
 
 ---
 
-## V6 — Optional integrations (deferred)
+## P2 — Assembly Productization
 
-Kept out of the core loop on purpose. Pick up only when the CLI
-+ JSON contract is no longer enough.
+### Why
 
-- MCP server exposing the same CLI surface (so non-CLI agents can
-  drive AgentCAD).
-- PNG / glTF / STEP-AP242 export.
-- External viewer handoff beyond the generated HTML preview.
-- Template gallery (browse-and-fork existing models).
+Assembly validation exists and is valuable, but it should become easier to trust
+for real multi-part products. The project needs stricter metadata contracts,
+better assembly examples, and clearer review gates before assembly is treated as
+mature as single-part validation.
+
+### Scope
+
+- Define an assembly-ready `metadata.json` schema for anchors and interfaces.
+- Add helper support for emitting common interfaces:
+  - cylindrical male/female sockets
+  - screw axes and install envelopes
+  - snap-fit pin/socket pairs
+  - dovetail rails
+  - gear axes and pitch references
+- Add assembly fixtures beyond `fan_with_screen`:
+  - body/lid fit fixture
+  - snap-fit fixture
+  - gear housing fixture
+  - fastened plate fixture
+- Expand assembly review:
+  - uncovered component pair risks
+  - missing interface measurement
+  - stale component artifact detection
+  - missing preview/MJCF/combined STL artifacts
+- Evaluate whether exact STEP assembly export is necessary; keep combined STL
+  plus MJCF as the default until a concrete downstream workflow needs STEP
+  assembly.
+
+### Acceptance
+
+- New assembly fixtures fail when a mate, clearance, or transform is
+  intentionally wrong.
+- Assembly review blocks delivery on missing interface evidence, not just
+  malformed JSON.
+- Helper-emitted interfaces can be consumed by assembly validation without
+  hand-copying metadata coordinates.
+- MJCF round-trip checks remain supplemental evidence, not the source of truth.
 
 ---
 
-## Cross-cutting tasks (any milestone)
+## P3 — Agent Authoring UX
 
-These are smaller items that can be done at any point; group them into
-PRs alongside whichever milestone they support.
+### Why
 
-- **Section semantics**: today's `section_bbox_at_z` `expected: "void"`
-  treats any empty intersection as a void. Tighten by requiring the
-  `region` argument when the model is hollow, so a missed mesh
-  slice does not silently pass.
-- **Probe ergonomics follow-up**: `--cx` / `--cy` aliases are delivered for
-  radial centers. Continue smoothing multi-plane probe input if more CLI
-  parsing traps appear.
-- **Render speed**: section SVG rendering on the iPhone case takes
-  >1 s; profile and cache the triangle-plane intersection.
-- **`agentcad sync` refinements**: `--dry-run`, `--only`, and
-  `--prune-deprecated` are delivered. Future work can add richer diff output if
-  template churn grows.
-- **`min_wall_thickness` 3D mode**: today the check works on a single Z
-  slice. Extend with a Z-range option that takes the worst slice.
-- **Common-error regression tests**: each catalogued common error
-  (hole-wall interference, hole-edge break, hole-to-hole, rib blocking
-  bolt) gets a fixture model that *should* fail validation, plus a
-  test that asserts validation fails for the right reason.
+AgentCAD is agent-first, so the most valuable UX work is not a desktop UI. It
+is reducing the number of manual reasoning steps an agent needs to create a
+strong contract and debug a failing model.
+
+### Scope
+
+- Add `agentcad doctor <model>` or extend `review` with a stronger advisory
+  mode:
+  - missing checks by feature type
+  - likely better probe commands
+  - stale or contradictory artifacts
+  - weak helper usage patterns
+- Add `agentcad suggest-checks <model>` based on `features`, `params.json`,
+  helper metadata, and existing probes.
+- Improve `suggested_fix` payloads:
+  - include parameter candidates when `param_ref` is absent but likely
+  - distinguish "contract likely wrong" from "geometry likely wrong"
+  - include the exact probe/render commands to verify a fix
+- Add a helper cookbook generated from tested snippets, not prose-only docs.
+- Make template sync safer for long-lived projects:
+  - richer `sync --dry-run` diff output
+  - conflict markers or side-by-side paths for locally modified templates
+
+### Acceptance
+
+- A fresh agent can take a scaffolded non-trivial part from concept to review
+  with fewer manual probe guesses.
+- Failing validation output names the next command to run for the top common
+  failure classes.
+- Helper docs include executable snippets covered by tests.
+- `sync --dry-run` is useful enough to review template drift before writing.
 
 ---
 
-## Decision log (recent)
+## P4 — Performance And Artifact Hygiene
+
+### Why
+
+As batch validation grows, slow section extraction and noisy artifacts will
+become development friction. Performance work should be targeted at measured
+hot spots, not speculative rewrites.
+
+### Scope
+
+- Profile section extraction on complex examples such as `iphone15pro-case`.
+- Cache triangle-plane intersections where repeated section checks share an
+  axis or nearby plane.
+- Add timing data to validation output:
+  - build time
+  - measure time
+  - render time
+  - check time
+  - preview generation time
+- Define artifact retention rules:
+  - validation history count / age
+  - debug SVG cleanup
+  - preview regeneration policy
+- Add benchmark reporting for representative examples in slow CI.
+
+### Acceptance
+
+- Batch validation reports per-target timing and identifies slow stages.
+- Section-heavy examples get a measurable speedup without changing validation
+  semantics.
+- Generated artifacts are predictable enough for CI and local cleanup.
+
+---
+
+## P5 — Optional Integrations
+
+### Why
+
+Integrations are useful only after the CLI contract is stable. Until then, they
+risk multiplying unstable surfaces.
+
+### Candidate Work
+
+- MCP server exposing the same validated CLI operations.
+- PNG snapshots for CI comments and release artifacts.
+- glTF export or viewer handoff for workflows where STL + SVG + HTML preview is
+  not enough.
+- Template gallery for browse-and-fork example workspaces.
+- STEP-AP242 or richer CAD exchange export if downstream CAD tools require it.
+
+### Entry Criteria
+
+- `validate all` and regression snapshots are working.
+- Schemas are explicit enough that external clients do not need to infer
+  payload shape.
+- At least one real external workflow requires the integration.
+
+---
+
+## Near-Term Execution Plan
+
+### Next PR: `agentcad validate all`
+
+1. Add target discovery for models, variants, and assemblies.
+2. Run validation/review in a deterministic order.
+3. Emit a project-level JSON summary.
+4. Cover discovery and failure behavior in tests.
+5. Add one example workspace batch fixture.
+
+### Following PR: regression snapshots
+
+1. Define normalized snapshot format.
+2. Add `agentcad diff --snapshot` or a dedicated snapshot compare command.
+3. Store snapshots for selected examples.
+4. Wire snapshot comparison into CI for representative fixtures.
+
+### Following PR: contract hardening fixtures
+
+1. Add negative fixture models for the common-error catalog.
+2. Assert each fixture fails for the intended check type.
+3. Promote the most reliable weak-check warnings into blocking review gates.
+
+## Decision Log
 
 | Date | Decision | Why |
 |---|---|---|
-| 2026-05-12 | Treat V3 helper library as delivered and keep it Python-first | The merged `agentcad.features` surface and tests cover the repeated primitive problem without needing a declarative DSL. |
-| 2026-05-12 | Split CI into fast, slow, and publish workflows | Fast feedback should run on every push/PR, while slow CAD-heavy tests and release publishing need separate triggers. |
-| 2026-05-07 | Treat the four geometric-relation checks as design-time first, post-build second | The original interference bug was a hand-math error in `design.json`; catching it post-build is too late and re-runs cost agent context. |
-| 2026-05-07 | Make `precheck` and `review` mandatory checkpoints | The mounting-bracket E2E run only surfaced the hole-wall interference because we manually inspected the iso preview. Reviewing must be cheap and routine. |
-| 2026-05-07 | All workspace docs are English-only | Mixed-language templates were confusing for agents that translate selectively; English is the lingua franca. |
-| 2026-05-06 | Helpers (V3) over a declarative DSL | A DSL forces upfront design choices we have not learned yet; helpers compose freely and emit matching checks today. |
-| 2026-05-06 | No project-root `outputs/` directory | Each model owns its artifacts; ambiguity caused stale-artifact bugs in early V0. |
+| 2026-05-12 | Make batch validation and regression CI the next priority | The project now has enough examples and helpers that manual per-model validation is the main reliability bottleneck. |
+| 2026-05-12 | Treat V3 helper library as delivered and keep it Python-first | The merged `agentcad.features` surface and tests solve repeated primitive authoring without needing a declarative DSL. |
+| 2026-05-12 | Split CI into fast, slow, and publish workflows | Fast feedback should run on every push/PR, while CAD-heavy tests and release publishing need separate triggers. |
+| 2026-05-07 | Treat geometric-relation checks as design-time first, post-build second | The original interference bug was a hand-math error in `design.json`; catching it post-build is too late. |
+| 2026-05-07 | Make `precheck` and `review` mandatory checkpoints | Hole-wall interference and floating-feature failures need cheap routine gates, not occasional human inspection. |
+| 2026-05-07 | Keep workspace docs English-only | Mixed-language templates were confusing for agents that translate selectively. |
+| 2026-05-06 | Keep helpers over a declarative DSL for now | Python helpers compose freely while the correct higher-level schema is still unclear. |
+| 2026-05-06 | Avoid project-root model outputs | Each model owns its artifacts; ambiguous root outputs caused stale-artifact bugs early on. |
 
----
+## Keeping This Roadmap Useful
 
-## How to keep this document accurate
-
-- After every milestone PR, update the table in
-  [Milestone overview](#milestone-overview) and the corresponding
-  STATUS.md milestone block.
-- Add a row to the [Decision log](#decision-log-recent) whenever a
-  major roadmap question is settled.
-- Open questions for an in-flight milestone live under that milestone's
-  "Open questions" subsection, not in the global section.
+- Move completed work to [`STATUS.md`](STATUS.md); keep this file focused on
+  decisions still ahead.
+- Add acceptance criteria before starting implementation.
+- Remove or demote items that do not protect correctness, repeatability, or
+  agent autonomy.
+- Re-rank priorities after every real e2e modeling session.

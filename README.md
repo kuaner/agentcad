@@ -202,6 +202,9 @@ and PRs; slow tests run on a scheduled/manual workflow.
   V0–V6 iteration roadmap (with delivered milestones marked).
 - [`docs/STATUS.md`](docs/STATUS.md) — current implementation state, recent
   lessons, delivered validation gates, and remaining roadmap direction.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) and
+  [`docs/ROADMAP_EXECUTION_PLAN.md`](docs/ROADMAP_EXECUTION_PLAN.md) —
+  prioritized future work plus PR-level execution, test, and acceptance plans.
 - `AGENTS.md` / `CLAUDE.md` (workspace) — operating rules for the coding
   agent, including the mandatory TDD red/green workflow and the common
   design-error catalog.
