@@ -136,6 +136,33 @@ project/
       <name>.mjcf.xml
 ```
 
+## Documentation Maintenance
+
+This project has **two CLAUDE.md files** serving different audiences. When you
+make changes to the project (new commands, new modules, changed conventions),
+you must update **both** — not just one.
+
+1. **Root `CLAUDE.md`** (this file) — audience: agents **developing** the
+   agentcad project. Covers tech stack, project structure, CLI reference,
+   conventions, pitfalls, release process, running tests. Update this file when:
+   - Adding new modules (update Project Structure)
+   - Adding new CLI commands (update CLI Commands)
+   - Changing test count (update Running Tests)
+   - Adding new pitfalls or conventions
+
+2. **Template `CLAUDE.md`**
+   (`src/agentcad/_templates/workspace/CLAUDE.md`) — audience: agents **using**
+   agentcad to create CAD models. Covers 14-stage workflow, iteration loop, hard
+   rules, workspace layout, CLI quick reference. Update this file when:
+   - Adding new CLI commands (update CLI Quick Reference)
+   - Changing workflow stages or hard rules
+   - Changing workspace layout or conventions that affect modeling behavior
+
+The template file is copied into every new workspace via `agentcad init` and
+propagated to existing workspaces via `agentcad sync`. The root file stays in
+the project repo only. If you add a command but forget the template, users will
+never discover it — so always check both files after a change.
+
 ## Key Conventions
 
 - `part.py` must assign the final build123d object to a global variable named `result`
