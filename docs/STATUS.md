@@ -60,6 +60,9 @@ agentcad review <model>                           # pre-delivery checklist + rel
 agentcad deliver <model>[:<variant>]                      # delivery manifest
 agentcad preview <name>[:<variant>] [--kind model|assembly]  # interactive HTML preview
 agentcad report <model>                                  # Markdown validation summary
+agentcad doctor <model>[:<variant>]               # workflow state diagnostics: gaps, severity, next command
+agentcad suggest-checks <model>               # suggest missing checks based on design contract
+agentcad clean [--model <name>] [--dry-run] [--debug] [--previews]  # remove debug/history artifacts
 ```
 
 `agentcad validate` is the post-build self-check. `agentcad precheck` and
@@ -313,15 +316,17 @@ Both are documented in `references/build123d-guide.md`.
 
 ## Tests
 
-`uv run pytest -v` — currently 376 collected tests across:
+`uv run pytest -v` — currently 657 collected tests across:
 
 - `test_cli.py` — CLI dispatch
 - `test_workspace.py` — init / new / sync dry-run / sync-only / deprecated-prune / discovery
 - `test_runner.py`, `test_stale.py` — build runner + hash cache
 - `test_stl.py` — pure-Python STL reader and analysis
 - `test_render.py`, `test_section.py` — SVG rendering and section extraction
+- `test_section_cache.py` — SectionCache for triangle-plane intersection caching
 - `test_preview.py` — local interactive HTML preview generation
 - `test_validate.py`, `test_weak_check.py` — post-build validation + weak-check warnings + fix suggestions
+- `test_suggested_fix.py` — improved suggested_fix payloads (likely_source, next_commands, param_candidates)
 - `test_diff.py` — validation history archiving and run diff
 - `test_variant.py` — model variant creation and variant-aware build
 - `test_probe.py` — probe + scan
@@ -329,8 +334,18 @@ Both are documented in `references/build123d-guide.md`.
 - `test_hardware.py` — screw, nut, washer, and heat-set insert lookup tables
 - `test_checks_relations.py`, `test_checks_section.py` — relation and section check edge cases
 - `test_geometry.py` — pure shape primitives (AABB, clearance, accessibility, wall thickness)
-- `test_assembly.py` — assembly contracts, transform bans, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, SVG/STL/MJCF artifacts
+- `test_assembly.py` — assembly contracts, transform bans, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, SVG/STL/MJCF artifacts, metadata schema integration
 - `test_precheck_review.py` — `agentcad precheck` and `agentcad review` integration
+- `test_review_gates.py` — feature classification, weak-check severity, review blocking gates
+- `test_metadata_schema.py` — metadata interface schema validation and ContractBuilder interface emission
+- `test_negative_fixtures.py` — common-error regression fixtures (hole-wall, hole-edge, blocked tool, good clearance)
+- `test_doctor.py` — workflow state diagnostics: severity-graded findings + recommended next commands
+- `test_suggest.py` — suggest-checks: missing check recommendations based on design contract
+- `test_cookbook.py` — executable helper cookbook: 6 common patterns with testable snippets
+- `test_timing.py` — timing instrumentation: timed_stage context manager, payload timings
+- `test_clean.py` — artifact cleanup: dry-run, validation history, debug, protected artifacts, retention
+- `test_batch.py` — batch validation target discovery and workspace-level orchestration
+- `test_snapshot.py` — regression snapshots: write, load, compare normalized validation data
 - `test_jsonio.py`
 
 CI status:
@@ -353,6 +368,11 @@ CI status:
 | V2.6 — design-thinking prompts | ✅ delivered (new) | split references, Discovery Gate, Concept Gate, Design Quality Review, real cable-hook e2e |
 | V3 — feature library | ✅ delivered | `agentcad.features`, `ContractBuilder`, 30+ tested helpers, hardware dimension database, helper-driven example workspaces |
 | V4 — assembly validation | ✅ delivered | `agentcad assembly init/list/validate/review`, rigid transforms, metadata interface measurement, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, combined/exploded SVG, combined STL, top-level interactive preview, mandatory MJCF round-trip |
+| P0 — batch validation + regression CI | ✅ delivered | `agentcad validate all`, target discovery, per-model/assembly/variant validation, regression snapshots, batch summary, fail-fast |
+| P1 — contract and schema hardening | ✅ delivered | field-level SchemaIssue errors, section void semantics (region required), min_wall_thickness range mode, negative regression fixtures, weak-check severity grading (blocking/warning), review blocking gates, feature classification |
+| P2 — assembly productization | ✅ delivered | metadata interface schema, helper-emitted interfaces (tube, duct_socket, screw_hole, snap_pin), assembly metadata schema integration, screw_axis validation |
+| P3 — agent authoring UX | ✅ delivered | `agentcad doctor`, `agentcad suggest-checks`, improved suggested_fix (likely_source, next_commands, param_candidates), executable helper cookbook (6 patterns) |
+| P4 — performance and artifact hygiene | ✅ delivered | timing instrumentation (timed_stage, payload timings), SectionCache for triangle-plane intersections, `agentcad clean` with retention policy |
 | V4.5 — iteration tooling | ✅ delivered | SVG dimension annotations, validation run diff, model variants, fix suggestions |
 | V5 — CAD CI | partially delivered | Fast GitHub Actions suite, separate slow-test workflow, and publish workflow are present; workspace-wide `validate all`, regression snapshots, and benchmarks remain planned |
 
