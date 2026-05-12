@@ -183,8 +183,10 @@ def build_parser() -> argparse.ArgumentParser:
     snapshot_sub = snapshot.add_subparsers(dest="snapshot_command", required=True)
     snapshot_write = snapshot_sub.add_parser("write", help="write regression snapshots for validated targets")
     snapshot_write.add_argument("--target", default=None, help="specific model or assembly name (default: all)")
+    snapshot_write.add_argument("--include-variants", action="store_true", help="include model variants")
     snapshot_compare = snapshot_sub.add_parser("compare", help="compare current results against baseline snapshots")
     snapshot_compare.add_argument("--target", default=None, help="specific model or assembly name (default: all)")
+    snapshot_compare.add_argument("--include-variants", action="store_true", help="include model variants")
 
     return parser
 
@@ -451,7 +453,7 @@ def _dispatch_snapshot(project: Path, args: argparse.Namespace) -> dict:
     from .batch import discover_validation_targets
     from .jsonio import read_json
 
-    targets = discover_validation_targets(project)
+    targets = discover_validation_targets(project, include_variants=getattr(args, "include_variants", False))
     target_name = getattr(args, "target", None)
     if target_name:
         targets = [t for t in targets if t.name == target_name]

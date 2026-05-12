@@ -135,7 +135,7 @@ class TestInvalidMetadata:
                 "axis": {"point": [0, 0, 0], "direction": [0, 0, 1]},
             }},
         })
-        assert any("interfaces.x" in i.path and "outer_cylinder" in i.message or "inner_cylinder" in i.message for i in issues)
+        assert any("interfaces.x" in i.path and ("outer_cylinder" in i.message or "inner_cylinder" in i.message) for i in issues)
 
     def test_cylinder_descriptor_wrong_type(self):
         issues = validate_part_metadata_dict({
