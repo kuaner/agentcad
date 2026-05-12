@@ -22,13 +22,13 @@ discovery -> concept -> design contract -> precheck -> params/source -> build
 | Init | `agentcad init <workspace> [--model <name>]` | Initialize workspace scaffold (optionally create first model) |
 | Scaffold | `agentcad new <model>` | Create model folder inside an existing workspace |
 | Scaffold | `agentcad new <model>:<variant>` | Create a variant (same `part.py`, different `params.json`) |
-| Sync | `agentcad sync` | Refresh workspace scaffold from latest templates |
+| Sync | `agentcad sync [--dry-run] [--only <path>] [--prune-deprecated]` | Refresh workspace scaffold from latest templates, preview changes, or prune deprecated scaffold paths |
 | Precheck | `agentcad precheck <model>` | Solve `design.json` statically (schema, feature coverage, `min_clearance`) **before** part.py is written |
 | Build | `agentcad build <model>[:<variant>]` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
 | Measure | `agentcad measure <model>[:<variant>]` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
 | Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews with dimension annotations + Z/X/Y cross-section SVGs with measurement sidecars |
 | Preview | `agentcad preview <name>[:<variant>]` | Generate a local `preview.html` for either a model or an assembly, with interactive Three.js STL inspection, component isolation, and geometry/check panels |
-| Probe | `agentcad probe <model>` | Cross-section diameter / bbox / component analysis plus ad-hoc line, point, and region measurements; `--scan` to discover step changes |
+| Probe | `agentcad probe <model>` | Cross-section diameter / bbox / component analysis plus ad-hoc line, point, and region measurements; `--scan` to discover step changes; `--cx/--cy` avoid negative-number parsing issues |
 | Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + measurement JSON + suggested probes |
 | Validate | `agentcad validate <model>[:<variant>]` | Build + measure + render all orthographic previews + design checks + feature coverage + fix suggestions |
 | Diff | `agentcad diff <model> [--last]` | Compare current vs previous validation run: fixed/regressed/stable checks + geometry drift |
@@ -168,6 +168,8 @@ provides ISO/DIN specs for screws, nuts, washers, and heat-set inserts.
 | `examples/e2e-real-cable-hook/` | Real e2e surface-mounted cable hook with concept + quality review artifacts |
 | `examples/e2e-bit-holder/` | Two-part body/lid design that motivated first-class assembly validation |
 | `examples/e2e-l-bracket/` | L-shaped bracket demonstrating variants, diff, and fix suggestions |
+| `examples/e2e-feature-helpers/` | End-to-end workspace focused on ContractBuilder and Phase 3 helper usage |
+| `examples/e2e-feature-demo/` | Smaller helper-driven model used as a feature-library smoke fixture |
 | `examples/drone-panel/` | Lightweight drone panel with sparse_wall, hex_panel, torus seal, cover lip |
 | `examples/gear-housing/` | Spur + ring gear housing demonstrating gear helpers |
 | `examples/pipe-coupling/` | Pipe coupling with tube, dovetail, and chamfer_mask helpers |
@@ -186,16 +188,18 @@ agentcad review fan_duct_adapter_8025
 uv run pytest -v
 ```
 
-The test suite covers CLI dispatch, workspace scaffolding, STL
-reading and measurement, section extraction and SVG rendering, JSON IO,
-post-build validation checks, weak-check warnings, stale build detection,
-geometric primitives, interactive previews, assembly validation, and
-`precheck` / `review` integration.
+The test suite currently collects 376 tests. It covers CLI dispatch, workspace
+scaffolding and sync modes, STL reading and measurement, section extraction and
+SVG rendering, JSON IO, post-build validation checks, weak-check warnings,
+stale build detection, feature helpers, hardware lookup tables, geometric
+primitives, interactive previews, variants, assembly validation, and
+`precheck` / `review` integration. GitHub Actions runs the fast suite on pushes
+and PRs; slow tests run on a scheduled/manual workflow.
 
 ## Documentation
 
 - [`docs/DESIGN.md`](docs/DESIGN.md) — architecture, first principles, and
-  V0–V5 iteration roadmap (with delivered milestones marked).
+  V0–V6 iteration roadmap (with delivered milestones marked).
 - [`docs/STATUS.md`](docs/STATUS.md) — current implementation state, recent
   lessons, delivered validation gates, and remaining roadmap direction.
 - `AGENTS.md` / `CLAUDE.md` (workspace) — operating rules for the coding

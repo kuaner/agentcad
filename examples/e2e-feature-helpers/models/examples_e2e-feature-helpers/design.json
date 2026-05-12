@@ -1,0 +1,43 @@
+{
+  "schema": "design-spec.v1",
+  "model": "examples_e2e-feature-helpers",
+  "units": "mm",
+  "intent": "Default rectangular sample block.",
+  "features": [
+    {
+      "id": "base_block",
+      "intent": "Rectangular solid block with parameter-driven envelope.",
+      "checks": [
+        "bbox_size",
+        "watertight"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "bbox_size",
+      "type": "bbox_size",
+      "expected": [
+        40.0,
+        30.0,
+        20.0
+      ],
+      "tolerance": 0.2
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/examples_e2e-feature-helpers.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/examples_e2e-feature-helpers.stl"
+    }
+  ]
+}

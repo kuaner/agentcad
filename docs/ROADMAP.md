@@ -1,6 +1,6 @@
 # AgentCAD Roadmap
 
-Last updated: 2026-05-09
+Last updated: 2026-05-12
 
 This document is the actionable companion to [`DESIGN.md`](DESIGN.md). It
 takes the high-level milestones (V0 – V6) and breaks them into concrete,
@@ -19,14 +19,16 @@ For background on what is already shipped, see
 | V1 | Geometry observability | ✅ delivered | three-axis probe + scan, multi-view, debug SVGs |
 | V2 | Design spec standardization | ✅ delivered | check IDs, schema, weak-check warnings, Markdown report |
 | V2.5 | Design-time observability | ✅ delivered | `precheck`, `review`, four relational checks, common-error catalog |
-| **V3** | **Feature library** | **next** | **declarative helpers that emit matching checks** |
+| V3 | Feature library | ✅ delivered | `agentcad.features`, `ContractBuilder`, hardware tables, helper-driven examples |
 | V4 | Assembly + relations | ✅ delivered | assembly contracts, mate residuals, fit checks, mesh narrow phase, interactive preview, mandatory MJCF |
-| V5 | CAD CI | planned | `validate all`, regression snapshots, GitHub Actions |
-| V6 | Optional integrations | deferred | MCP server, live viewer, PNG / glTF previews |
+| **V5** | **CAD CI** | **partially delivered / next** | **fast/slow GitHub Actions exist; `validate all`, regression snapshots, benchmarks remain** |
+| V6 | Optional integrations | deferred | MCP server, PNG / glTF previews, external viewer handoff |
 
 ## V3 — Feature library
 
-### Why now
+Status: delivered in `agentcad.features`.
+
+### Why it was needed
 
 Across the existing examples we already see the same primitives written
 by hand multiple times:
@@ -39,79 +41,56 @@ by hand multiple times:
 Every one of these required the agent to write the geometry **and** to
 write the matching checks (`bbox_size`, `inner_diameter_at_z`,
 `min_clearance`, `hole_accessibility`). The check side is mechanical and
-prone to omission. Helpers can write both halves at once.
+prone to omission. Helpers write both halves at once.
 
-### Scope
+### Delivered scope
 
-Exposed as a thin `agentcad.features` module that returns build123d
-objects **and** mutates the model's `design.json` to add matching feature
-+ check entries.
+Exposed as a thin `agentcad.features` module that returns build123d objects
+and can register matching feature/check records through `ContractBuilder`.
 
-Initial helper set:
+Delivered helper set:
 
-| Helper | Geometry | Auto-emitted checks |
-|---|---|---|
-| `plate(w, d, t, fillet=0)` | rounded plate | `bbox_size` |
-| `mounting_pattern(spacing, hole_d, plate_thickness, offsets)` | array of through-holes | one `inner_diameter_at_z` per hole + `min_clearance` to plate edges |
-| `boss(d, h, position)` | cylindrical boss | `outer_diameter_at_z` at top + `feature_position` solid at top center |
-| `rib(start, end, t, h)` | rectangular rib | `min_wall_thickness` across the rib + `feature_position` solid at midpoint |
-| `slot(length, width, depth, position)` | rounded slot | `inner_diameter_at_z` at slot center + `min_clearance` vs neighbours |
-| `stepped_bore(through_d, head_d, head_depth, plate_thickness, position)` | counterbore stack | per-step `inner_diameter_at_z` + `feature_position` chain |
-| `duct_socket(od, length, lead_in)` | cylindrical socket with chamfer | `outer_diameter_at_z` at top + `diameter_decreases_along_z` for the lead-in |
+| Helper group | Helpers |
+|---|---|
+| base and masks | `plate`, `boss`, `rib`, `slot`, `tube`, `rect_tube`, `prismoid`, `wedge`, `torus`, `pie_slice`, `chamfer_mask`, `rounding_mask` |
+| holes and hardware | `mounting_pattern`, `screw_hole`, `stepped_bore`, `nut_trap`, `nut_body`, `screw`, `threaded_rod`, `threaded_nut`, `sinusoidal_thread` |
+| mechanisms and patterns | `duct_socket`, `living_hinge_mask`, `dovetail`, `hex_panel`, `snap_pin`, `snap_pin_socket`, `sparse_wall`, `nema_mount` |
+| gears and surfaces | `spur_gear`, `ring_gear`, `helical_knurl` |
 
 Each helper:
 
 - accepts a `name` argument that becomes both the build123d label and
   the `feature_id` in `design.json`;
-- accepts an optional `neighbours` list (other declared shape
-  descriptors) and emits `min_clearance` checks against each;
-- writes its invocation arguments to `metadata.json` so the part can
-  later be reasoned about declaratively.
+- can register feature/check entries into a supplied `ContractBuilder`;
+- emits checks appropriate to the helper class, such as bbox, diameter,
+  section, wall-thickness, volume, or feature-position checks;
+- composes with `agentcad.hardware` lookup tables for screws, nuts, washers,
+  and heat-set inserts where relevant.
 
-### Deliverables
+### Delivered artifacts
 
-1. `src/agentcad/features/__init__.py` — public helper API.
-2. `src/agentcad/features/_emit.py` — internal utility to merge
-   feature + check entries into `design.json` (idempotent on re-build).
-3. `tests/test_features.py` — unit + integration tests per helper:
-   - building a single helper produces the expected geometry hash;
-   - the matching checks pass against the resulting STL;
-   - re-running `agentcad build` does not duplicate feature / check entries
-     in `design.json`.
-4. `examples/feature-library/` — a minimal showcase model exercising
-   every helper.
-5. Rewrite at least one existing example (recommended:
-   `fan_duct_adapter_8025`) using helpers; show the diff in the
-   pull request and document line savings + check coverage parity.
-6. `references/build123d-guide.md` and `references/validation-strategy.md` updated
-   with helper usage patterns.
+1. `src/agentcad/features/` — public helper modules plus shared geometry code.
+2. `src/agentcad/features/contract.py` — `ContractBuilder` merge/write support.
+3. `src/agentcad/hardware/` — hardware dimension database.
+4. `tests/test_features/` — helper coverage per module.
+5. Helper-driven examples: `e2e-feature-demo`, `e2e-feature-helpers`,
+   `drone-panel`, `gear-housing`, and `pipe-coupling`.
+6. Workspace reference templates include feature usage notes under
+   `references/feature/`.
 
-### Acceptance criteria
+### Acceptance status
 
-- All seven helpers ship with tests.
-- Helpers fail loudly (raise) when invoked with parameters that would
-  produce a `min_clearance` violation against a declared neighbour, so
-  errors surface during `agentcad build` rather than `agentcad validate`.
-- `agentcad precheck` on a helper-driven model passes without manual
-  authoring of `design.json` checks beyond features the helpers do not
-  cover.
-- The rewritten fan-adapter has the same or stronger validation than
-  the hand-written version (no regression in `validation.json`).
+- 30+ helpers ship with focused tests.
+- `ContractBuilder` writes/merges helper records into `design.json` and avoids
+  duplicate scaffold entries.
+- Helper-driven workspaces exercise real model generation and validation.
+- The feature layer remains Python-first; a declarative DSL is still deferred.
 
-### Open questions
+### Follow-up questions
 
-- Should helpers also emit `metadata` entries that `metadata_equals`
-  checks can target? (Lean: yes, for assembly-direction features.)
-- Where to draw the line between "helper" and "DSL"? Helpers stay
-  Python functions; if a declarative `features:` array starts to
-  emerge, V4 can promote it into a real schema.
-
-### Estimated effort
-
-Roughly two implementation chunks: primitives (`plate`, `boss`,
-`mounting_pattern`, `slot`) and stacked / extruded helpers
-(`rib`, `stepped_bore`, `duct_socket`). Plus one chunk for the
-showcase example and the fan-adapter rewrite.
+- Should more helpers emit structured metadata for assembly interfaces?
+- Which repeated helper combinations deserve composite helpers, and which
+  should stay explicit in `part.py`?
 
 ---
 
@@ -172,12 +151,23 @@ that workflow.
 
 ## V5 — CAD CI
 
+Delivered:
+
+- `.github/workflows/ci.yml` runs the fast test suite on pushes and pull
+  requests, plus a CLI entrypoint smoke test.
+- `.github/workflows/slow-tests.yml` runs slow tests on a daily schedule and
+  manual trigger.
+- `.github/workflows/publish.yml` verifies via CI before building and
+  publishing tagged releases to PyPI.
+
+Remaining:
+
 - `agentcad validate all` walks every model in the workspace.
-- Regression snapshots: hash STEP / STL outputs and store
-  `validation.json`; PRs that change either are flagged.
-- Benchmark suite: tracks build time, validation time, mesh size
-  per example.
-- GitHub Actions sample workflow under `examples/.github/`.
+- Regression snapshots hash STEP / STL outputs and store `validation.json`;
+  PRs that change either are flagged.
+- Benchmark suite tracks build time, validation time, and mesh size per
+  example.
+- Optional batch model generation for example and fixture workspaces.
 
 ### Acceptance
 
@@ -194,9 +184,8 @@ Kept out of the core loop on purpose. Pick up only when the CLI
 
 - MCP server exposing the same CLI surface (so non-CLI agents can
   drive AgentCAD).
-- Live preview viewer (Three.js + glTF) when section SVGs prove
-  inadequate.
 - PNG / glTF / STEP-AP242 export.
+- External viewer handoff beyond the generated HTML preview.
 - Template gallery (browse-and-fork existing models).
 
 ---
@@ -210,13 +199,14 @@ PRs alongside whichever milestone they support.
   treats any empty intersection as a void. Tighten by requiring the
   `region` argument when the model is hollow, so a missed mesh
   slice does not silently pass.
-- **Probe ergonomics**: `agentcad probe --center=-10,5` requires the `=`
-  workaround for negative numbers. Add `--cx -10 --cy 5` aliases.
+- **Probe ergonomics follow-up**: `--cx` / `--cy` aliases are delivered for
+  radial centers. Continue smoothing multi-plane probe input if more CLI
+  parsing traps appear.
 - **Render speed**: section SVG rendering on the iPhone case takes
   >1 s; profile and cache the triangle-plane intersection.
-- **`agentcad sync` diff mode**: today `agentcad sync` overwrites template files;
-  add `--dry-run` to print a diff and `--only <path>` to update one
-  file.
+- **`agentcad sync` refinements**: `--dry-run`, `--only`, and
+  `--prune-deprecated` are delivered. Future work can add richer diff output if
+  template churn grows.
 - **`min_wall_thickness` 3D mode**: today the check works on a single Z
   slice. Extend with a Z-range option that takes the worst slice.
 - **Common-error regression tests**: each catalogued common error
@@ -230,6 +220,8 @@ PRs alongside whichever milestone they support.
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-05-12 | Treat V3 helper library as delivered and keep it Python-first | The merged `agentcad.features` surface and tests cover the repeated primitive problem without needing a declarative DSL. |
+| 2026-05-12 | Split CI into fast, slow, and publish workflows | Fast feedback should run on every push/PR, while slow CAD-heavy tests and release publishing need separate triggers. |
 | 2026-05-07 | Treat the four geometric-relation checks as design-time first, post-build second | The original interference bug was a hand-math error in `design.json`; catching it post-build is too late and re-runs cost agent context. |
 | 2026-05-07 | Make `precheck` and `review` mandatory checkpoints | The mounting-bracket E2E run only surfaced the hole-wall interference because we manually inspected the iso preview. Reviewing must be cheap and routine. |
 | 2026-05-07 | All workspace docs are English-only | Mixed-language templates were confusing for agents that translate selectively; English is the lingua franca. |

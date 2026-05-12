@@ -8,7 +8,7 @@ agents a repeatable local environment for:
 
 ```text
 discovery -> concept -> design contract -> precheck -> params/source -> build
-          -> measure -> render -> validate -> review -> quality review -> deliver
+          -> measure -> render -> preview -> validate -> review -> quality review -> deliver
 ```
 
 The user describes a part or assembly; a coding agent creates and refines
@@ -29,7 +29,7 @@ runtime:
 - deterministic build / export commands
 - structured error reports
 - geometry measurements
-- preview artifacts
+- preview artifacts, including local interactive HTML review pages
 - a typed validation contract
 - a delivery manifest
 
@@ -48,6 +48,7 @@ evidence:
 - preview SVGs (iso, front, top, side, back)
 - section SVGs at meaningful Z / X / Y planes
 - section measurement sidecars next to every section SVG
+- `preview.html` for STL inspection, checks, measurements, and assembly review
 - STEP / STL artifacts
 
 ### 2.3 Catch errors at the earliest layer that can see them
@@ -195,8 +196,10 @@ Example contract with both mesh-level and relational checks:
 
 `design.json` is a typed contract, not a complete CAD IR. It records
 intent and checks that can be evaluated either statically (relational
-checks) or after build (mesh-level checks). A feature library or DSL is
-introduced only when repeated patterns justify it (V3+).
+checks) or after build (mesh-level checks). The delivered feature-helper
+library fills the repeated-pattern gap with Python functions that can
+register features and checks through `ContractBuilder`; it is still not a
+separate declarative CAD DSL.
 
 ## 6. CLI Commands
 
@@ -204,18 +207,20 @@ introduced only when repeated patterns justify it (V3+).
 agentcad init <workspace> [--model <model>]                          # scaffold workspace (and optional first model)
 agentcad new <model>                                      # add model in existing workspace
 agentcad new <model>:<variant>                            # create variant (same part.py, different params)
-agentcad sync                                            # refresh templates
+agentcad sync [--dry-run] [--only <path>] [--prune-deprecated]  # refresh templates
 agentcad precheck <model>                         # design-time solve
 agentcad build <model>[:<variant>] [--force]              # part.py -> STEP + STL
 agentcad measure <model>[:<variant>]                      # mesh stats + structural facts
 agentcad render <model> --view iso                # iso/front/top/side/back
+agentcad render <model> --views iso,front,top     # multiple views in one run
 agentcad render <model> --section-z|x|y <v>              # cross-section SVG + measurement JSON
-agentcad validate <model>[:<variant>]                     # full pipeline with fix suggestions
+agentcad validate <model>[:<variant>] [--views iso,front,top]  # full pipeline with fix suggestions
 agentcad diff <model> [--last]                             # compare validation runs
 agentcad review <model>                           # pre-delivery checklist
 agentcad deliver <model>[:<variant>]                      # delivery manifest
 agentcad preview <name>[:<variant>] [--kind model|assembly]  # interactive HTML preview
 agentcad probe <model> --z|--x|--y <v>            # cross-section diameters + section analysis
+agentcad probe <model> --z <v> --cx <x> --cy <y>  # radial center aliases
 agentcad probe <model> --z <v> --line-u <u>       # active line measurement in section axes
 agentcad probe <model> --z <v> --point u,v        # nearest contour distance in section axes
 agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
@@ -231,8 +236,11 @@ and relevant artifact paths.
 - `build123d` for CAD construction and STEP / STL export.
 - Pure-Python STL parsing for measurement (no `numpy-stl` dependency).
 - Dependency-free SVG renderer for previews and cross-sections.
+- Local Three.js preview generator for model and assembly artifact review.
 - Pure shape primitives (`agentcad/geometry.py`) for design-time
   relational checks (no STL needed).
+- `agentcad.features` helper library and `agentcad.hardware` dimension tables
+  for reusable CAD primitives that can emit validation contracts.
 - JSON reports for every stage.
 
 ## 7.1 E2E Lessons Folded Back Into The Runtime
@@ -255,8 +263,9 @@ Runtime consequences:
   holes that lack access-envelope checks.
 
 The SVG renderer is intentionally modest. It gives agents and humans a
-preview artifact without requiring Blender, Three.js, Playwright, or a
-GUI. PNG, GLTF, and interactive viewers are future enhancements.
+deterministic preview artifact without requiring Blender, Playwright, or a
+GUI. Interactive HTML previews are delivered for local review; PNG and glTF
+remain optional future export formats.
 
 ## 8. Iteration Plan
 
@@ -296,34 +305,29 @@ GUI. PNG, GLTF, and interactive viewers are future enhancements.
 - common-error catalog and mandatory TDD red-green workflow encoded in
   the `CLAUDE.md` template
 
-### V3 — Feature library (next)
+### V3 — Feature library ✅ delivered
 
-Status: planned. Triggered by repeated patterns observed across the
-fan-adapter, phone-case, and mounting-bracket examples.
+Status: delivered. Repeated primitives across the fan-adapter, phone-case,
+mounting-bracket, drone-panel, gear-housing, and pipe-coupling examples are now
+covered by `agentcad.features`.
 
-Goal: short, declarative helpers for frequent CAD primitives, each one
-auto-emitting matching feature + check entries into `design.json`.
+Delivered surface:
 
-Initial set:
+- `ContractBuilder` accumulates feature/check records and can merge them into
+  `models/<name>/design.json`.
+- Core helpers cover plates, bosses, ribs, slots, tubes, rectangular tubes,
+  wedges, prismoids, torus rings, pie slices, chamfer/rounding masks, screw
+  holes, stepped bores, mounting patterns, nut traps, threaded rods/nuts,
+  screws, duct sockets, living hinges, dovetails, hex panels, snap pins,
+  sparse walls, NEMA mounts, knurls, spur gears, and ring gears.
+- `agentcad.hardware` provides screw, nut, washer, and heat-set insert lookup
+  data for hardware-driven helpers.
+- `tests/test_features/` verifies helper geometry and emitted contract checks;
+  helper-driven examples include `e2e-feature-demo`, `e2e-feature-helpers`,
+  `drone-panel`, `gear-housing`, and `pipe-coupling`.
 
-- `plate(w, d, t, fillet?)`
-- `mounting_pattern(spec)` — square / rectangular bolt patterns with
-  through-holes, counterbores, countersinks
-- `boss(d, h)`
-- `rib(start, end, t, h)`
-- `slot(...)`
-- `stepped_bore(...)` — through-hole + head recess + magnet pocket
-- `duct_socket(od, length, lead_in)`
-
-Each helper writes:
-
-- a feature record into `design.json`
-- a default set of checks (bbox, inner-diameter, section, clearance vs
-  declared neighbours)
-- a `metadata` entry recording the helper invocation
-
-Acceptance: existing examples can be rewritten using helpers with no
-loss of validation strength.
+The library intentionally remains a Python helper layer. A declarative feature
+DSL is still deferred until helper composition shows a concrete need.
 
 ### V4 — Assembly + relations
 
@@ -360,29 +364,29 @@ loss of validation strength.
   guidance. Checks with `param_ref` produce param-targeted fixes with confidence
   levels; checks without get generic action strings.
 
-### V5 — CAD CI
+### V5 — CAD CI partially delivered
 
-- `agentcad validate all`
-- regression snapshots for STEP / STL hashes and validation outputs
-- batch model generation
-- benchmark suite (build time, validation time, mesh size)
-- GitHub Actions example
+- Delivered: GitHub Actions fast suite on pushes/PRs, scheduled/manual slow
+  test workflow, PyPI publish workflow with CI verification.
+- Planned: `agentcad validate all`
+- Planned: regression snapshots for STEP / STL hashes and validation outputs
+- Planned: batch model generation
+- Planned: benchmark suite (build time, validation time, mesh size)
 
 ### V6 — Optional integrations (kept out of the core loop)
 
 - MCP server exposing the same CLI surface
-- live-preview viewer (Three.js / glTF) when section SVG is insufficient
 - richer 3D snapshots (PNG / glTF) generated on demand
+- external viewer handoff beyond generated HTML previews
 
 ## 9. Open design questions
 
-1. **DSL vs. helpers?** V3 chooses helpers (Python functions returning
-   build123d shapes, with side effects on `design.json`) over a full
-   declarative DSL. Revisit if helpers fail to compose well.
-2. **How many examples is enough?** Three is the current minimum
-   (fan-adapter, phone-case, mounting-bracket). V3 adds at least one
-   assembly example to drive helper-library design.
-3. **Does `metadata.json` deserve a schema?** It is currently free-form.
-   If `metadata_equals` checks proliferate, a schema may be warranted.
-4. **PNG export for review?** Not required for V3. Reconsider once
-   helpers and assemblies make section SVGs inadequate.
+1. **When does a helper layer become a DSL?** V3 deliberately chose Python
+   helpers over a declarative feature schema. Revisit only if helper
+   composition becomes hard to validate or reason about.
+2. **Does `metadata.json` deserve a schema?** It is currently free-form.
+   Assembly interfaces already rely on metadata shape references, so a stricter
+   schema may be warranted.
+3. **What is the next preview format?** Interactive HTML and SVGs are
+   delivered. PNG / glTF should be added only if CI artifacts or downstream
+   review workflows need them.

@@ -1,6 +1,6 @@
 # AgentCAD Current Status
 
-Last updated: 2026-05-10
+Last updated: 2026-05-12
 
 ## Project Goal
 
@@ -9,7 +9,7 @@ models. The expanded core loop is:
 
 ```text
 discovery -> concept -> design contract -> precheck -> params/source -> build
-          -> measure -> render -> validate -> review -> quality review -> deliver
+          -> measure -> render -> preview -> validate -> review -> quality review -> deliver
 ```
 
 `precheck` and `review` are mandatory checkpoints that catch design-time
@@ -18,7 +18,8 @@ artifact is shipped, respectively. The prompt templates now also include a
 Concept Gate before `design.json` and a Design Quality Review before delivery,
 so agents have to reason about topology and design quality, not only geometric
 validity. The project remains intentionally agent-first: there is no desktop
-UI, web viewer, or MCP server in the core loop.
+UI or MCP server in the core loop. A local HTML/Three.js preview is now a
+generated review artifact, not the source of truth for validation.
 
 ## Environment
 
@@ -28,8 +29,9 @@ uv sync
 uv run agentcad --help
 ```
 
-- `build123d` is a required dependency.
+- `build123d` is the only runtime dependency declared by the package.
 - `.python-version` pins Python `3.12`.
+- `pyproject.toml` supports Python `>=3.11,<3.13`; CI currently runs on 3.12.
 - Python 3.13 was tested and rejected because the required `vtk==9.3.1`
   wheel is not available for `cp313`.
 
@@ -39,18 +41,20 @@ uv run agentcad --help
 agentcad init <workspace> [--model <model>]                          # scaffold workspace (and optional first model)
 agentcad new <model>                                      # add model in existing workspace
 agentcad new <model>:<variant>                            # create variant (same part.py, different params)
-agentcad sync                                            # refresh workspace files from templates
+agentcad sync [--dry-run] [--only <path>] [--prune-deprecated]  # refresh workspace files from templates
 agentcad precheck <model>                         # design-time solve before code
 agentcad build <model>[:<variant>] [--force]              # build123d -> STEP + STL (hash-cached)
 agentcad measure <model>[:<variant>]                      # mesh stats + structural facts
 agentcad render <model> --view iso                # iso/front/top/side/back SVG
+agentcad render <model> --views iso,front,top     # render multiple SVG views
 agentcad render <model> --section-z <z>                  # cross-section SVG + JSON sidecar (also --section-x, --section-y)
 agentcad probe <model> --z <z>                    # cross-section diameters / void / section analysis
+agentcad probe <model> --z <z> --cx <x> --cy <y>  # radial probe center aliases
 agentcad probe <model> --z <z> --line-u <u>       # active line measurement
 agentcad probe <model> --z <z> --point u,v        # nearest contour distance
 agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
 agentcad inspect <model>                          # three-axis scan + auto sections + suggested probes
-agentcad validate <model>[:<variant>]                     # build + measure + render + design checks + fix suggestions
+agentcad validate <model>[:<variant>] [--views iso,front,top]  # build + measure + render + design checks + fix suggestions
 agentcad diff <model> [--last]                             # compare validation runs
 agentcad review <model>                           # pre-delivery checklist + relations matrix
 agentcad deliver <model>[:<variant>]                      # delivery manifest
@@ -156,6 +160,27 @@ Geometric relation checks (added in the latest milestone):
 ("hole edge buried under a wall") is caught the moment `design.json` is
 finalized — long before any geometry is generated.
 
+## Feature helper library
+
+V3 is delivered as `agentcad.features`: Python helpers that return build123d
+geometry and can register matching feature/check records through
+`ContractBuilder`. The public helper surface now includes:
+
+- primitives and masks: `plate`, `boss`, `rib`, `slot`, `tube`, `rect_tube`,
+  `prismoid`, `wedge`, `torus`, `pie_slice`, `chamfer_mask`, `rounding_mask`
+- holes and hardware-driven features: `mounting_pattern`, `screw_hole`,
+  `stepped_bore`, `nut_trap`, `nut_body`, `screw`, `threaded_rod`,
+  `threaded_nut`, `sinusoidal_thread`
+- mechanical patterns: `duct_socket`, `living_hinge_mask`, `dovetail`,
+  `hex_panel`, `snap_pin`, `snap_pin_socket`, `sparse_wall`, `nema_mount`
+- gears and surfaces: `spur_gear`, `ring_gear`, `helical_knurl`
+
+The hardware database under `agentcad.hardware` provides screw, nut, washer,
+and heat-set insert dimensions used by helpers and tests. Helper behavior is
+covered by the dedicated `tests/test_features/` suite and by example workspaces
+such as `e2e-feature-helpers`, `drone-panel`, `gear-housing`, and
+`pipe-coupling`.
+
 ## Example workspaces
 
 ```text
@@ -164,6 +189,13 @@ examples/
   iphone15pro-case/      # full-cutout phone case with section checks
   e2e-test/              # sub-agent run that produced mounting_bracket
   e2e-real-cable-hook/   # real e2e wall hook with concept + quality review
+  e2e-bit-holder/        # body/lid assembly workflow
+  e2e-l-bracket/         # variants, diff, and fix suggestions
+  e2e-feature-demo/      # small helper-driven model fixture
+  e2e-feature-helpers/   # broader ContractBuilder/helper e2e fixture
+  drone-panel/           # sparse wall, hex panel, cover lip, torus seal
+  gear-housing/          # spur/ring gear helpers
+  pipe-coupling/         # tube, dovetail, chamfer helpers
 ```
 
 ### 1. Fan duct adapter (`fan-adapter-8025/fan_duct_adapter_8025`)
@@ -281,10 +313,10 @@ Both are documented in `references/build123d-guide.md`.
 
 ## Tests
 
-`uv run pytest -v` — currently 192 tests across:
+`uv run pytest -v` — currently 376 collected tests across:
 
 - `test_cli.py` — CLI dispatch
-- `test_workspace.py` — init / new / sync / discovery
+- `test_workspace.py` — init / new / sync dry-run / sync-only / deprecated-prune / discovery
 - `test_runner.py`, `test_stale.py` — build runner + hash cache
 - `test_stl.py` — pure-Python STL reader and analysis
 - `test_render.py`, `test_section.py` — SVG rendering and section extraction
@@ -293,10 +325,22 @@ Both are documented in `references/build123d-guide.md`.
 - `test_diff.py` — validation history archiving and run diff
 - `test_variant.py` — model variant creation and variant-aware build
 - `test_probe.py` — probe + scan
+- `tests/test_features/` — feature helper geometry and ContractBuilder output
+- `test_hardware.py` — screw, nut, washer, and heat-set insert lookup tables
+- `test_checks_relations.py`, `test_checks_section.py` — relation and section check edge cases
 - `test_geometry.py` — pure shape primitives (AABB, clearance, accessibility, wall thickness)
 - `test_assembly.py` — assembly contracts, transform bans, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, SVG/STL/MJCF artifacts
 - `test_precheck_review.py` — `agentcad precheck` and `agentcad review` integration
 - `test_jsonio.py`
+
+CI status:
+
+- `.github/workflows/ci.yml` runs the fast suite (`pytest -m "not slow"`) on
+  pushes and pull requests and smoke-tests the CLI entry point.
+- `.github/workflows/slow-tests.yml` runs slow tests on a daily schedule and
+  manual trigger.
+- `.github/workflows/publish.yml` verifies via CI, builds with `uv build`, then
+  publishes tagged releases to PyPI and creates the GitHub release.
 
 ## Roadmap delivered
 
@@ -307,7 +351,11 @@ Both are documented in `references/build123d-guide.md`.
 | V2 — design spec standardization | ✅ delivered | check IDs, schema validation, weak-check warnings, Markdown report (`agentcad report`) |
 | V2.5 — design-time observability | ✅ delivered (new) | `agentcad precheck`, `agentcad review`, four geometric relation checks, common-error catalog, mandatory TDD prompt |
 | V2.6 — design-thinking prompts | ✅ delivered (new) | split references, Discovery Gate, Concept Gate, Design Quality Review, real cable-hook e2e |
+| V3 — feature library | ✅ delivered | `agentcad.features`, `ContractBuilder`, 30+ tested helpers, hardware dimension database, helper-driven example workspaces |
 | V4 — assembly validation | ✅ delivered | `agentcad assembly init/list/validate/review`, rigid transforms, metadata interface measurement, mate residuals, pair coverage, mesh narrow-phase interference, inter-model clearance, section checks, combined/exploded SVG, combined STL, top-level interactive preview, mandatory MJCF round-trip |
 | V4.5 — iteration tooling | ✅ delivered | SVG dimension annotations, validation run diff, model variants, fix suggestions |
+| V5 — CAD CI | partially delivered | Fast GitHub Actions suite, separate slow-test workflow, and publish workflow are present; workspace-wide `validate all`, regression snapshots, and benchmarks remain planned |
 
-Next milestones (V3+) are tracked in [`DESIGN.md`](DESIGN.md).
+Next planned work is tracked in [`DESIGN.md`](DESIGN.md) and
+[`ROADMAP.md`](ROADMAP.md), with V5 focusing on workspace-wide validation,
+regression snapshots, and benchmark reporting.

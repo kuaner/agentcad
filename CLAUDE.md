@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-AgentCAD is a CLI-first CAD workflow runtime for coding agents. It provides a repeatable workspace, build/export tools, geometry measurement, SVG previews, validation checks, and delivery manifests so an agent can autonomously create and refine CAD models with measurable feedback.
+AgentCAD is a CLI-first CAD workflow runtime for coding agents. It provides a repeatable workspace, build/export tools, geometry measurement, SVG and interactive HTML previews, validation checks, feature helpers, assembly checks, and delivery manifests so an agent can autonomously create and refine CAD models with measurable feedback.
 
-Core loop: `design contract -> precheck -> params/source -> build -> measure -> render -> validate -> review -> deliver`
+Core loop: `discovery -> concept -> design contract -> precheck -> params/source -> build -> measure -> render -> preview -> validate -> review -> quality review -> deliver`
 
 The `precheck` and `review` stages are mandatory checkpoints that catch
 design-time interferences (before code) and pre-delivery gaps (before
@@ -12,7 +12,7 @@ delivery), respectively.
 
 ## Tech Stack
 
-- **Language**: Python 3.12 (pinned via `.python-version`; 3.13 rejected due to missing `vtk` wheel)
+- **Language**: Python 3.12 for local/CI use (pinned via `.python-version`; package supports `>=3.11,<3.13`; 3.13 rejected due to missing `vtk` wheel)
 - **Package manager**: uv (`uv sync`, `uv run agentcad ...`)
 - **CAD backend**: build123d
 - **Entry point**: `agentcad` CLI command (maps to `agentcad.cli:main`)
@@ -49,13 +49,19 @@ src/agentcad/          # Main package
   jsonio.py             # JSON read/write/print helpers
   templates.py          # Loads template files from _templates/ package
   _templates/           # Template files (md, json, py) for workspace/model scaffolding
+  features/             # Helper library: reusable CAD primitives + ContractBuilder integration
+  hardware/             # Screw, nut, washer, heat-set insert dimension tables
   __main__.py           # python -m agentcad entry point
 docs/
-  DESIGN.md             # Architecture and iteration roadmap (V0-V5)
+  DESIGN.md             # Architecture and iteration roadmap (V0-V6)
   STATUS.md             # Current implementation state and lessons learned
 examples/
-  fan-adapter-8025/     # Example workspace with two validated models
-  e2e-test/             # Sub-agent end-to-end test (mounting bracket)
+  fan-adapter-8025/     # Two validated models plus fan_with_screen assembly
+  e2e-bit-holder/       # Body/lid assembly fixture
+  e2e-feature-helpers/  # ContractBuilder/helper e2e fixture
+  drone-panel/          # Helper-driven lightweight panel
+  gear-housing/         # Gear helper fixture
+  pipe-coupling/        # Tube/dovetail/chamfer helper fixture
   iphone15pro-case/     # Real-world iPhone 15 Pro phone case
 ```
 
@@ -66,11 +72,12 @@ All commands auto-detect the workspace by walking up from cwd.
 agentcad init <workspace> [--model <model>]                          # Initialize workspace (optionally create first model)
 agentcad new <model>                                      # Create model inside an existing workspace
 agentcad new <model>:<variant>                            # Create variant (same part.py, different params)
-agentcad sync                                           # Update workspace scaffold files from templates
+agentcad sync [--dry-run] [--only <path>] [--prune-deprecated]  # Update workspace scaffold files from templates
 agentcad precheck <model>                        # Static design solve before writing part.py
 agentcad build <model>[:<variant>]                       # Build + export STEP/STL
 agentcad measure <model>[:<variant>]                     # Measure STL geometry
 agentcad render <model>                          # SVG preview from STL
+agentcad render <model> --views iso,front,top    # Render multiple SVG previews
 agentcad preview <name>[:<variant>]                      # Start local server + interactive browser preview (auto-opens browser)
 agentcad preview <name> --static                         # Self-contained offline HTML preview (auto-opens browser, no server needed)
 agentcad preview <name> --kind assembly          # Disambiguate if a model and assembly share a name
@@ -79,6 +86,7 @@ agentcad validate <model>[:<variant>]                    # Full validation pipel
 agentcad diff <model> [--last]                   # Compare validation runs
 agentcad review <model>                          # Pre-delivery checklist + relations matrix
 agentcad deliver <model>[:<variant>]                     # Delivery manifest
+agentcad probe <model> --z <z> --cx <x> --cy <y> # Radial center aliases
 agentcad probe <model> --scan --axis z|x|y       # Profile scan for step changes / void detection
 agentcad inspect <model>                         # Three-axis scan + section SVGs + suggested probes
 agentcad report <model>                                 # Markdown validation report
@@ -142,7 +150,7 @@ project/
 
 ## Validation Check Types
 
-Existing: `bbox_size`, `watertight`, `min_triangles`, `artifact_exists`, `metadata_equals`, `outer_diameter_at_z`, `inner_diameter_at_z`, `diameter_decreases_along_z`, `volume_range`, `section_bbox_at_z`, automatic `feature_coverage`.
+Existing: `bbox_size`, `watertight`, `min_triangles`, `artifact_exists`, `metadata_equals`, `outer_diameter_at_z`, `inner_diameter_at_z`, `diameter_decreases_along_z`, `volume_range`, `section_bbox_at_z`, `section_component_count`, automatic `feature_coverage`.
 
 **Geometric relations (new):**
 - `min_clearance` — declarative shape pair clearance ≥ N mm (no STL needed; runs in `agentcad precheck`)
@@ -151,6 +159,10 @@ Existing: `bbox_size`, `watertight`, `min_triangles`, `artifact_exists`, `metada
 - `feature_position` — a 3D point is in expected solid/void state
 
 Section checks use STL triangle-plane intersections for validating ducts, tapers, sockets, and chamfers. `min_clearance` is a pure-shape check evaluated at design time before any code is written, catching the most common interference bugs (hole edge under a wall, hole-to-edge break, hole-to-hole pitch too tight).
+
+## Feature Helpers
+
+Use `agentcad.features` for repeated mechanical primitives when it fits the model. Helpers return build123d geometry and can register feature/check records through `ContractBuilder`. The public helper set includes plates, bosses, ribs, slots, tubes, screw holes, stepped bores, mounting patterns, duct sockets, hinges, dovetails, snap pins, sparse walls, NEMA mounts, threaded rods/nuts, screws, knurls, spur gears, and ring gears. Hardware dimensions live under `agentcad.hardware`.
 
 ## Release Process
 
@@ -170,8 +182,10 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests cover: CLI dispatch, workspace init/new, STL reading/measurement/section,
-SVG rendering, JSON IO, validation checks and feature coverage.
+Tests currently collect 376 cases. Coverage includes CLI dispatch, workspace
+init/new/sync, STL reading/measurement/section, SVG rendering, interactive
+previews, JSON IO, validation checks, feature coverage, feature helpers,
+hardware lookup tables, variants, diff, assemblies, precheck, and review.
 
 Integration validation through example models:
 
