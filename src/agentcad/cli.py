@@ -156,8 +156,7 @@ def build_parser() -> argparse.ArgumentParser:
     sync.add_argument("--prune-deprecated", action="store_true", help="remove deprecated scaffold paths like skills/")
 
     doctor_cmd = sub.add_parser("doctor", help="diagnose workspace state and recommend next command")
-    doctor_cmd.add_argument("model", help="model name to diagnose")
-    doctor_cmd.add_argument("--variant", default=None, help="variant name")
+    doctor_cmd.add_argument("model", help="model name to diagnose (supports model:variant syntax)")
 
     suggest_cmd = sub.add_parser("suggest-checks", help="suggest missing checks based on design contract")
     suggest_cmd.add_argument("model", help="model name to analyze")
@@ -364,7 +363,8 @@ def dispatch(args: argparse.Namespace) -> dict:
         return review_model(project, args.model)
     if args.command == "doctor":
         from .doctor import run_model_doctor
-        return run_model_doctor(project, args.model, variant=args.variant)
+        model_name, variant_name = _parse_model_target(args.model)
+        return run_model_doctor(project, model_name, variant=variant_name)
     if args.command == "suggest-checks":
         from .suggest import suggest_checks
         return suggest_checks(project, args.model)

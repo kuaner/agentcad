@@ -74,9 +74,10 @@ def validate_model(
     if measure.get("ok"):
         with timed_stage(timings, "checks"):
             schema_errors = validate_design_schema(project, name)
+            has_blocking_schema = any(not c.get("ok") for c in schema_errors)
             if schema_errors:
                 checks.extend(schema_errors)
-            else:
+            if not has_blocking_schema:
                 checks.extend(evaluate_feature_coverage(project, name))
                 checks.extend(evaluate_design_checks(project, name, measure, variant=variant))
                 warnings = evaluate_weak_check_warnings(project, name)

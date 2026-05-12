@@ -216,10 +216,11 @@ def _validate_min_wall_thickness_check(check: dict, index: int) -> list[SchemaIs
         )]
     if has_range:
         axis_val = str(check.get("axis", "z")).lower()
-        if axis_val not in ("x", "y", "z"):
+        if axis_val != "z":
             return [_issue(
                 _check_path(index, "axis"),
-                f"unsupported axis {axis_val!r}; must be x, y, or z",
+                f"range mode currently only supports axis='z' (got '{axis_val}')",
+                hint="Use axis='z' for range mode. Single-plane mode using 'z' field supports any plane implicitly.",
             )]
         rng = check.get("range")
         if not isinstance(rng, list) or len(rng) != 2:

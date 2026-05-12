@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from .jsonio import read_json
-from .workspace import model_dir, outputs_dir
+from .workspace import model_dir, outputs_dir, outputs_dir_for_variant
 
 # ── Data structures ────────────────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ WORKFLOW_STATES = (
 def run_model_doctor(project: Path, name: str, variant: str | None = None) -> dict:
     """Inspect model artifacts and report workflow gaps."""
     mdir = model_dir(project, name)
-    out_dir = outputs_dir(project, name)
+    out_dir = outputs_dir_for_variant(project, name, variant)
     artifacts = _model_artifact_state(mdir, out_dir)
     findings: list[DoctorFinding] = []
     for rule in MODEL_DOCTOR_RULES:

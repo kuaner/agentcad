@@ -15,20 +15,6 @@ from .jsonio import read_json, write_json
 
 SNAPSHOT_SCHEMA = "agentcad.snapshot.v1"
 
-VOLATILE_KEYS = frozenset({
-    "validatedAt",
-    "builtAt",
-    "measuredAt",
-    "renderedAt",
-    "observedAt",
-    "generatedAt",
-    "durationMs",
-    "validated_at",
-    "built_at",
-    "measured_at",
-    "rendered_at",
-})
-
 DEFAULT_SNAPSHOT_TOLERANCES = {
     "bbox_abs_mm": 0.05,
     "volume_rel": 0.005,
@@ -43,11 +29,9 @@ def snapshot_target(
 ) -> dict:
     """Create a normalized snapshot from a validation payload.
 
-    Strips volatile keys and keeps only stable check metrics, geometry
-    summaries, and artifact presence flags.
+    Keeps only stable check metrics, geometry summaries, and artifact
+    presence flags.
     """
-    from .batch import ValidationTarget
-
     checks = payload.get("checks") or []
     check_summary: dict[str, dict] = {}
     for c in checks:

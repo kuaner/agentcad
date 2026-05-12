@@ -225,6 +225,16 @@ class TestMinWallThicknessValidation:
         assert len(issues) == 1
         assert issues[0].path == "checks[0].axis"
 
+    def test_range_mode_rejects_x_y_axis(self):
+        check = {
+            "id": "w1", "type": "min_wall_thickness",
+            "axis": "x", "range": [0, 10],
+            "region": [[0, 0], [10, 10]], "min_mm": 1.0,
+        }
+        issues = _validate_min_wall_thickness_check(check, 0)
+        assert len(issues) == 1
+        assert issues[0].path == "checks[0].axis"
+
     def test_bad_range_shape_errors(self):
         check = {
             "id": "w1", "type": "min_wall_thickness",
