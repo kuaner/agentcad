@@ -25,7 +25,6 @@ from .contract import (
     INTERFACE_WORDS,
     ROOT_CHECK_TYPES,
     GEOMETRY_CHECK_TYPES,
-    search_params_by_keywords,
 )
 from .jsonio import read_json
 from .workspace import model_dir

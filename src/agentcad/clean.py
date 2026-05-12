@@ -20,7 +20,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .workspace import model_dir, outputs_dir, list_models
+from .workspace import outputs_dir, list_models
 
 # Default retention limits.
 DEFAULT_HISTORY_MAX = 10
@@ -88,7 +88,8 @@ def clean_model(
                 if i >= history_max:
                     size = f.stat().st_size
                     if dry_run:
-                        kept.append(str(f))
+                        removed.append(str(f))
+                        bytes_freed += size
                     else:
                         f.unlink()
                         removed.append(str(f))
@@ -104,7 +105,8 @@ def clean_model(
                 continue
             size = f.stat().st_size
             if dry_run:
-                kept.append(str(f))
+                removed.append(str(f))
+                bytes_freed += size
             else:
                 f.unlink()
                 removed.append(str(f))
@@ -115,7 +117,8 @@ def clean_model(
         for f in out_dir.glob(_PREVIEW_SVG_PATTERN):
             size = f.stat().st_size
             if dry_run:
-                kept.append(str(f))
+                removed.append(str(f))
+                bytes_freed += size
             else:
                 f.unlink()
                 removed.append(str(f))

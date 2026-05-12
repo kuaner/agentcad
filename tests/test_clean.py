@@ -27,12 +27,13 @@ class TestCleanDryRun:
         out_dir = outputs_dir(project, "thing")
         history_dir = out_dir / "validation-history"
         history_dir.mkdir(parents=True, exist_ok=True)
-        # Write 5 history files.
+        # Write 5 history files (under default limit of 10).
         for i in range(5):
             _write_json(history_dir / f"run_{i}.json", {"ok": True})
         result = clean_model(project, "thing", dry_run=True)
         assert result["dry_run"] is True
-        assert result["bytes_freed"] == 0
+        # No files to remove, so removed list is empty.
+        assert len(result["removed"]) == 0
         # Files should still exist.
         assert len(list(history_dir.glob("*.json"))) == 5
 
@@ -43,9 +44,11 @@ class TestCleanDryRun:
         for i in range(15):
             _write_json(history_dir / f"run_{i}.json", {"ok": True})
         result = clean_model(project, "thing", dry_run=True, history_max=10)
-        # Should report that files would be removed (but not actually remove).
+        # Should report files that would be removed.
         assert result["dry_run"] is True
-        # All files still present.
+        assert len(result["removed"]) == 5
+        assert result["bytes_freed"] > 0
+        # Files still present on disk (dry run doesn't delete).
         assert len(list(history_dir.glob("*.json"))) == 15
 
 

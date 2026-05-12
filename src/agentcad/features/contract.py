@@ -94,6 +94,8 @@ class ContractBuilder:
         design_path = model_dir(project, name) / "design.json"
         if merge and design_path.exists():
             existing = read_json(design_path, default={})
+            if not isinstance(existing, dict):
+                existing = {}
         else:
             existing = {}
 
@@ -169,6 +171,8 @@ class ContractBuilder:
         metadata_path = model_dir(project, name) / "metadata.json"
         if merge and metadata_path.exists():
             existing = read_json(metadata_path, default={})
+            if not isinstance(existing, dict):
+                existing = {}
         else:
             existing = {}
 
@@ -176,7 +180,9 @@ class ContractBuilder:
 
         # Merge interfaces: add new ones, update existing ones with matching names.
         if "interfaces" in new:
-            existing_interfaces = existing.get("interfaces", {})
+            existing_interfaces = existing.get("interfaces") or {}
+            if not isinstance(existing_interfaces, dict):
+                existing_interfaces = {}
             for iface_name, iface_data in new["interfaces"].items():
                 existing_interfaces[iface_name] = iface_data
             existing["interfaces"] = existing_interfaces
