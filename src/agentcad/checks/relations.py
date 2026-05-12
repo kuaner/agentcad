@@ -121,8 +121,13 @@ def evaluate_hole_accessibility(check: dict, ctx: CheckContext) -> dict:
 def evaluate_min_wall_thickness(check: dict, ctx: CheckContext) -> dict:
     check_id = check.get("id") or "min_wall_thickness"
     raw_z = check.get("z")
+
+    # Range mode: axis + range + samples evaluates multiple slices.
+    if raw_z is None and "range" in check and "axis" in check:
+        return _evaluate_min_wall_thickness_range(check, ctx, check_id)
+
     if raw_z is None:
-        return _input_error(check, "min_wall_thickness", "check requires 'z' field")
+        return _input_error(check, "min_wall_thickness", "check requires 'z' field (or axis+range for range mode)")
     min_mm = float(check.get("min_mm", 0.0))
     tolerance = float(check.get("tolerance", 0.0))
     raw_region = check.get("region")
@@ -167,6 +172,86 @@ def evaluate_min_wall_thickness(check: dict, ctx: CheckContext) -> dict:
         payload["debug_analysis_json"] = info.get("analysis_json")
         payload["hint"] = f"thickness {actual:.3f}mm < min {min_mm}mm (tol ±{tolerance})"
     return payload
+
+
+def _evaluate_min_wall_thickness_range(check: dict, ctx: CheckContext, check_id: str) -> dict:
+    """Evaluate min_wall_thickness across a range of slices and report the worst."""
+    min_mm = float(check.get("min_mm", 0.0))
+    tolerance = float(check.get("tolerance", 0.0))
+    axis = str(check.get("axis", "z")).lower()
+    raw_range = check.get("range", [])
+    samples = int(check.get("samples", 6))
+    raw_region = check.get("region")
+    region = None
+    if raw_region is not None:
+        try:
+            (x0, y0), (x1, y1) = raw_region[0], raw_region[1]
+            region = ((float(x0), float(y0)), (float(x1), float(y1)))
+        except (TypeError, IndexError, ValueError):
+            return _input_error(check, "min_wall_thickness", "region must be [[x0,y0],[x1,y1]]")
+    if not isinstance(raw_range, list) or len(raw_range) != 2:
+        return _input_error(check, "min_wall_thickness", "range must be [start, end]")
+    start, end = float(raw_range[0]), float(raw_range[1])
+    if axis != "z":
+        return _input_error(check, "min_wall_thickness", f"range mode only supports axis='z' currently (got '{axis}')")
+
+    positions = _sample_positions(start, end, samples)
+    triangles = ctx.get_triangles()
+    sample_res = float(check.get("sample_resolution", 0.5))
+
+    slice_results: list[dict] = []
+    worst: dict | None = None
+    for pos in positions:
+        result = min_wall_thickness_at_z(triangles, pos, region=region, sample_resolution=sample_res)
+        if not result.get("ok"):
+            slice_results.append({"position": pos, "ok": False, "error": str(result.get("error"))})
+            continue
+        actual = float(result["min_thickness_mm"])
+        passed = actual >= (min_mm - tolerance)
+        entry = {
+            "position": pos,
+            "ok": passed,
+            "actual_mm": actual,
+            "min_pair": result.get("min_pair"),
+            "point_count": result.get("point_count"),
+        }
+        slice_results.append(entry)
+        if worst is None or actual < worst["actual_mm"]:
+            worst = {"position": pos, "actual_mm": actual, "min_pair": result.get("min_pair")}
+
+    ok = worst is not None and worst["actual_mm"] >= (min_mm - tolerance)
+    payload = {
+        "name": check_id,
+        "type": "min_wall_thickness",
+        "ok": ok,
+        "axis": axis,
+        "range": [start, end],
+        "samples": samples,
+        "region": raw_region,
+        "min_mm": min_mm,
+        "tolerance": tolerance,
+        "slice_results": slice_results,
+    }
+    if worst:
+        payload["worst_position"] = worst["position"]
+        payload["actual_mm"] = worst["actual_mm"]
+        payload["worst_min_pair"] = worst.get("min_pair")
+        if not ok:
+            svg_path = ctx.out_dir / f"debug.{check_id}.z{worst['position']:.2f}.svg"
+            info = write_section_svg(triangles, AXIS_Z, worst["position"], svg_path)
+            payload["debug_svg"] = info.get("svg")
+            payload["debug_analysis_json"] = info.get("analysis_json")
+            payload["hint"] = f"worst thickness {worst['actual_mm']:.3f}mm at z={worst['position']:.2f} < min {min_mm}mm"
+    else:
+        payload["ok"] = False
+        payload["error"] = {"type": "ThicknessError", "message": "no valid slices found in range"}
+    return payload
+
+
+def _sample_positions(start: float, end: float, samples: int) -> list[float]:
+    if samples < 2:
+        return [start]
+    return [start + (end - start) * i / (samples - 1) for i in range(samples)]
 
 
 def _input_error(check: dict, check_type: str, message: str) -> dict:
