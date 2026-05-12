@@ -48,6 +48,8 @@ src/agentcad/          # Main package
   report.py             # Markdown validation report
   jsonio.py             # JSON read/write/print helpers
   templates.py          # Loads template files from _templates/ package
+  batch.py              # Batch validation: target discovery + workspace-level orchestration
+  snapshot.py           # Regression snapshots: write, load, compare normalized validation data
   _templates/           # Template files (md, json, py) for workspace/model scaffolding
   features/             # Helper library: reusable CAD primitives + ContractBuilder integration
   hardware/             # Screw, nut, washer, heat-set insert dimension tables
@@ -186,10 +188,11 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests currently collect 376 cases. Coverage includes CLI dispatch, workspace
+Tests currently collect 433 cases. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
-hardware lookup tables, variants, diff, assemblies, precheck, and review.
+hardware lookup tables, variants, diff, assemblies, precheck, review, batch
+validation, and regression snapshots.
 
 Integration validation through example models:
 

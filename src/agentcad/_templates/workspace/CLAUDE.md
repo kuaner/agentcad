@@ -197,6 +197,17 @@ agentcad diff <model> --last
 agentcad review <model>
 agentcad deliver <model>
 
+# Batch validation and regression
+agentcad validate all                       # Validate all models and assemblies in workspace
+agentcad validate all --models              # Only models
+agentcad validate all --assemblies          # Only assemblies
+agentcad validate all --include-variants    # Include model variants
+agentcad validate all --fail-fast           # Stop after first failure
+agentcad snapshot write                     # Write regression snapshots for all validated targets
+agentcad snapshot write --target <name>     # Write snapshot for one target
+agentcad snapshot compare                   # Compare current vs baseline snapshots
+agentcad snapshot compare --target <name>   # Compare one target
+
 # Preview (auto-opens browser — do NOT manually run `open`)
 agentcad preview <name>                  # Start local server + auto-open browser
 agentcad preview <name> --static         # Self-contained HTML + auto-open browser
