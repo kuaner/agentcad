@@ -19,6 +19,8 @@ from .review import review_model
 from .runner import build_model
 from .section import AXIS_X, AXIS_Y, AXIS_Z, write_section_svg
 from .stl import read_stl
+from .batch import validate_all
+from .snapshot import compare_snapshot, load_snapshot, snapshot_target, write_snapshot
 from .validate import deliver_model, validate_model
 from .workspace import find_project, init_workspace, model_dir, new_model, normalize_model_name, outputs_dir, outputs_dir_for_variant, sync_workspace
 
@@ -95,7 +97,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     preview.add_argument("--static", action="store_true", help="generate self-contained HTML with embedded assets (for offline use)")
 
-    validate = sub.add_parser("validate", help="build, measure, render, and validate a model")
+    validate = sub.add_parser("validate", help="build, measure, render, and validate a model or all targets")
     validate.add_argument("model")
     validate.add_argument("--view", choices=["iso", "front", "top", "side", "back"], default="iso")
     validate.add_argument(
@@ -103,6 +105,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="comma-separated list of views to render during validation (default: iso,front,top,side,back)",
     )
+    validate.add_argument("--models", action="store_true", help="when validating all, include models")
+    validate.add_argument("--assemblies", action="store_true", help="when validating all, include assemblies")
+    validate.add_argument("--include-variants", action="store_true", help="when validating all, include model variants")
+    validate.add_argument("--include-slow", action="store_true", help="when validating all, include slow targets")
+    validate.add_argument("--fail-fast", action="store_true", help="stop after first validation failure")
+    validate.add_argument("--output", type=Path, default=None, help="path for batch validation report (default: .agentcad/validation/all.json)")
 
     deliver = sub.add_parser("deliver", help="write a delivery manifest")
     deliver.add_argument("model")
@@ -157,6 +165,16 @@ def build_parser() -> argparse.ArgumentParser:
     assembly_validate.add_argument("assembly")
     assembly_review = assembly_sub.add_parser("review", help="run assembly delivery gates")
     assembly_review.add_argument("assembly")
+
+    snapshot = sub.add_parser("snapshot", help="regression snapshot management")
+    snapshot_sub = snapshot.add_subparsers(dest="snapshot_command", required=True)
+    snapshot_write = snapshot_sub.add_parser("write", help="write regression snapshots for validated targets")
+    snapshot_write.add_argument("--target", default=None, help="specific model or assembly name (default: all)")
+    snapshot_write.add_argument("--kind", choices=["model", "assembly", "auto"], default="auto")
+    snapshot_write.add_argument("--all", action="store_true", help="write snapshots for all targets")
+    snapshot_compare = snapshot_sub.add_parser("compare", help="compare current results against baseline snapshots")
+    snapshot_compare.add_argument("--target", default=None, help="specific model or assembly name (default: all)")
+    snapshot_compare.add_argument("--kind", choices=["model", "assembly", "auto"], default="auto")
 
     return parser
 
@@ -267,6 +285,22 @@ def dispatch(args: argparse.Namespace) -> dict:
             static=getattr(args, "static", False),
         )
     if args.command == "validate":
+        if args.model == "all":
+            include_models = getattr(args, "models", False)
+            include_assemblies = getattr(args, "assemblies", False)
+            # If neither --models nor --assemblies is specified, include both.
+            if not include_models and not include_assemblies:
+                include_models = True
+                include_assemblies = True
+            return validate_all(
+                project,
+                include_models=include_models,
+                include_assemblies=include_assemblies,
+                include_variants=getattr(args, "include_variants", False),
+                include_slow=getattr(args, "include_slow", False),
+                fail_fast=getattr(args, "fail_fast", False),
+                output=getattr(args, "output", None),
+            )
         model_name, variant_name = _parse_model_target(args.model)
         views_arg = getattr(args, "views", None)
         render_views = [v.strip() for v in views_arg.split(",") if v.strip() in VIEW_DIRS] if views_arg else None
@@ -317,6 +351,9 @@ def dispatch(args: argparse.Namespace) -> dict:
         return precheck_model(project, args.model)
     if args.command == "review":
         return review_model(project, args.model)
+
+    if args.command == "snapshot":
+        return _dispatch_snapshot(project, args)
 
     raise ValueError(f"unknown command: {args.command}")
 
@@ -369,6 +406,82 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: 
             serve_preview(preview_path)
 
     return result
+
+
+def _dispatch_snapshot(project: Path, args: argparse.Namespace) -> dict:
+    from .batch import discover_validation_targets
+    if args.snapshot_command == "write":
+        targets = discover_validation_targets(project)
+        target_name = getattr(args, "target", None)
+        if target_name:
+            targets = [t for t in targets if t.name == target_name]
+        if not targets:
+            return {"ok": False, "stage": "snapshot_write", "error": {"type": "NoTargets", "message": "no validation targets found"}}
+        paths = []
+        for t in targets:
+            # Read the validation payload for this target.
+            kind = t.kind
+            name = t.name
+            variant = t.variant
+            if kind == "model":
+                from .workspace import outputs_dir_for_variant
+                v_path = outputs_dir_for_variant(project, name, variant) / "validation.json"
+            else:
+                from .assembly import assembly_outputs_dir
+                v_path = assembly_outputs_dir(project, name) / "assembly_validation.json"
+            from .jsonio import read_json
+            payload = read_json(v_path, default=None)
+            if payload is None:
+                continue
+            target_dict = {"kind": t.kind, "name": t.name, "variant": t.variant}
+            path = write_snapshot(project, target_dict, payload)
+            paths.append(str(path))
+        return {
+            "ok": True,
+            "stage": "snapshot_write",
+            "project": str(project),
+            "snapshots_written": len(paths),
+            "paths": paths,
+        }
+
+    if args.snapshot_command == "compare":
+        targets = discover_validation_targets(project)
+        target_name = getattr(args, "target", None)
+        if target_name:
+            targets = [t for t in targets if t.name == target_name]
+        if not targets:
+            return {"ok": False, "stage": "snapshot_compare", "error": {"type": "NoTargets", "message": "no validation targets found"}}
+        comparisons = []
+        for t in targets:
+            kind = t.kind
+            name = t.name
+            variant = t.variant
+            if kind == "model":
+                from .workspace import outputs_dir_for_variant
+                v_path = outputs_dir_for_variant(project, name, variant) / "validation.json"
+            else:
+                from .assembly import assembly_outputs_dir
+                v_path = assembly_outputs_dir(project, name) / "assembly_validation.json"
+            from .jsonio import read_json
+            payload = read_json(v_path, default=None)
+            if payload is None:
+                continue
+            target_dict = {"kind": t.kind, "name": t.name, "variant": t.variant}
+            current = snapshot_target(project, target_dict, payload)
+            baseline = load_snapshot(project, target_dict)
+            if baseline is None:
+                comparisons.append({"target": target_dict, "ok": False, "error": "no baseline snapshot"})
+                continue
+            comparisons.append(compare_snapshot(current, baseline))
+        ok = all(c.get("ok", True) for c in comparisons)
+        return {
+            "ok": ok,
+            "stage": "snapshot_compare",
+            "project": str(project),
+            "comparisons": comparisons,
+        }
+
+    raise ValueError(f"unknown snapshot command: {args.snapshot_command}")
 
 
 def _preview_not_found(target: str, *, kind: str) -> dict:

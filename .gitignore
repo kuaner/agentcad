@@ -19,3 +19,6 @@ __pycache__/
 **/outputs/*.stl
 **/outputs/*.json
 **/outputs/*.svg
+
+# Batch validation and snapshot artifacts (machine-specific paths)
+.agentcad/

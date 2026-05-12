@@ -83,6 +83,10 @@ agentcad preview <name> --static                         # Self-contained offlin
 agentcad preview <name> --kind assembly          # Disambiguate if a model and assembly share a name
 agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
 agentcad validate <model>[:<variant>]                    # Full validation pipeline
+agentcad validate all [--models] [--assemblies] [--include-variants] \
+  [--include-slow] [--fail-fast] [--output <path>]      # Batch validate all workspace targets
+agentcad snapshot write [--target <name>] [--all]        # Write regression snapshots
+agentcad snapshot compare [--target <name>]              # Compare current vs baseline snapshots
 agentcad diff <model> [--last]                   # Compare validation runs
 agentcad review <model>                          # Pre-delivery checklist + relations matrix
 agentcad deliver <model>[:<variant>]                     # Delivery manifest

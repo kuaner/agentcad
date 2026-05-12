@@ -1872,15 +1872,22 @@ schemas, and does not bypass CLI validation semantics.
 4. P0.4 Regression Snapshots
 5. P1.1 Schema Error Infrastructure
 6. P1.2 Section Semantics Hardening
-7. P1.4 Common-Error Negative Fixtures
-8. P2.1 Metadata Interface Schema
-9. P2.2 Helper-Emitted Interfaces
-10. P3.1 Doctor Command
-11. P3.2 Suggest Checks
-12. P4.1 Timing Instrumentation
-13. P4.2 Section Cache
-14. P5 tracks only after P0 and P1 are stable
+7. P1.3 Min Wall Thickness Range Mode
+8. P1.4 Common-Error Negative Fixtures
+9. P1.5 Weak-Check Review Gates
+10. P2.1 Metadata Interface Schema
+11. P2.2 Helper-Emitted Interfaces
+12. P2.3 Assembly Fixture Expansion
+13. P3.1 Doctor Command
+14. P3.2 Suggest Checks
+15. P4.1 Timing Instrumentation
+16. P4.2 Section Cache
+17. P5 tracks only after P0 and P1 are stable
 
 This order intentionally front-loads reliability. It creates project-scale
 feedback before tightening contracts, then uses the stronger contracts to make
 assemblies and authoring guidance more trustworthy.
+
+P1.3 (range mode) and P1.5 (review gates) were previously omitted from the
+order but are part of P1 completion. P1.3 extends an existing check type and
+P1.5 turns P1.2 warnings into blocking gates, so both follow P1.2 naturally.

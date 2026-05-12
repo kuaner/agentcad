@@ -29,3 +29,8 @@ jobs:
 
       - name: Run slow tests
         run: uv run pytest -v -m slow
+
+      - name: Batch validation on fan-adapter-8025
+        run: |
+          cd $GITHUB_WORKSPACE/examples/fan-adapter-8025
+          uv run --project $GITHUB_WORKSPACE agentcad validate all
