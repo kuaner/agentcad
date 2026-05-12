@@ -131,6 +131,13 @@ Read only the references needed for the current stage.
   detached in any orthographic view is not deliverable until the contract
   contains a check that would catch that failure.
 - Reason edge-to-edge, never center-to-face.
+- `section_bbox_at_z` with `expected: "void"` must include a `region` field
+  `[[x0,y0],[x1,y1]]` to avoid false passes on empty slices where the STL has
+  no mesh at that Z. Without region, an empty global slice passes as void even
+  if solid material exists nearby.
+- `min_wall_thickness` supports range mode: use `axis`, `range` `[start, end]`,
+  `samples`, `region`, and `min_mm` instead of a single `z` plane. Range mode
+  evaluates multiple slices and reports the worst result.
 
 ## Workspace Layout
 

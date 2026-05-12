@@ -188,10 +188,12 @@ Existing: `bbox_size`, `watertight`, `min_triangles`, `artifact_exists`, `metada
 **Geometric relations (new):**
 - `min_clearance` — declarative shape pair clearance ≥ N mm (no STL needed; runs in `agentcad precheck`)
 - `hole_accessibility` — tool/bolt envelope can reach a hole at given Z without obstruction
-- `min_wall_thickness` — minimum wall thickness in a region at Z
+- `min_wall_thickness` — minimum wall thickness in a region at Z; supports range mode (axis + range + samples) for multi-slice evaluation
 - `feature_position` — a 3D point is in expected solid/void state
 
 Section checks use STL triangle-plane intersections for validating ducts, tapers, sockets, and chamfers. `min_clearance` is a pure-shape check evaluated at design time before any code is written, catching the most common interference bugs (hole edge under a wall, hole-to-edge break, hole-to-hole pitch too tight).
+
+Schema validation now uses structured `SchemaIssue` with field-level error paths, severity (error/warning), and hints. `section_bbox_at_z` with `expected: "void"` emits a warning if `region` is missing (false-pass risk on empty slices). `min_wall_thickness` validates single-plane vs range-mode schema before evaluation.
 
 ## Feature Helpers
 
@@ -215,11 +217,12 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests currently collect 433 cases. Coverage includes CLI dispatch, workspace
+Tests currently collect 470 cases. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
 hardware lookup tables, variants, diff, assemblies, precheck, review, batch
-validation, and regression snapshots.
+validation, regression snapshots, contract schema hardening, and min_wall_thickness
+range mode.
 
 Integration validation through example models:
 
