@@ -233,7 +233,7 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests currently collect 620 cases. Coverage includes CLI dispatch, workspace
+Tests currently collect 639 cases. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
 hardware lookup tables, variants, diff, assemblies, precheck, review, batch
@@ -241,7 +241,7 @@ validation, regression snapshots, contract schema hardening, min_wall_thickness
 range mode, negative regression fixtures, review blocking gates, metadata
 interface schema, ContractBuilder interface emission, doctor diagnostics,
 suggest-checks, improved suggested_fix payloads, timing instrumentation,
-and section cache.
+section cache, and executable helper cookbook.
 
 Integration validation through example models:
 
