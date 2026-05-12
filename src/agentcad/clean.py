@@ -84,9 +84,8 @@ def clean_model(
                 key=lambda p: p.stat().st_mtime,
                 reverse=True,
             )
-            for f in history_files:
-                if len(history_files) - history_files.index(f) > history_max:
-                    # This is an older file beyond retention.
+            for i, f in enumerate(history_files):
+                if i >= history_max:
                     size = f.stat().st_size
                     if dry_run:
                         kept.append(str(f))

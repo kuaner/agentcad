@@ -12,6 +12,7 @@ from .contract import (
     evaluate_feature_coverage_dict,
     evaluate_weak_check_warnings_dict,
     validate_design_schema_dict,
+    search_params_by_keywords,
 )
 from .jsonio import read_json, write_json
 from .measure import measure_model
@@ -25,6 +26,7 @@ from .stl import read_stl
 from .workspace import model_dir, outputs_dir, outputs_dir_for_variant, variant_params_path
 
 _DEFAULT_VALIDATE_VIEWS = ["iso", "front", "top", "side", "back"]
+_TIMED_STAGES = ("build", "measure", "render", "checks", "preview")
 
 # Backward-compatible aliases for modules/tests importing these constants.
 _VALID_CHECK_TYPES = known_types()
@@ -129,7 +131,7 @@ def validate_model(
         preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure, variant=variant)
     if preview.get("ok"):
         payload["artifacts"]["preview_page"] = (preview.get("artifacts") or {}).get("preview_page")
-    timings["totalMs"] = sum(v for k, v in timings.items() if k != "_start" and k.endswith("Ms"))
+    timings["totalMs"] = sum(timings.get(f"{s}Ms", 0) for s in _TIMED_STAGES)
     write_json(validation_path, payload)
     return payload
 
@@ -331,7 +333,6 @@ def _attach_suggested_fixes(checks: list[dict], design: dict, params: dict, *, n
         check_id = str(check.get("name", ""))
         check_def = check_defs.get(check_id, {})
         param_ref = check_def.get("param_ref")
-        # Find candidate param names even without param_ref.
         param_candidates = _find_param_candidates(check, params) if isinstance(params, dict) else []
         if param_ref and param_ref in params:
             fix = _param_fix(check, param_ref, params[param_ref])
@@ -398,23 +399,20 @@ def _generic_fix(check: dict, *, name: str = "") -> dict:
 
 
 # Check type → likely source heuristic.
-_LIKELY_SOURCE_MAP: dict[str, tuple[str, str]] = {
-    "bbox_size": ("geometry", "contract"),
-    "inner_diameter_at_z": ("geometry", "geometry"),
-    "outer_diameter_at_z": ("geometry", "geometry"),
-    "diameter_decreases_along_z": ("geometry", "geometry"),
-    "section_bbox_at_z": ("geometry", "contract"),
-    "section_component_count": ("geometry", "geometry"),
-    "min_clearance": ("contract", "geometry"),
-    "hole_accessibility": ("geometry", "geometry"),
-    "min_wall_thickness": ("geometry", "geometry"),
-    "feature_position": ("geometry", "geometry"),
-    "watertight": ("artifact", "artifact"),
-    "min_triangles": ("artifact", "artifact"),
-    "volume_range": ("geometry", "geometry"),
-    "metadata_equals": ("artifact", "artifact"),
-    "artifact_exists": ("artifact", "artifact"),
-    "feature_coverage": ("contract", "contract"),
+_LIKELY_SOURCE_MAP: dict[str, str] = {
+    "inner_diameter_at_z": "geometry",
+    "outer_diameter_at_z": "geometry",
+    "diameter_decreases_along_z": "geometry",
+    "section_component_count": "geometry",
+    "hole_accessibility": "geometry",
+    "min_wall_thickness": "geometry",
+    "feature_position": "geometry",
+    "volume_range": "geometry",
+    "watertight": "artifact",
+    "min_triangles": "artifact",
+    "metadata_equals": "artifact",
+    "artifact_exists": "artifact",
+    "feature_coverage": "contract",
 }
 
 # Keywords that suggest a param is related to a check dimension.
@@ -436,75 +434,60 @@ def _likely_source(check: dict) -> str:
     """
     check_type = check.get("type", "")
     has_actual = check.get("actual") is not None
-    primary, fallback = _LIKELY_SOURCE_MAP.get(check_type, ("unknown", "unknown"))
-    # bbox_size with actual values → geometry; without → contract is more likely.
     if check_type == "bbox_size":
         return "geometry" if has_actual else "contract"
     if check_type == "min_clearance":
-        # design-time min_clearance → contract; post-build descriptor mismatch → geometry
         return "contract"
-    return primary
+    if check_type == "section_bbox_at_z":
+        return "geometry" if has_actual else "contract"
+    return _LIKELY_SOURCE_MAP.get(check_type, "unknown")
+
+
+_SIMPLE_NEXT_COMMANDS: dict[str, str] = {
+    "artifact_exists": "agentcad build {name}",
+    "watertight": "agentcad build {name} --force",
+    "min_triangles": "agentcad measure {name}",
+    "feature_coverage": "agentcad suggest-checks {name}",
+    "hole_accessibility": "agentcad render {name} --section-z <z>",
+    "min_wall_thickness": "agentcad probe {name} --scan --axis <z|x|y>",
+    "min_clearance": "agentcad precheck {name}",
+    "diameter_decreases_along_z": "agentcad probe {name} --scan --axis z",
+    "feature_position": "agentcad inspect {name}",
+    "section_component_count": "agentcad measure {name}",
+    "volume_range": "agentcad measure {name}",
+}
 
 
 def _next_commands(check: dict, name: str) -> list[str]:
     """Recommended CLI commands to investigate or fix the failure."""
     check_type = check.get("type", "")
-    cmds: list[str] = []
-    # Artifact-level failures: run the command that creates the missing artifact.
-    if check_type == "artifact_exists":
-        cmds.append(f"agentcad build {name}")
-    elif check_type == "watertight":
-        cmds.append(f"agentcad build {name} --force")
-    elif check_type == "min_triangles":
-        cmds.append(f"agentcad measure {name}")
-    elif check_type == "feature_coverage":
-        cmds.append(f"agentcad suggest-checks {name}")
-    # Geometry-level failures: probe or render for verification.
-    elif check_type == "bbox_size":
-        cmds.append(f"agentcad measure {name}")
-        cmds.append(f"agentcad render {name} --views iso,front,top")
-    elif check_type in ("inner_diameter_at_z", "outer_diameter_at_z"):
+    simple_cmd = _SIMPLE_NEXT_COMMANDS.get(check_type)
+    if simple_cmd:
+        return [simple_cmd.format(name=name)]
+
+    # Check types that need dynamic parameters.
+    if check_type == "bbox_size":
+        return [f"agentcad measure {name}", f"agentcad render {name} --views iso,front,top"]
+    if check_type in ("inner_diameter_at_z", "outer_diameter_at_z"):
         z = check.get("z", check.get("section_z"))
         cx, cy = check.get("center", ["0", "0"])
-        cmds.append(f"agentcad probe {name} --z {z} --cx {cx[0] if isinstance(cx, list) else cx} --cy {cy[1] if isinstance(cy, list) else cy}")
-        cmds.append(f"agentcad render {name} --section-z {z}")
-    elif check_type == "section_bbox_at_z":
+        return [
+            f"agentcad probe {name} --z {z} --cx {cx[0] if isinstance(cx, list) else cx} --cy {cy[1] if isinstance(cy, list) else cy}",
+            f"agentcad render {name} --section-z {z}",
+        ]
+    if check_type == "section_bbox_at_z":
         z = check.get("z", check.get("section_z"))
-        cmds.append(f"agentcad render {name} --section-z {z}")
-    elif check_type in ("section_component_count", "volume_range"):
-        cmds.append(f"agentcad measure {name}")
-    elif check_type == "hole_accessibility":
-        cmds.append(f"agentcad render {name} --section-z <z>")
-    elif check_type == "min_wall_thickness":
-        cmds.append(f"agentcad probe {name} --scan --axis <z|x|y>")
-    elif check_type == "min_clearance":
-        cmds.append(f"agentcad precheck {name}")
-    elif check_type == "diameter_decreases_along_z":
-        cmds.append(f"agentcad probe {name} --scan --axis z")
-    elif check_type == "feature_position":
-        cmds.append(f"agentcad inspect {name}")
-    else:
-        cmds.append(f"agentcad validate {name}")
-    return cmds
+        return [f"agentcad render {name} --section-z {z}"]
+    return [f"agentcad validate {name}"]
 
 
 def _find_param_candidates(check: dict, params: dict) -> list[str]:
-    """Find params.json keys that might control the failing dimension.
-
-    Returns up to 3 candidate param names sorted by relevance.
-    """
-    if not isinstance(params, dict):
-        return []
+    """Find params.json keys that might control the failing dimension."""
     check_type = check.get("type", "")
     keywords = _PARAM_KEYWORDS_BY_CHECK_TYPE.get(check_type, frozenset())
     if not keywords:
         return []
-    candidates: list[str] = []
-    for key in sorted(params.keys()):
-        key_lower = str(key).lower()
-        if any(kw in key_lower for kw in keywords):
-            candidates.append(str(key))
-    return candidates[:3]
+    return search_params_by_keywords(params, keywords, max_results=3)
 
 
 __all__ = [

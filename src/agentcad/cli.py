@@ -441,32 +441,39 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: 
     return result
 
 
+def _validation_json_path(project: Path, target) -> Path:
+    """Resolve validation.json path for a ValidationTarget."""
+    from .workspace import outputs_dir_for_variant
+    from .assembly import assembly_outputs_dir
+    if target.kind == "model":
+        return outputs_dir_for_variant(project, target.name, target.variant) / "validation.json"
+    return assembly_outputs_dir(project, target.name) / "assembly_validation.json"
+
+
 def _dispatch_snapshot(project: Path, args: argparse.Namespace) -> dict:
     from .batch import discover_validation_targets
+    from .jsonio import read_json
+
+    targets = discover_validation_targets(project)
+    target_name = getattr(args, "target", None)
+    if target_name:
+        targets = [t for t in targets if t.name == target_name]
+    if not targets:
+        return {"ok": False, "stage": f"snapshot_{args.snapshot_command}", "error": {"type": "NoTargets", "message": "no validation targets found"}}
+
+    # Load payloads for all targets with existing validation results.
+    loaded: list[tuple[dict, dict]] = []
+    for t in targets:
+        v_path = _validation_json_path(project, t)
+        payload = read_json(v_path, default=None)
+        if payload is None:
+            continue
+        target_dict = {"kind": t.kind, "name": t.name, "variant": t.variant}
+        loaded.append((target_dict, payload))
+
     if args.snapshot_command == "write":
-        targets = discover_validation_targets(project)
-        target_name = getattr(args, "target", None)
-        if target_name:
-            targets = [t for t in targets if t.name == target_name]
-        if not targets:
-            return {"ok": False, "stage": "snapshot_write", "error": {"type": "NoTargets", "message": "no validation targets found"}}
         paths = []
-        for t in targets:
-            # Read the validation payload for this target.
-            kind = t.kind
-            name = t.name
-            variant = t.variant
-            if kind == "model":
-                from .workspace import outputs_dir_for_variant
-                v_path = outputs_dir_for_variant(project, name, variant) / "validation.json"
-            else:
-                from .assembly import assembly_outputs_dir
-                v_path = assembly_outputs_dir(project, name) / "assembly_validation.json"
-            from .jsonio import read_json
-            payload = read_json(v_path, default=None)
-            if payload is None:
-                continue
-            target_dict = {"kind": t.kind, "name": t.name, "variant": t.variant}
+        for target_dict, payload in loaded:
             path = write_snapshot(project, target_dict, payload)
             paths.append(str(path))
         return {
@@ -478,28 +485,8 @@ def _dispatch_snapshot(project: Path, args: argparse.Namespace) -> dict:
         }
 
     if args.snapshot_command == "compare":
-        targets = discover_validation_targets(project)
-        target_name = getattr(args, "target", None)
-        if target_name:
-            targets = [t for t in targets if t.name == target_name]
-        if not targets:
-            return {"ok": False, "stage": "snapshot_compare", "error": {"type": "NoTargets", "message": "no validation targets found"}}
         comparisons = []
-        for t in targets:
-            kind = t.kind
-            name = t.name
-            variant = t.variant
-            if kind == "model":
-                from .workspace import outputs_dir_for_variant
-                v_path = outputs_dir_for_variant(project, name, variant) / "validation.json"
-            else:
-                from .assembly import assembly_outputs_dir
-                v_path = assembly_outputs_dir(project, name) / "assembly_validation.json"
-            from .jsonio import read_json
-            payload = read_json(v_path, default=None)
-            if payload is None:
-                continue
-            target_dict = {"kind": t.kind, "name": t.name, "variant": t.variant}
+        for target_dict, payload in loaded:
             current = snapshot_target(project, target_dict, payload)
             baseline = load_snapshot(project, target_dict)
             if baseline is None:

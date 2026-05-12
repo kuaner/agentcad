@@ -25,6 +25,7 @@ from .contract import (
     INTERFACE_WORDS,
     ROOT_CHECK_TYPES,
     GEOMETRY_CHECK_TYPES,
+    search_params_by_keywords,
 )
 from .jsonio import read_json
 from .workspace import model_dir
@@ -218,12 +219,16 @@ def _interface_template(fid: str) -> dict:
 
 
 def _find_param_hint(params: dict, keywords: frozenset | set) -> str | None:
-    """Search params.json for keys matching keywords and return value hint."""
+    """Search params.json for keys matching keywords and return first numeric value.
+
+    Iterates in dict insertion order (not sorted) to prefer keys that appear
+    earlier in the user's params.json, which typically lists primary dimensions
+    before derived ones like clearance.
+    """
     if not isinstance(params, dict):
         return None
     for key, value in params.items():
         key_lower = str(key).lower()
-        if any(kw in key_lower for kw in keywords):
-            if isinstance(value, (int, float)):
-                return str(value)
+        if any(kw in key_lower for kw in keywords) and isinstance(value, (int, float)):
+            return str(value)
     return None

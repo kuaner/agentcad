@@ -12,6 +12,7 @@ from pathlib import Path
 from time import perf_counter
 
 from .jsonio import write_json
+from .workspace import list_models
 
 
 @dataclass(frozen=True)
@@ -31,23 +32,11 @@ class ValidationTarget:
 
 def discover_models(project: Path) -> list[ValidationTarget]:
     """Discover models with a design.json under models/*/."""
-    models_root = project / "models"
-    if not models_root.is_dir():
-        return []
-    targets = []
-    for entry in sorted(models_root.iterdir()):
-        if not entry.is_dir():
-            continue
-        design_path = entry / "design.json"
-        if not design_path.exists():
-            continue
-        targets.append(ValidationTarget(
-            kind="model",
-            name=entry.name,
-            variant=None,
-            path=entry,
-        ))
-    return targets
+    names = list_models(project)
+    return [
+        ValidationTarget(kind="model", name=name, variant=None, path=project / "models" / name)
+        for name in names
+    ]
 
 
 def discover_variants(project: Path, model: str) -> list[ValidationTarget]:

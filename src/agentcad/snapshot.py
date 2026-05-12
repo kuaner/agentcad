@@ -100,6 +100,16 @@ def snapshot_target(
     }
 
 
+def _snapshot_path(project: Path, target: dict) -> Path:
+    """Resolve snapshot file path from target descriptor."""
+    kind = target.get("kind", "model")
+    name = target.get("name", "")
+    variant = target.get("variant")
+    filename = _snapshot_filename(kind, name, variant)
+    kind_dir = "models" if kind == "model" else "assemblies"
+    return project / ".agentcad" / "snapshots" / kind_dir / filename
+
+
 def write_snapshot(
     project: Path,
     target: dict,
@@ -107,12 +117,7 @@ def write_snapshot(
 ) -> Path:
     """Write a normalized snapshot to .agentcad/snapshots/."""
     snap = snapshot_target(project, target, payload)
-    kind = target.get("kind", "model")
-    name = target.get("name", "")
-    variant = target.get("variant")
-    filename = _snapshot_filename(kind, name, variant)
-    kind_dir = "models" if kind == "model" else "assemblies"
-    output_path = project / ".agentcad" / "snapshots" / kind_dir / filename
+    output_path = _snapshot_path(project, target)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     write_json(output_path, snap)
     return output_path
@@ -123,12 +128,7 @@ def load_snapshot(
     target: dict,
 ) -> dict | None:
     """Load a snapshot from .agentcad/snapshots/ if it exists."""
-    kind = target.get("kind", "model")
-    name = target.get("name", "")
-    variant = target.get("variant")
-    filename = _snapshot_filename(kind, name, variant)
-    kind_dir = "models" if kind == "model" else "assemblies"
-    path = project / ".agentcad" / "snapshots" / kind_dir / filename
+    path = _snapshot_path(project, target)
     return read_json(path, default=None)
 
 

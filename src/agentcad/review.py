@@ -30,7 +30,7 @@ import itertools
 from pathlib import Path
 from typing import Any
 
-from .contract import evaluate_weak_check_warnings_dict
+from .contract import evaluate_weak_check_warnings_dict, HOLE_WORDS
 from .geometry import min_clearance_3d, parse_shape
 from .jsonio import read_json, write_json
 from .runner import utc_now
@@ -232,7 +232,7 @@ def _shape_declares_hole(shape: dict, check_hint: str = "") -> bool:
         if shape.get(key):
             terms.append(str(shape.get(key)).lower())
     text = " ".join(terms)
-    return any(word in text for word in ("hole", "screw", "bolt", "fastener"))
+    return any(word in text for word in HOLE_WORDS)
 
 
 def _distinct_holes_in_design(design: dict) -> list[dict]:

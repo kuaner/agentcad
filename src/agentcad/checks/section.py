@@ -8,10 +8,6 @@ from ..section import (
     analyze_section_segments,
     section_segments,
     write_section_svg,
-    AXIS_Z,
-    analyze_section_segments,
-    section_segments,
-    write_section_svg,
 )
 from ..stl import section_bbox_at_z, section_radius_at_z
 from . import CheckContext, POST_BUILD, register_check

@@ -15,9 +15,10 @@ Usage::
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
+
+from ..jsonio import read_json, write_json
 
 
 class ContractBuilder:
@@ -92,7 +93,7 @@ class ContractBuilder:
 
         design_path = model_dir(project, name) / "design.json"
         if merge and design_path.exists():
-            existing = json.loads(design_path.read_text(encoding="utf-8"))
+            existing = read_json(design_path, default={})
         else:
             existing = {}
 
@@ -139,7 +140,7 @@ class ContractBuilder:
                 existing[key] = new[key]
 
         design_path.parent.mkdir(parents=True, exist_ok=True)
-        design_path.write_text(json.dumps(existing, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        write_json(design_path, existing)
         return existing
 
     @staticmethod
@@ -167,7 +168,7 @@ class ContractBuilder:
 
         metadata_path = model_dir(project, name) / "metadata.json"
         if merge and metadata_path.exists():
-            existing = json.loads(metadata_path.read_text(encoding="utf-8"))
+            existing = read_json(metadata_path, default={})
         else:
             existing = {}
 
@@ -185,5 +186,5 @@ class ContractBuilder:
                 existing[key] = new[key]
 
         metadata_path.parent.mkdir(parents=True, exist_ok=True)
-        metadata_path.write_text(json.dumps(existing, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        write_json(metadata_path, existing)
         return existing
