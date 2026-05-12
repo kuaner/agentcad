@@ -123,7 +123,7 @@ Read only the references needed for the current stage.
 - Every hole needs a `min_clearance` check for each surrounding wall, adjacent
   solid, or relevant edge.
 - Every hole also needs a `hole_accessibility` check on the real tool/fastener
-  approach plane.
+  approach plane. Missing hole_accessibility is a blocking review gate.
 - Every load-bearing attached feature needs at least one interface/root check
   in addition to a body-exists check. A lip, rib, boss, tab, wall, hook, or
   bracket arm that only touches at an edge is a blocker even if validate passes.

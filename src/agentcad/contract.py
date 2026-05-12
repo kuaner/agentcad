@@ -21,6 +21,16 @@ GEOMETRY_CHECK_TYPES = frozenset({
     "feature_position",
 })
 
+# Feature classification keywords.
+HOLE_WORDS = frozenset({"hole", "bore", "screw", "bolt", "fastener", "counterbore", "countersink"})
+ATTACHMENT_WORDS = frozenset({"rib", "boss", "tab", "lip", "arm", "flange", "hook", "hinge"})
+INTERFACE_WORDS = frozenset({"socket", "pin", "dovetail", "gear", "mate", "interface", "neck"})
+
+# Check types that verify hole-specific behavior.
+HOLE_CHECK_TYPES = frozenset({"hole_accessibility", "inner_diameter_at_z", "min_clearance"})
+# Check types that verify attachment root/interface behavior.
+ROOT_CHECK_TYPES = frozenset({"min_wall_thickness", "min_clearance", "section_bbox_at_z", "feature_position"})
+
 
 @dataclass(frozen=True)
 class SchemaIssue:
@@ -46,6 +56,22 @@ class SchemaIssue:
 
 def _issue(path: str, message: str, *, hint: str | None = None, severity: str = "error") -> SchemaIssue:
     return SchemaIssue(path=path, message=message, hint=hint, severity=severity)
+
+
+def classify_feature(feature: dict) -> set[str]:
+    """Classify a feature by its id, intent, and description text.
+
+    Returns a set of tags: "hole", "load_bearing_attachment", "interface".
+    """
+    text = " ".join(str(feature.get(k, "")) for k in ("id", "description", "intent")).lower()
+    tags: set[str] = set()
+    if any(word in text for word in HOLE_WORDS):
+        tags.add("hole")
+    if any(word in text for word in ATTACHMENT_WORDS):
+        tags.add("load_bearing_attachment")
+    if any(word in text for word in INTERFACE_WORDS):
+        tags.add("interface")
+    return tags
 
 
 def _check_path(index: int, field: str | None = None) -> str:
@@ -261,23 +287,59 @@ def evaluate_weak_check_warnings_dict(design: dict[str, Any]) -> list[dict]:
         if not isinstance(feature, dict):
             continue
         feature_id = str(feature.get("id") or "unknown")
+        categories = classify_feature(feature)
         linked_ids = [str(cid) for cid in (feature.get("checks") or [])]
+
         if not linked_ids:
             warnings.append({
                 "feature": feature_id,
+                "category": sorted(categories) if categories else ["unclassified"],
+                "severity": "blocking",
+                "missing": "any_check",
                 "message": f"feature '{feature_id}' has no checks linked — add at least one geometry check",
                 "hint": "Link outer_diameter_at_z, inner_diameter_at_z, section_bbox_at_z, or min_clearance",
             })
             continue
+
         linked_types = {check_type_map.get(cid, "") for cid in linked_ids}
         geometry_checks = linked_types & GEOMETRY_CHECK_TYPES
         if not geometry_checks:
             warnings.append({
                 "feature": feature_id,
+                "category": sorted(categories) if categories else ["unclassified"],
+                "severity": "blocking",
+                "missing": "geometry_check",
                 "linkedCheckTypes": sorted(t for t in linked_types if t),
                 "message": f"feature '{feature_id}' has no geometry checks — geometry is not verified",
                 "hint": "Use agentcad probe/inspect and add section/diameter/clearance checks",
             })
+            continue
+
+        # Category-specific gaps.
+        if "hole" in categories:
+            hole_checks = linked_types & HOLE_CHECK_TYPES
+            if "hole_accessibility" not in hole_checks:
+                warnings.append({
+                    "feature": feature_id,
+                    "category": ["hole"],
+                    "severity": "blocking",
+                    "missing": "hole_accessibility",
+                    "message": f"hole-like feature '{feature_id}' has diameter/clearance checks but no access-envelope check",
+                    "hint": "Add hole_accessibility check for the tool/bolt approach direction",
+                })
+
+        if "load_bearing_attachment" in categories:
+            root_checks = linked_types & ROOT_CHECK_TYPES
+            if not root_checks:
+                warnings.append({
+                    "feature": feature_id,
+                    "category": ["load_bearing_attachment"],
+                    "severity": "warning",
+                    "missing": "root_interface_check",
+                    "message": f"load-bearing feature '{feature_id}' has no root/interface check — detachment risk is unverified",
+                    "hint": "Add min_wall_thickness at the feature root, or min_clearance at the attachment interface",
+                })
+
     return warnings
 
 

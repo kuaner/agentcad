@@ -195,6 +195,13 @@ Section checks use STL triangle-plane intersections for validating ducts, tapers
 
 Schema validation now uses structured `SchemaIssue` with field-level error paths, severity (error/warning), and hints. `section_bbox_at_z` with `expected: "void"` emits a warning if `region` is missing (false-pass risk on empty slices). `min_wall_thickness` validates single-plane vs range-mode schema before evaluation.
 
+Weak-check warnings are now categorized with severity levels:
+- Features without any checks or without geometry checks → `severity: "blocking"` (gates delivery in review)
+- Hole-like features without `hole_accessibility` → `severity: "blocking"`
+- Load-bearing attachment features (rib/boss/tab) without root/interface checks → `severity: "warning"` (deferred followup)
+
+Feature classification (`classify_feature`) uses keyword matching on feature id, intent, and description to tag features as `hole`, `load_bearing_attachment`, or `interface`. Review promotes blocking-severity warnings to checklist items that gate `ready_to_deliver`.
+
 ## Feature Helpers
 
 Use `agentcad.features` for repeated mechanical primitives when it fits the model. Helpers return build123d geometry and can register feature/check records through `ContractBuilder`. The public helper set includes plates, bosses, ribs, slots, tubes, screw holes, stepped bores, mounting patterns, duct sockets, hinges, dovetails, snap pins, sparse walls, NEMA mounts, threaded rods/nuts, screws, knurls, spur gears, and ring gears. Hardware dimensions live under `agentcad.hardware`.
@@ -217,12 +224,12 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests currently collect 470 cases. Coverage includes CLI dispatch, workspace
+Tests currently collect 510 cases. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
 hardware lookup tables, variants, diff, assemblies, precheck, review, batch
-validation, regression snapshots, contract schema hardening, and min_wall_thickness
-range mode.
+validation, regression snapshots, contract schema hardening, min_wall_thickness
+range mode, negative regression fixtures, and review blocking gates.
 
 Integration validation through example models:
 
