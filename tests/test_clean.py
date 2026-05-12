@@ -137,7 +137,7 @@ class TestCleanPreviewSVGs:
         result = clean_model(project, "thing", dry_run=False, previews=True)
         assert not (out_dir / "preview.iso.svg").exists()
 
-    def test_preview_html_is_protected_even_with_flag(self, project):
+    def test_preview_html_is_not_matched_by_svg_glob(self, project):
         out_dir = outputs_dir(project, "thing")
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / "preview.html").write_text("<html></html>")

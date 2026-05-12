@@ -13,6 +13,7 @@ from typing import Any
 from .geometry import min_clearance_3d, parse_shape
 from .jsonio import read_json, write_json
 from .metadata import validate_part_metadata_dict
+from .contract import SchemaIssue
 from .render import triangles_to_svg
 from .runner import build_model
 from .section import AXIS_X, AXIS_Y, AXIS_Z, analyze_section_segments, section_segments
@@ -761,15 +762,15 @@ def _metadata_schema_checks(components: dict[str, dict]) -> list[dict]:
         issues = record.get("metadata_issues") or []
         if not issues:
             continue
-        error_issues = [i for i in issues if isinstance(i, dict) and i.get("severity") != "warning"]
-        warning_issues = [i for i in issues if isinstance(i, dict) and i.get("severity") == "warning"]
+        error_issues = [i for i in issues if isinstance(i, SchemaIssue) and i.severity != "warning"]
+        warning_issues = [i for i in issues if isinstance(i, SchemaIssue) and i.severity == "warning"]
         if error_issues:
             checks.append({
                 "name": f"metadata_schema:{cid}",
                 "type": "metadata_schema",
                 "ok": False,
                 "component": cid,
-                "issues": [i if isinstance(i, dict) else {"path": "", "message": str(i)} for i in error_issues],
+                "issues": [{"path": i.path, "message": i.message, "severity": i.severity, **({"hint": i.hint} if i.hint else {})} for i in error_issues],
                 "hint": "fix metadata.json interface/anchor schema errors before assembly validation",
             })
         elif warning_issues:
@@ -778,7 +779,7 @@ def _metadata_schema_checks(components: dict[str, dict]) -> list[dict]:
                 "type": "metadata_schema",
                 "ok": True,
                 "component": cid,
-                "warnings": [i if isinstance(i, dict) else {"path": "", "message": str(i)} for i in warning_issues],
+                "warnings": [{"path": i.path, "message": i.message, "severity": i.severity, **({"hint": i.hint} if i.hint else {})} for i in warning_issues],
             })
     return checks
 

@@ -164,8 +164,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     clean_cmd = sub.add_parser("clean", help="remove accumulated debug and history artifacts")
     clean_cmd.add_argument("--model", default=None, help="clean only one model (default: all)")
-    clean_cmd.add_argument("--validation-history", action="store_true", default=True, help="clean old validation history files")
-    clean_cmd.add_argument("--debug", action="store_true", default=True, help="clean debug SVGs and JSONs")
+    clean_cmd.add_argument("--validation-history", action=argparse.BooleanOptionalAction, default=True, help="clean old validation history files (default: on; use --no-validation-history to skip)")
+    clean_cmd.add_argument("--debug", action=argparse.BooleanOptionalAction, default=True, help="clean debug SVGs and JSONs (default: on; use --no-debug to skip)")
     clean_cmd.add_argument("--previews", action="store_true", default=False, help="also clean preview SVGs")
     clean_cmd.add_argument("--dry-run", action="store_true", default=False, help="report deletions without deleting")
 
@@ -184,11 +184,8 @@ def build_parser() -> argparse.ArgumentParser:
     snapshot_sub = snapshot.add_subparsers(dest="snapshot_command", required=True)
     snapshot_write = snapshot_sub.add_parser("write", help="write regression snapshots for validated targets")
     snapshot_write.add_argument("--target", default=None, help="specific model or assembly name (default: all)")
-    snapshot_write.add_argument("--kind", choices=["model", "assembly", "auto"], default="auto")
-    snapshot_write.add_argument("--all", action="store_true", help="write snapshots for all targets")
     snapshot_compare = snapshot_sub.add_parser("compare", help="compare current results against baseline snapshots")
     snapshot_compare.add_argument("--target", default=None, help="specific model or assembly name (default: all)")
-    snapshot_compare.add_argument("--kind", choices=["model", "assembly", "auto"], default="auto")
 
     return parser
 

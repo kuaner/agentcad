@@ -470,9 +470,11 @@ def _next_commands(check: dict, name: str) -> list[str]:
         return [f"agentcad measure {name}", f"agentcad render {name} --views iso,front,top"]
     if check_type in ("inner_diameter_at_z", "outer_diameter_at_z"):
         z = check.get("z", check.get("section_z"))
-        cx, cy = check.get("center", ["0", "0"])
+        raw_center = check.get("center", [0, 0])
+        cx_val = raw_center[0] if isinstance(raw_center, list) else raw_center
+        cy_val = raw_center[1] if isinstance(raw_center, list) else raw_center
         return [
-            f"agentcad probe {name} --z {z} --cx {cx[0] if isinstance(cx, list) else cx} --cy {cy[1] if isinstance(cy, list) else cy}",
+            f"agentcad probe {name} --z {z} --cx {cx_val} --cy {cy_val}",
             f"agentcad render {name} --section-z {z}",
         ]
     if check_type == "section_bbox_at_z":

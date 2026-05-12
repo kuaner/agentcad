@@ -113,10 +113,6 @@ def clean_model(
     # Preview SVGs: only if --previews is passed.
     if previews:
         for f in out_dir.glob(_PREVIEW_SVG_PATTERN):
-            # Preview HTML is protected (it's the interactive preview page).
-            if f.suffix == ".html" and f.name == "preview.html":
-                kept.append(str(f))
-                continue
             size = f.stat().st_size
             if dry_run:
                 kept.append(str(f))
