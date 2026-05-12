@@ -28,8 +28,12 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra dev
 
-      - name: Run tests
-        run: uv run pytest -v
+      - name: Run tests (fast suite)
+        run: uv run pytest -v -m "not slow"
+
+      - name: Run slow tests
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: uv run pytest -v -m slow
 
       - name: Smoke test CLI entrypoint
         run: uv run agentcad --help
