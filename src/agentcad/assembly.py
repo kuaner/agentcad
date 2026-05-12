@@ -12,6 +12,7 @@ from typing import Any
 
 from .geometry import min_clearance_3d, parse_shape
 from .jsonio import read_json, write_json
+from .metadata import validate_part_metadata_dict
 from .render import triangles_to_svg
 from .runner import build_model
 from .section import AXIS_X, AXIS_Y, AXIS_Z, analyze_section_segments, section_segments
@@ -123,6 +124,7 @@ def measure_assembly(project: Path, name: str) -> dict:
         refs_needed = _collect_references(contract)
         resolved_refs = _resolve_references(refs_needed, components)
         metadata_checks = _evaluate_metadata_geometry(resolved_refs, components)
+        metadata_schema_checks = _metadata_schema_checks(components)
         mate_residuals = _evaluate_mates(contract, resolved_refs)
         pairwise = _measure_pairwise(components)
         assembly_bbox = _global_bbox([component["world_bbox"] for component in components.values()])
@@ -137,6 +139,7 @@ def measure_assembly(project: Path, name: str) -> dict:
             "components": {cid: _public_component_record(record) for cid, record in components.items()},
             "references": resolved_refs,
             "metadata_geometry_checks": metadata_checks,
+            "metadata_schema_checks": metadata_schema_checks,
             "mate_residuals": mate_residuals,
             "pairwise": pairwise,
             "assembly_geometry": {
@@ -187,6 +190,7 @@ def validate_assembly(project: Path, name: str) -> dict:
         checks: list[dict] = []
         checks.extend(_fresh_component_checks(geometry))
         checks.extend(geometry.get("metadata_geometry_checks") or [])
+        checks.extend(geometry.get("metadata_schema_checks") or [])
         checks.extend(_mate_checks(geometry))
         checks.extend(_evaluate_user_checks(contract, geometry))
         checks.extend(_fit_coverage_checks(contract, geometry))
@@ -401,6 +405,7 @@ def _load_components(project: Path, contract: dict) -> dict[str, dict]:
             local_report = mesh_report(local_triangles)
             world_report = mesh_report(world_triangles)
         metadata = read_json(metadata_path, default={}) or {}
+        metadata_issues = validate_part_metadata_dict(metadata)
 
         records[cid] = {
             "id": cid,
@@ -420,6 +425,7 @@ def _load_components(project: Path, contract: dict) -> dict[str, dict]:
                 "metadata": metadata_path.exists(),
             },
             "metadata": metadata,
+            "metadata_issues": metadata_issues,
             "transform": transform,
             "local_triangles": local_triangles,
             "world_triangles": world_triangles,
@@ -746,6 +752,35 @@ def _cylinder_endpoints(desc: dict) -> tuple[Vec3, Vec3]:
         x, z = center[0], center[1]
         return ((x, start, z), (x, end, z))
     raise AssemblyError("CylinderDescriptorInvalid", f"unsupported cylinder axis: {axis}")
+
+
+def _metadata_schema_checks(components: dict[str, dict]) -> list[dict]:
+    """Convert metadata interface validation issues into assembly validation checks."""
+    checks: list[dict] = []
+    for cid, record in components.items():
+        issues = record.get("metadata_issues") or []
+        if not issues:
+            continue
+        error_issues = [i for i in issues if isinstance(i, dict) and i.get("severity") != "warning"]
+        warning_issues = [i for i in issues if isinstance(i, dict) and i.get("severity") == "warning"]
+        if error_issues:
+            checks.append({
+                "name": f"metadata_schema:{cid}",
+                "type": "metadata_schema",
+                "ok": False,
+                "component": cid,
+                "issues": [i if isinstance(i, dict) else {"path": "", "message": str(i)} for i in error_issues],
+                "hint": "fix metadata.json interface/anchor schema errors before assembly validation",
+            })
+        elif warning_issues:
+            checks.append({
+                "name": f"metadata_schema:{cid}",
+                "type": "metadata_schema",
+                "ok": True,
+                "component": cid,
+                "warnings": [i if isinstance(i, dict) else {"path": "", "message": str(i)} for i in warning_issues],
+            })
+    return checks
 
 
 def _evaluate_metadata_geometry(resolved_refs: dict[str, dict], components: dict[str, dict]) -> list[dict]:

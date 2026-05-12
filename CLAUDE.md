@@ -50,6 +50,7 @@ src/agentcad/          # Main package
   templates.py          # Loads template files from _templates/ package
   batch.py              # Batch validation: target discovery + workspace-level orchestration
   snapshot.py           # Regression snapshots: write, load, compare normalized validation data
+  metadata.py           # Metadata interface schema validation and resolution
   _templates/           # Template files (md, json, py) for workspace/model scaffolding
   features/             # Helper library: reusable CAD primitives + ContractBuilder integration
   hardware/             # Screw, nut, washer, heat-set insert dimension tables
@@ -202,6 +203,8 @@ Weak-check warnings are now categorized with severity levels:
 
 Feature classification (`classify_feature`) uses keyword matching on feature id, intent, and description to tag features as `hole`, `load_bearing_attachment`, or `interface`. Review promotes blocking-severity warnings to checklist items that gate `ready_to_deliver`.
 
+Metadata interface schema (`metadata.py`) validates the `interfaces` and `anchors` sections of `metadata.json` with structured `SchemaIssue` error paths. Supported interface kinds: `cylindrical_male`, `cylindrical_female`, `screw_axis`, `dovetail_rail`, `snap_pin`, `snap_socket`, `gear_axis`, `planar`. Assembly validation converts metadata schema errors into `metadata_schema` checks. `ContractBuilder.add_interface()` accumulates interface entries and `write_metadata_to()` writes/merges them into `metadata.json`.
+
 ## Feature Helpers
 
 Use `agentcad.features` for repeated mechanical primitives when it fits the model. Helpers return build123d geometry and can register feature/check records through `ContractBuilder`. The public helper set includes plates, bosses, ribs, slots, tubes, screw holes, stepped bores, mounting patterns, duct sockets, hinges, dovetails, snap pins, sparse walls, NEMA mounts, threaded rods/nuts, screws, knurls, spur gears, and ring gears. Hardware dimensions live under `agentcad.hardware`.
@@ -224,12 +227,13 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests currently collect 510 cases. Coverage includes CLI dispatch, workspace
+Tests currently collect 544 cases. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
 hardware lookup tables, variants, diff, assemblies, precheck, review, batch
 validation, regression snapshots, contract schema hardening, min_wall_thickness
-range mode, negative regression fixtures, and review blocking gates.
+range mode, negative regression fixtures, review blocking gates, metadata
+interface schema, and ContractBuilder interface emission.
 
 Integration validation through example models:
 

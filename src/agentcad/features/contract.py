@@ -21,7 +21,7 @@ from typing import Any
 
 
 class ContractBuilder:
-    """Accumulates features and checks from helper calls."""
+    """Accumulates features, checks, and interfaces from helper calls."""
 
     def __init__(self, intent: str = "", units: str = "mm") -> None:
         self.intent = intent
@@ -29,6 +29,7 @@ class ContractBuilder:
         self._features: list[dict[str, Any]] = []
         self._checks: list[dict[str, Any]] = []
         self._meta: dict[str, Any] = {}
+        self._interfaces: dict[str, dict[str, Any]] = {}
 
     @property
     def features(self) -> list[dict[str, Any]]:
@@ -63,6 +64,15 @@ class ContractBuilder:
         self.add_feature(feature)
         for check in checks:
             self.add_check(check)
+
+    def add_interface(self, name: str, interface: dict[str, Any]) -> None:
+        if name in self._interfaces:
+            raise ValueError(f"duplicate interface name: {name!r}")
+        self._interfaces[name] = interface
+
+    @property
+    def interfaces(self) -> dict[str, dict[str, Any]]:
+        return dict(self._interfaces)
 
     def to_design(self) -> dict[str, Any]:
         """Build a design.json-compatible dict."""
@@ -140,3 +150,40 @@ class ContractBuilder:
         if key == "features":
             return fid in scaffold_features
         return fid in scaffold_checks
+
+    def to_metadata(self) -> dict[str, Any]:
+        """Build a metadata.json-compatible dict."""
+        doc: dict[str, Any] = {
+            "schema": "agentcad.part.metadata.v1",
+            "units": self.units,
+        }
+        if self._interfaces:
+            doc["interfaces"] = dict(self._interfaces)
+        return doc
+
+    def write_metadata_to(self, project: Path, name: str, *, merge: bool = True) -> dict[str, Any]:
+        """Write (or merge into) ``models/<name>/metadata.json``."""
+        from ..workspace import model_dir
+
+        metadata_path = model_dir(project, name) / "metadata.json"
+        if merge and metadata_path.exists():
+            existing = json.loads(metadata_path.read_text(encoding="utf-8"))
+        else:
+            existing = {}
+
+        new = self.to_metadata()
+
+        # Merge interfaces: add new ones, update existing ones with matching names.
+        if "interfaces" in new:
+            existing_interfaces = existing.get("interfaces", {})
+            for iface_name, iface_data in new["interfaces"].items():
+                existing_interfaces[iface_name] = iface_data
+            existing["interfaces"] = existing_interfaces
+
+        for key in ("schema", "units"):
+            if key in new and key not in existing:
+                existing[key] = new[key]
+
+        metadata_path.parent.mkdir(parents=True, exist_ok=True)
+        metadata_path.write_text(json.dumps(existing, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        return existing
