@@ -175,15 +175,17 @@ def evaluate_design_checks(project: Path, name: str, measure_payload: dict, vari
     out_dir = outputs_dir_for_variant(project, name, variant)
     design = read_json(model_dir(project, name) / "design.json", default={}) or {}
     stl_path = out_dir / f"{name}.stl"
-    cache: list | None = None
+    stl_cache: list | None = None
+    from .section import SectionCache
+    section_cache = SectionCache()
 
     def get_triangles() -> list:
-        nonlocal cache
-        if cache is None:
-            cache = read_stl(stl_path)
-        return cache
+        nonlocal stl_cache
+        if stl_cache is None:
+            stl_cache = read_stl(stl_path)
+        return stl_cache
 
-    ctx = CheckContext(project=project, name=name, measure=measure_payload, get_triangles=get_triangles, out_dir=out_dir)
+    ctx = CheckContext(project=project, name=name, measure=measure_payload, get_triangles=get_triangles, out_dir=out_dir, section_cache=section_cache)
     results: list[dict] = []
     for index, check in enumerate(design.get("checks") or []):
         if not isinstance(check, dict):
@@ -218,13 +220,14 @@ def evaluate_weak_check_warnings(project: Path, name: str) -> list[dict]:
     return evaluate_weak_check_warnings_dict(design)
 
 
-def evaluate_check(project: Path, name: str, check: dict, measure_payload: dict, index: int, get_triangles=None) -> dict:
+def evaluate_check(project: Path, name: str, check: dict, measure_payload: dict, index: int, get_triangles=None, section_cache=None) -> dict:
     ctx = CheckContext(
         project=project,
         name=name,
         measure=measure_payload,
         get_triangles=get_triangles if get_triangles is not None else (lambda: read_stl(outputs_dir(project, name) / f"{name}.stl")),
         out_dir=outputs_dir(project, name),
+        section_cache=section_cache,
     )
     if not isinstance(check, dict):
         return {
