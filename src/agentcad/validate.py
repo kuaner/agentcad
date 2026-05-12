@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
 from .checks import CheckContext, known_types, run_check
@@ -40,19 +42,24 @@ def validate_model(
     out_dir.mkdir(parents=True, exist_ok=True)
     validation_path = out_dir / "validation.json"
     observability_path = out_dir / "observability.json"
+    timings: dict[str, float] = {}
 
-    build = build_model(project, name, variant=variant)
+    with timed_stage(timings, "build"):
+        build = build_model(project, name, variant=variant)
     archive_validation(out_dir)
     if not build.get("ok"):
-        payload = _validation_payload(name, [stage_check("build", False, build)], artifacts={"validation": str(validation_path)})
+        timings["totalMs"] = timings.get("buildMs", 0)
+        payload = _validation_payload(name, [stage_check("build", False, build)], artifacts={"validation": str(validation_path)}, timings=timings)
         write_json(validation_path, payload)
         return payload
 
-    measure = measure_model(project, name, variant=variant)
+    with timed_stage(timings, "measure"):
+        measure = measure_model(project, name, variant=variant)
     views = render_views if render_views is not None else _DEFAULT_VALIDATE_VIEWS
     if render_view != "iso" and render_view not in views:
         views = [render_view] + [v for v in views if v != render_view]
-    multi_render = render_models_multi(project, name, views, variant=variant)
+    with timed_stage(timings, "render"):
+        multi_render = render_models_multi(project, name, views, variant=variant)
 
     checks = [
         stage_check("build", bool(build.get("ok")), build),
@@ -63,13 +70,14 @@ def validate_model(
     auto_scan: dict = {}
     observability: dict | None = None
     if measure.get("ok"):
-        schema_errors = validate_design_schema(project, name)
-        if schema_errors:
-            checks.extend(schema_errors)
-        else:
-            checks.extend(evaluate_feature_coverage(project, name))
-            checks.extend(evaluate_design_checks(project, name, measure, variant=variant))
-            warnings = evaluate_weak_check_warnings(project, name)
+        with timed_stage(timings, "checks"):
+            schema_errors = validate_design_schema(project, name)
+            if schema_errors:
+                checks.extend(schema_errors)
+            else:
+                checks.extend(evaluate_feature_coverage(project, name))
+                checks.extend(evaluate_design_checks(project, name, measure, variant=variant))
+                warnings = evaluate_weak_check_warnings(project, name)
 
         stl_path = out_dir / f"{name}.stl"
         if stl_path.exists():
@@ -108,7 +116,7 @@ def validate_model(
     }
     if observability:
         artifacts["observability"] = str(observability_path)
-    payload = _validation_payload(name, checks, artifacts=artifacts, warnings=warnings or None, auto_scan=auto_scan or None)
+    payload = _validation_payload(name, checks, artifacts=artifacts, warnings=warnings or None, auto_scan=auto_scan or None, timings=timings)
     design = read_json(model_dir(project, name) / "design.json", default={}) or {}
     if variant:
         v_params_path = variant_params_path(project, name, variant)
@@ -117,9 +125,11 @@ def validate_model(
         params = read_json(model_dir(project, name) / "params.json", default={}) or {}
     _attach_suggested_fixes(payload.get("checks", []), design, params, name=name)
     write_json(validation_path, payload)
-    preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure, variant=variant)
+    with timed_stage(timings, "preview"):
+        preview = write_model_preview(project, name, validation_payload=payload, geometry_payload=measure, variant=variant)
     if preview.get("ok"):
         payload["artifacts"]["preview_page"] = (preview.get("artifacts") or {}).get("preview_page")
+    timings["totalMs"] = sum(v for k, v in timings.items() if k != "_start" and k.endswith("Ms"))
     write_json(validation_path, payload)
     return payload
 
@@ -232,6 +242,7 @@ def _validation_payload(
     artifacts: dict[str, str],
     warnings: list[dict] | None = None,
     auto_scan: dict | None = None,
+    timings: dict[str, float] | None = None,
 ) -> dict:
     ok = all(bool(check.get("ok")) for check in checks)
     payload: dict[str, Any] = {
@@ -247,7 +258,19 @@ def _validation_payload(
         payload["warnings"] = warnings
     if auto_scan:
         payload["auto_scan"] = auto_scan
+    if timings:
+        payload["timings"] = timings
     return payload
+
+
+@contextmanager
+def timed_stage(timings: dict[str, float], name: str):
+    """Record elapsed milliseconds for a named stage."""
+    start = perf_counter()
+    try:
+        yield
+    finally:
+        timings[f"{name}Ms"] = round((perf_counter() - start) * 1000, 3)
 
 
 def _observability_payload(

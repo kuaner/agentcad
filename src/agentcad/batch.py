@@ -153,6 +153,8 @@ def _target_summary(target: ValidationTarget, payload: dict) -> dict:
         "warnings": payload.get("warnings") or [],
         "artifacts": payload.get("artifacts") or {},
         "error": payload.get("error"),
+        "timings": payload.get("timings"),
+        "durationMs": (payload.get("timings") or {}).get("totalMs"),
     }
 
 
