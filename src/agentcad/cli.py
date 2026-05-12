@@ -162,6 +162,13 @@ def build_parser() -> argparse.ArgumentParser:
     suggest_cmd = sub.add_parser("suggest-checks", help="suggest missing checks based on design contract")
     suggest_cmd.add_argument("model", help="model name to analyze")
 
+    clean_cmd = sub.add_parser("clean", help="remove accumulated debug and history artifacts")
+    clean_cmd.add_argument("--model", default=None, help="clean only one model (default: all)")
+    clean_cmd.add_argument("--validation-history", action="store_true", default=True, help="clean old validation history files")
+    clean_cmd.add_argument("--debug", action="store_true", default=True, help="clean debug SVGs and JSONs")
+    clean_cmd.add_argument("--previews", action="store_true", default=False, help="also clean preview SVGs")
+    clean_cmd.add_argument("--dry-run", action="store_true", default=False, help="report deletions without deleting")
+
     assembly = sub.add_parser("assembly", help="create, validate, and review multi-model assemblies")
     assembly_sub = assembly.add_subparsers(dest="assembly_command", required=True)
     assembly_init = assembly_sub.add_parser("init", help="create an assembly contract")
@@ -364,6 +371,19 @@ def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "suggest-checks":
         from .suggest import suggest_checks
         return suggest_checks(project, args.model)
+    if args.command == "clean":
+        from .clean import clean_model, _clean_all
+        if args.model:
+            return clean_model(project, args.model,
+                               dry_run=args.dry_run,
+                               validation_history=args.validation_history,
+                               debug=args.debug,
+                               previews=args.previews)
+        return _clean_all(project,
+                          dry_run=args.dry_run,
+                          validation_history=args.validation_history,
+                          debug=args.debug,
+                          previews=args.previews)
 
     if args.command == "snapshot":
         return _dispatch_snapshot(project, args)

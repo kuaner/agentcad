@@ -250,6 +250,7 @@ agentcad inspect <model>
 agentcad report <model>
 agentcad doctor <model>[:<variant>]           # Workflow state diagnostics: gaps, next command
 agentcad suggest-checks <model>               # Suggest missing checks based on design contract
+agentcad clean [--model <name>] [--dry-run]   # Remove debug/history artifacts
 
 # Assembly
 agentcad assembly init <assembly>

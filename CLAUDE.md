@@ -53,6 +53,7 @@ src/agentcad/          # Main package
   doctor.py             # Workflow state diagnostics: severity-graded findings + recommended next commands
   suggest.py             # Suggest missing checks based on design contract feature classification
   metadata.py           # Metadata interface schema validation and resolution
+  clean.py              # Artifact cleanup: validation history, debug SVGs, retention policy
   _templates/           # Template files (md, json, py) for workspace/model scaffolding
   features/             # Helper library: reusable CAD primitives + ContractBuilder integration
   hardware/             # Screw, nut, washer, heat-set insert dimension tables
@@ -101,6 +102,7 @@ agentcad inspect <model>                         # Three-axis scan + section SVG
 agentcad report <model>                                 # Markdown validation report
 agentcad suggest-checks <model>                 # Suggest missing checks based on design contract
 agentcad doctor <model>[:<variant>]               # Workflow state diagnostics: gaps, severity, next command
+agentcad clean [--model <name>] [--dry-run] [--debug] [--previews]  # Remove debug/history artifacts
 agentcad assembly init/list/validate/review      # Optional multi-model assembly workflow
 ```
 
@@ -233,7 +235,7 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests currently collect 639 cases. Coverage includes CLI dispatch, workspace
+Tests currently collect 657 cases. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
 hardware lookup tables, variants, diff, assemblies, precheck, review, batch
@@ -241,7 +243,7 @@ validation, regression snapshots, contract schema hardening, min_wall_thickness
 range mode, negative regression fixtures, review blocking gates, metadata
 interface schema, ContractBuilder interface emission, doctor diagnostics,
 suggest-checks, improved suggested_fix payloads, timing instrumentation,
-section cache, and executable helper cookbook.
+section cache, executable helper cookbook, and artifact cleanup.
 
 Integration validation through example models:
 
