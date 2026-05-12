@@ -50,6 +50,7 @@ src/agentcad/          # Main package
   templates.py          # Loads template files from _templates/ package
   batch.py              # Batch validation: target discovery + workspace-level orchestration
   snapshot.py           # Regression snapshots: write, load, compare normalized validation data
+  doctor.py             # Workflow state diagnostics: severity-graded findings + recommended next commands
   metadata.py           # Metadata interface schema validation and resolution
   _templates/           # Template files (md, json, py) for workspace/model scaffolding
   features/             # Helper library: reusable CAD primitives + ContractBuilder integration
@@ -97,6 +98,7 @@ agentcad probe <model> --z <z> --cx <x> --cy <y> # Radial center aliases
 agentcad probe <model> --scan --axis z|x|y       # Profile scan for step changes / void detection
 agentcad inspect <model>                         # Three-axis scan + section SVGs + suggested probes
 agentcad report <model>                                 # Markdown validation report
+agentcad doctor <model>[:<variant>]               # Workflow state diagnostics: gaps, severity, next command
 agentcad assembly init/list/validate/review      # Optional multi-model assembly workflow
 ```
 
@@ -229,13 +231,13 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests currently collect 544 cases. Coverage includes CLI dispatch, workspace
+Tests currently collect 565 cases. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
 hardware lookup tables, variants, diff, assemblies, precheck, review, batch
 validation, regression snapshots, contract schema hardening, min_wall_thickness
 range mode, negative regression fixtures, review blocking gates, metadata
-interface schema, and ContractBuilder interface emission.
+interface schema, ContractBuilder interface emission, and doctor diagnostics.
 
 Integration validation through example models:
 

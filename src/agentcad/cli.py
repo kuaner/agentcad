@@ -155,6 +155,10 @@ def build_parser() -> argparse.ArgumentParser:
     sync.add_argument("--only", default=None, help="sync only one template path prefix (e.g. references/)")
     sync.add_argument("--prune-deprecated", action="store_true", help="remove deprecated scaffold paths like skills/")
 
+    doctor_cmd = sub.add_parser("doctor", help="diagnose workspace state and recommend next command")
+    doctor_cmd.add_argument("model", help="model name to diagnose")
+    doctor_cmd.add_argument("--variant", default=None, help="variant name")
+
     assembly = sub.add_parser("assembly", help="create, validate, and review multi-model assemblies")
     assembly_sub = assembly.add_subparsers(dest="assembly_command", required=True)
     assembly_init = assembly_sub.add_parser("init", help="create an assembly contract")
@@ -351,6 +355,9 @@ def dispatch(args: argparse.Namespace) -> dict:
         return precheck_model(project, args.model)
     if args.command == "review":
         return review_model(project, args.model)
+    if args.command == "doctor":
+        from .doctor import run_model_doctor
+        return run_model_doctor(project, args.model, variant=args.variant)
 
     if args.command == "snapshot":
         return _dispatch_snapshot(project, args)

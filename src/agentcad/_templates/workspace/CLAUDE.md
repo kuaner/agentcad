@@ -240,6 +240,9 @@ agentcad inspect <model>
 agentcad report <model>
 
 # Assembly
+agentcad doctor <model>[:<variant>]           # Workflow state diagnostics: gaps, next command
+
+# Assembly
 agentcad assembly init <assembly>
 agentcad assembly list
 agentcad assembly validate <assembly>
