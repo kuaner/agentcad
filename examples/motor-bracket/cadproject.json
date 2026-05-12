@@ -1,7 +1,0 @@
-{
-  "schema": "agentcad.project.v1",
-  "units": "mm",
-  "modelsDir": "models",
-  "referencesDir": "references",
-  "defaultBackend": "build123d"
-}
