@@ -192,6 +192,12 @@ def snap_pin(
                 },
             ],
         )
+        builder.add_interface(f"{feature_id}_pin", {
+            "kind": "snap_pin",
+            "axis": {"point": [cx, cy, base_z], "direction": [0, 0, 1]},
+            "diameter": d,
+            "length": l,
+        })
 
     return result
 
@@ -333,5 +339,11 @@ def snap_pin_socket(
                 },
             ],
         )
+        builder.add_interface(f"{feature_id}_socket", {
+            "kind": "snap_socket",
+            "axis": {"point": [cx, cy, base_z], "direction": [0, 0, 1]},
+            "diameter": d,
+            "length": l,
+        })
 
     return result

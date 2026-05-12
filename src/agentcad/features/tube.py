@@ -102,5 +102,21 @@ def tube(
             },
             checks=checks,
         )
+        builder.add_interface(f"{feature_id}_outer_sleeve", {
+            "kind": "cylindrical_male",
+            "axis": {"point": [cx, cy, base_z], "direction": [0, 0, 1]},
+            "outer_cylinder": {
+                "type": "cylinder", "axis": "z", "center": [cx, cy],
+                "radius": outer_r, "z_range": [base_z, base_z + height],
+            },
+        })
+        builder.add_interface(f"{feature_id}_inner_bore", {
+            "kind": "cylindrical_female",
+            "axis": {"point": [cx, cy, base_z], "direction": [0, 0, 1]},
+            "inner_cylinder": {
+                "type": "cylinder", "axis": "z", "center": [cx, cy],
+                "radius": inner_r, "z_range": [base_z, base_z + height],
+            },
+        })
 
     return result

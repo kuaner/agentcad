@@ -205,6 +205,8 @@ Feature classification (`classify_feature`) uses keyword matching on feature id,
 
 Metadata interface schema (`metadata.py`) validates the `interfaces` and `anchors` sections of `metadata.json` with structured `SchemaIssue` error paths. Supported interface kinds: `cylindrical_male`, `cylindrical_female`, `screw_axis`, `dovetail_rail`, `snap_pin`, `snap_socket`, `gear_axis`, `planar`. Assembly validation converts metadata schema errors into `metadata_schema` checks. `ContractBuilder.add_interface()` accumulates interface entries and `write_metadata_to()` writes/merges them into `metadata.json`.
 
+Feature helpers that auto-emit interfaces when a builder is provided: `tube` (outer_sleeve + inner_bore), `duct_socket` (socket), `SteppedBore/ScrewHole` (screw_axis), `snap_pin` (pin), `snap_pin_socket` (socket).
+
 ## Feature Helpers
 
 Use `agentcad.features` for repeated mechanical primitives when it fits the model. Helpers return build123d geometry and can register feature/check records through `ContractBuilder`. The public helper set includes plates, bosses, ribs, slots, tubes, screw holes, stepped bores, mounting patterns, duct sockets, hinges, dovetails, snap pins, sparse walls, NEMA mounts, threaded rods/nuts, screws, knurls, spur gears, and ring gears. Hardware dimensions live under `agentcad.hardware`.

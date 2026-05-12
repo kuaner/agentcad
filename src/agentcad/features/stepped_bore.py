@@ -97,6 +97,12 @@ class SteppedBore:
                 },
                 checks=checks,
             )
+            builder.add_interface(f"{feature_id}_screw_axis", {
+                "kind": "screw_axis",
+                "axis": {"point": [cx, cy, 0], "direction": [0, 0, 1]},
+                "clearance_diameter": self.through_r * 2,
+                "screw": s.name,
+            })
 
     def cut(self) -> None:
         """Subtract the bore from the active BuildPart context.
