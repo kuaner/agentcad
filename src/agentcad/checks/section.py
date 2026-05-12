@@ -163,7 +163,6 @@ def evaluate_section_component_count(check: dict, ctx: CheckContext) -> dict:
     position = float(raw_position)
     expected = int(check["expected"])
     tolerance = int(check.get("tolerance", 0))
-    segs = _cached_segments(ctx, axis, position)
     analysis = _cached_analysis(ctx, axis, position)
     actual = int(analysis.get("component_count", 0))
     ok = abs(actual - expected) <= tolerance
@@ -180,7 +179,7 @@ def evaluate_section_component_count(check: dict, ctx: CheckContext) -> dict:
     }
     if not ok:
         svg_path = ctx.out_dir / f"debug.{check_id}.{axis_name}{position:.2f}.svg"
-        info = write_section_svg(triangles, axis, position, svg_path)
+        info = write_section_svg(_triangles(ctx), axis, position, svg_path)
         payload["debug_svg"] = info.get("svg")
         payload["debug_analysis_json"] = info.get("analysis_json")
     return payload

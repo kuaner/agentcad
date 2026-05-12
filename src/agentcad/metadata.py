@@ -162,8 +162,8 @@ def _validate_cylindrical_interface(
     issues: list[SchemaIssue] = []
 
     # Must have at least one cylinder descriptor.
-    has_outer = "outer_cylinder" in iface
-    has_inner = "inner_cylinder" in iface
+    has_outer = isinstance(iface.get("outer_cylinder"), dict)
+    has_inner = isinstance(iface.get("inner_cylinder"), dict)
     if not has_outer and not has_inner:
         issues.append(_issue(
             path_prefix,
