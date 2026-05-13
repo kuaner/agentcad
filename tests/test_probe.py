@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from agentcad.probe import probe_model
+from agentcad.inspect import inspect_model
+from agentcad.probe import plan_probes, probe_model, probe_scan
 from agentcad.workspace import init_workspace, new_model, outputs_dir
 
 
@@ -170,3 +171,34 @@ def test_probe_section_region_adds_region_measurement(cube_project):
     assert result["ok"] is True
     assert result["measurements"]["region"]["ok"] is True
     assert "intersecting_segment_count" in result["measurements"]["region"]
+
+
+def test_probe_scan_suggested_commands_use_supported_cli_flags(cube_project):
+    result = probe_scan(cube_project, "cube", axis="z", samples=4)
+    assert result["ok"] is True
+    for suggestion in result["suggested_probes"]:
+        assert "--json" not in suggestion["command"]
+
+
+def test_probe_plan_uses_design_checks(cube_project):
+    design_path = cube_project / "models" / "cube" / "design.json"
+    design_path.write_text("""{
+      "features": [{"id": "center_hole", "checks": ["hole_dia"]}],
+      "checks": [
+        {"id": "hole_dia", "type": "inner_diameter_at_z", "z": 5.0, "expected": 4.0, "center": [5.0, 5.0]}
+      ]
+    }""", encoding="utf-8")
+
+    result = plan_probes(cube_project, "cube")
+
+    assert result["ok"] is True
+    assert result["feature_evidence_matrix"]
+    commands = [item["command"] for item in result["suggested_probes"]]
+    assert "agentcad probe cube --z 5 --cx 5 --cy 5" in commands
+
+
+def test_inspect_suggested_commands_use_supported_cli_flags(cube_project):
+    result = inspect_model(cube_project, "cube", scan_samples=4)
+    assert result["ok"] is True
+    assert result["suggested_next"]
+    assert all("--json" not in item["command"] for item in result["suggested_next"])

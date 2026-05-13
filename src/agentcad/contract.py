@@ -31,6 +31,34 @@ HOLE_CHECK_TYPES = frozenset({"hole_accessibility", "inner_diameter_at_z", "min_
 # Check types that verify attachment root/interface behavior.
 ROOT_CHECK_TYPES = frozenset({"min_wall_thickness", "min_clearance", "feature_position"})
 
+# Evidence dimensions used by review / suggest-checks.  These are deliberately
+# coarse: the goal is to catch unmeasured mechanical facts without forcing every
+# feature into a heavyweight schema.
+POSITION_CHECK_TYPES = frozenset({
+    "feature_position",
+    "section_bbox_at_z",
+    "section_component_count",
+    "inner_diameter_at_z",
+    "outer_diameter_at_z",
+    "min_clearance",
+    "hole_accessibility",
+})
+DIMENSION_CHECK_TYPES = frozenset({
+    "bbox_size",
+    "inner_diameter_at_z",
+    "outer_diameter_at_z",
+    "diameter_decreases_along_z",
+    "section_bbox_at_z",
+    "min_wall_thickness",
+    "min_clearance",
+})
+ACCESS_CHECK_TYPES = frozenset({"hole_accessibility"})
+WALL_CHECK_TYPES = frozenset({"min_wall_thickness", "min_clearance"})
+INTERFACE_RISK_CHECK_TYPES = frozenset({"min_clearance", "metadata_equals", "hole_accessibility"})
+
+WALL_WORDS = frozenset({"wall", "shell", "thin", "sleeve", "tube", "web", "skin", "rim"})
+ROOT_WORDS = frozenset({"root", "base", "interface", "junction", "connected", "attach", "attachment"})
+
 
 @dataclass(frozen=True)
 class SchemaIssue:
@@ -281,6 +309,136 @@ def evaluate_feature_coverage_dict(design: dict[str, Any]) -> list[dict]:
             "matchedChecks": matched,
         })
     return results
+
+
+def evaluate_feature_evidence_matrix_dict(design: dict[str, Any]) -> list[dict]:
+    """Return per-feature evidence coverage across mechanical risk dimensions.
+
+    The matrix is a review aid and gate.  Every feature should prove where it is
+    and how large it is.  Access, wall/root, and interface-risk evidence are
+    required only when the feature text/classification makes that risk relevant.
+    """
+    features = design.get("features") or []
+    checks = design.get("checks") or []
+    check_map = {
+        str(c.get("id")): c
+        for c in checks
+        if isinstance(c, dict) and c.get("id")
+    }
+    rows: list[dict] = []
+    for index, feature in enumerate(features):
+        if not isinstance(feature, dict):
+            rows.append({
+                "feature": f"feature_{index}",
+                "ok": False,
+                "error": "feature must be an object",
+                "missing": ["position", "dimensions"],
+            })
+            continue
+        feature_id = str(feature.get("id") or f"feature_{index}")
+        categories = classify_feature(feature)
+        linked = _linked_check_defs(feature, check_map)
+        required = _feature_evidence_requirements(feature, categories)
+        evidence = {
+            "position": _evidence_cell(linked, POSITION_CHECK_TYPES, required["position"]),
+            "dimensions": _evidence_cell(linked, DIMENSION_CHECK_TYPES, required["dimensions"]),
+            "access": _evidence_cell(linked, ACCESS_CHECK_TYPES, required["access"]),
+            "wall": _wall_evidence_cell(linked, required["wall"]),
+            "interface_risk": _interface_evidence_cell(linked, required["interface_risk"], categories),
+        }
+        missing = [
+            key for key, cell in evidence.items()
+            if cell["required"] and not cell["ok"]
+        ]
+        rows.append({
+            "feature": feature_id,
+            "categories": sorted(categories) if categories else ["unclassified"],
+            "linked_checks": [
+                {"id": c.get("id"), "type": c.get("type")}
+                for c in linked
+            ],
+            "evidence": evidence,
+            "missing": missing,
+            "ok": not missing,
+        })
+    return rows
+
+
+def _linked_check_defs(feature: dict[str, Any], check_map: dict[str, dict]) -> list[dict]:
+    linked: list[dict] = []
+    for check_id in feature.get("checks") or []:
+        check = check_map.get(str(check_id))
+        if isinstance(check, dict):
+            linked.append(check)
+    return linked
+
+
+def _feature_evidence_requirements(feature: dict[str, Any], categories: set[str]) -> dict[str, bool]:
+    text = " ".join(str(feature.get(k, "")) for k in ("id", "intent", "description")).lower()
+    wall_risk = "load_bearing_attachment" in categories or any(word in text for word in WALL_WORDS)
+    interface_risk = "interface" in categories or "hole" in categories
+    access_risk = "hole" in categories
+    return {
+        "position": True,
+        "dimensions": True,
+        "access": access_risk,
+        "wall": wall_risk,
+        "interface_risk": interface_risk,
+    }
+
+
+def _evidence_cell(checks: list[dict], accepted_types: frozenset[str], required: bool) -> dict:
+    matched = [
+        str(check.get("id"))
+        for check in checks
+        if str(check.get("type", "")) in accepted_types and check.get("id")
+    ]
+    return {
+        "required": required,
+        "ok": (not required) or bool(matched),
+        "checks": matched,
+        "accepted_types": sorted(accepted_types),
+    }
+
+
+def _wall_evidence_cell(checks: list[dict], required: bool) -> dict:
+    matched: list[str] = []
+    for check in checks:
+        check_type = str(check.get("type", ""))
+        check_id = str(check.get("id", ""))
+        if check_type in WALL_CHECK_TYPES:
+            matched.append(check_id)
+        elif check_type in ("section_bbox_at_z", "feature_position") and _text_has_any(check_id, ROOT_WORDS):
+            matched.append(check_id)
+    return {
+        "required": required,
+        "ok": (not required) or bool(matched),
+        "checks": matched,
+        "accepted_types": sorted(WALL_CHECK_TYPES | {"section_bbox_at_z", "feature_position"}),
+    }
+
+
+def _interface_evidence_cell(checks: list[dict], required: bool, categories: set[str]) -> dict:
+    matched: list[str] = []
+    for check in checks:
+        check_type = str(check.get("type", ""))
+        check_id = str(check.get("id", ""))
+        if "hole" in categories:
+            if check_type == "min_clearance":
+                matched.append(check_id)
+        elif check_type in INTERFACE_RISK_CHECK_TYPES:
+            matched.append(check_id)
+    return {
+        "required": required,
+        "ok": (not required) or bool(matched),
+        "checks": matched,
+        "accepted_types": sorted(INTERFACE_RISK_CHECK_TYPES),
+    }
+
+
+def _text_has_any(text: str, words: frozenset[str]) -> bool:
+    lowered = text.lower()
+    return any(word in lowered for word in words)
 
 
 def evaluate_weak_check_warnings(project: Path, name: str) -> list[dict]:

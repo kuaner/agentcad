@@ -3,17 +3,47 @@
 You are working in an AgentCAD workspace. Your job is to create and refine CAD
 models using the `agentcad` CLI and build123d geometry library.
 
+## First Principles For CAD Agents
+
+Your goal is not to produce a plausible-looking shape. Your goal is to turn the
+user's intent into a CAD model whose important mechanical facts are measurable.
+
+Before writing geometry, identify:
+
+- functional surfaces: faces that mount, seal, slide, snap, support, or locate
+- interfaces: holes, sockets, bosses, rails, lids, pins, gears, fasteners
+- envelopes: keep-out volumes, tool access, insertion paths, external bounds
+- failure modes: shallow holes, hidden collisions, edge breakouts, thin walls,
+  detached ribs/tabs, wrong orientation, and unmeasured fits
+- evidence: the checks, probes, sections, previews, and review gates that would
+  catch each failure mode
+
+Every meaningful feature should trace through this chain:
+
+```text
+user requirement -> feature in design.json -> concrete check -> measured result
+```
+
+If a feature cannot be checked yet, either add a check or explicitly record the
+unknown before claiming the model is complete.
+
 ## Workflow (16 stages, do not skip)
 
 1. **Understand**: read the user request, identify every feature, and pass the
-   Discovery Gate. Read `references/discovery.md`.
-2. **Concept**: compare 2-3 topology concepts for non-trivial models, commit to
-   one. Read `references/concept-design.md`.
+   Discovery Gate. Capture functional surfaces, interfaces, envelopes,
+   constraints, likely failure modes, and the evidence that will catch each
+   one. Read `references/discovery.md` and write the Discovery table before
+   choosing topology.
+2. **Concept**: compare 2-3 topology concepts for non-trivial models. Choose
+   the concept that can be validated with the clearest checks, not just the one
+   that is easiest to draw. Read `references/concept-design.md`.
 3. **Contract**: write `models/<name>/design.json` with features and checks. Read
    `references/contract-design.md`. Optionally add `param_ref` fields to checks
-   for targeted fix suggestions on failure.
+   for targeted fix suggestions on failure. Fill the feature evidence matrix
+   (position, dimensions, access, wall/root, interface risk) before `part.py`.
 4. **Suggest**: run `agentcad suggest-checks <name>` to find missing checks. Paste
-   suggested templates into `design.json` after filling concrete values.
+   suggested templates into `design.json` after filling concrete values. Use
+   `probe_plan` from the output to choose section/probe points.
 5. **Params**: put tunable dimensions in `models/<name>/params.json`.
 6. **Precheck**: run `agentcad precheck <name>`. Do not write `part.py` while
    precheck fails.
@@ -27,6 +57,7 @@ models using the `agentcad` CLI and build123d geometry library.
    `references/cad-tdd.md` for the checks-first implementation loop.
 9. **Measure**: run `agentcad measure <name>`.
 10. **Render**: run `agentcad render <name> --views iso,front,top,side,back`.
+    When section SVGs are generated, read the same-name `.json` analysis.
 11. **Validate**: run `agentcad validate <name>`. It must pass. Read
    `references/validation-strategy.md` for check details, tolerances, and probe
    usage.
@@ -60,6 +91,10 @@ When `agentcad validate` fails, use the iteration tools to converge:
 6. Run `agentcad diff <name>` to see which checks were fixed, which regressed,
    and whether geometry drifted between iterations.
 
+When validation passes but the model still looks wrong, do not just edit the
+shape. First add or tighten the check that should have caught the issue, then
+change geometry and validate again.
+
 If you are unsure where you left off, run `agentcad doctor <name>` to get the
 workflow state and the next recommended command.
 
@@ -88,11 +123,19 @@ differs. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
   Treat CLI JSON output as the source of truth for actual state.
 - Prefer structured geometry measurements over visual impressions. When a
   section SVG exists, read its same-name `.json` analysis before judging it.
+- Every visible or functional feature must be represented in `design.json` and
+  backed by at least one check that would fail if the feature were missing,
+  misplaced, shallow, blocked, detached, or too thin.
+- If visual review finds a problem, encode the problem as a check before or
+  while fixing it. Do not rely on memory that you inspected it once.
 - Do not claim a model is complete until `agentcad validate` and
   `agentcad review` both pass and the quality review has no blocking issues.
 - Every requested feature must have at least one validation check.
 - bbox + watertight alone are not sufficient: they pass even when features are
   missing or hidden.
+- Prefer `agentcad.features` helpers when they match the requested primitive:
+  helpers often emit design checks and metadata interfaces that are harder to
+  forget by hand.
 - Every hole needs a `min_clearance` check for each surrounding wall, adjacent
   solid, or relevant edge.
 - Every hole also needs a `hole_accessibility` check on the real tool/fastener
@@ -104,6 +147,9 @@ differs. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
   detached in any orthographic view is not deliverable until the contract
   contains a check that would catch that failure.
 - Reason edge-to-edge, never center-to-face.
+- For multi-part products, validate fits in `assemblies/<name>/assembly.json`
+  using component metadata references. Do not hand-copy anchors into assembly
+  contracts when metadata can be referenced.
 - `section_bbox_at_z` with `expected: "void"` must include a `region` field
   `[[x0,y0],[x1,y1]]` to avoid false passes on empty slices where the STL has
   no mesh at that Z.
@@ -163,8 +209,8 @@ agentcad validate <model>
 # Iteration and review
 agentcad diff <model>
 agentcad diff <model> --last
-agentcad review <model>
-agentcad deliver <model>
+agentcad review <model>[:<variant>]
+agentcad deliver <model>[:<variant>]
 
 # Batch validation and regression
 agentcad validate all                       # Validate all models and assemblies in workspace
@@ -174,8 +220,10 @@ agentcad validate all --include-variants    # Include model variants
 agentcad validate all --fail-fast           # Stop after first failure
 agentcad snapshot write                     # Write regression snapshots for all validated targets
 agentcad snapshot write --target <name>     # Write snapshot for one target
+agentcad snapshot write --target <model>:<variant>
 agentcad snapshot compare                   # Compare current vs baseline snapshots
 agentcad snapshot compare --target <name>   # Compare one target
+agentcad snapshot compare --target <model>:<variant>
 
 # Preview (auto-opens browser — do NOT manually run `open`)
 agentcad preview <name>                  # Start local server + auto-open browser
@@ -192,6 +240,7 @@ agentcad probe <model> --z <z> --line-u <u>
 agentcad probe <model> --z <z> --line-v <v>
 agentcad probe <model> --z <z> --point u,v
 agentcad probe <model> --x <x> --section-region u0,v0,u1,v1
+agentcad probe <model> --plan
 agentcad probe <model> --scan
 agentcad probe <model> --scan --axis x
 agentcad probe <model> --scan --axis y

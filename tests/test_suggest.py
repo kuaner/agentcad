@@ -197,3 +197,52 @@ class TestSuggestTemplateQuality:
         result = suggest_checks(project, "thing")
         root_s = next(s for s in result["suggestions"] if s["missing"] == "root_interface_check")
         assert root_s["template"]["min_mm"] == "2.0"
+
+    def test_suggest_includes_evidence_matrix_and_probe_plan(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "mounting_hole", "checks": ["hole_dia"]}],
+            "checks": [
+                {
+                    "id": "hole_dia",
+                    "type": "inner_diameter_at_z",
+                    "z": 5,
+                    "expected": 4.0,
+                    "center": [10, -2],
+                    "tolerance": 0.2,
+                }
+            ],
+        })
+
+        result = suggest_checks(project, "thing")
+
+        assert result["feature_evidence_matrix"][0]["feature"] == "mounting_hole"
+        assert "interface_risk" in result["feature_evidence_matrix"][0]["missing"]
+        commands = [p["command"] for p in result["probe_plan"]]
+        assert "agentcad probe thing --z 5 --cx 10 --cy -2" in commands
+
+    def test_hole_access_template_uses_metadata_axis(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "m3_hole", "checks": ["dia"]}],
+            "checks": [{"id": "dia", "type": "inner_diameter_at_z", "expected": 3.4}],
+        })
+        _write_params(mdir, {"hole_diameter": 3.4})
+        (mdir / "metadata.json").write_text(json.dumps({
+            "schema": "agentcad.part.metadata.v1",
+            "interfaces": {
+                "m3_hole_screw_axis": {
+                    "kind": "screw_axis",
+                    "axis": {"point": [3.0, 4.0, 12.0], "direction": [0.0, 0.0, -1.0]},
+                    "clearance_diameter": 7.0,
+                }
+            },
+        }), encoding="utf-8")
+
+        result = suggest_checks(project, "thing")
+        access = next(s for s in result["suggestions"] if s["missing"] == "hole_accessibility")
+        template = access["template"]
+        assert template["axis"] == "z"
+        assert template["z"] == 12.0
+        assert template["center"] == [3.0, 4.0]
+        assert template["clearance_diameter"] == "7.0"

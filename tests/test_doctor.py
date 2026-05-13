@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
 
 from agentcad.doctor import run_model_doctor, DoctorFinding, _determine_state, _finding_to_dict
-from agentcad.workspace import init_workspace, new_model, model_dir, outputs_dir
+from agentcad.workspace import init_workspace, new_model, model_dir, outputs_dir, outputs_dir_for_variant, variant_params_path
 
 
 def _write_design(mdir: Path, design: dict) -> None:
@@ -172,6 +173,39 @@ class TestDoctorRules:
             design_path.unlink()
         result = run_model_doctor(project, "thing")
         assert result["next_command"] is not None
+
+    def test_variant_next_commands_include_variant_target(self, project):
+        mdir = model_dir(project, "thing")
+        out_dir = outputs_dir_for_variant(project, "thing", "large")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        _write_design(mdir, DESIGN)
+        (out_dir / "build.json").write_text(json.dumps({"ok": True}))
+        (out_dir / "thing.stl").write_text("fake stl")
+        (out_dir / "validation.json").write_text(json.dumps({"ok": False}))
+
+        result = run_model_doctor(project, "thing", variant="large")
+
+        assert result["variant"] == "large"
+        assert any(f.get("next_command") == "agentcad validate thing:large" for f in result["findings"])
+
+    def test_variant_params_newer_than_build_marks_variant_stale(self, project):
+        mdir = model_dir(project, "thing")
+        out_dir = outputs_dir_for_variant(project, "thing", "large")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        _write_design(mdir, DESIGN)
+        build_path = out_dir / "build.json"
+        build_path.write_text(json.dumps({"ok": True}))
+        (out_dir / "thing.stl").write_text("fake stl")
+        params_path = variant_params_path(project, "thing", "large")
+        params_path.parent.mkdir(parents=True, exist_ok=True)
+        params_path.write_text(json.dumps({"width": 20}))
+        os.utime(build_path, (1, 1))
+        os.utime(params_path, (2, 2))
+
+        result = run_model_doctor(project, "thing", variant="large")
+
+        assert any(f["id"] == "source_newer_than_build" for f in result["findings"])
+        assert result["next_command"] == "agentcad build thing:large"
 
 
 # ── DoctorFinding serialization ──────────────────────────────────────────

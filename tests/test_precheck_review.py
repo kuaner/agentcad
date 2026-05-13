@@ -219,6 +219,22 @@ def test_review_writes_artifact(model_with_clean_clearance):
     assert artifact.exists()
 
 
+def test_review_validation_action_uses_existing_cli_command(model_with_clean_clearance):
+    project, name = model_with_clean_clearance
+    result = review_model(project, name)
+    validation_item = next(item for item in result["checklist"] if item["id"] == "validation_passes")
+    assert "--json" not in validation_item["action"]
+    assert f"agentcad validate {name}" in validation_item["action"]
+
+
+def test_review_variant_uses_variant_output_directory(model_with_clean_clearance):
+    project, name = model_with_clean_clearance
+    result = review_model(project, name, variant="large")
+    artifact = Path(result["artifacts"]["review"])
+    assert result["variant"] == "large"
+    assert artifact == project / "models" / name / "outputs" / "large" / "review.json"
+
+
 def test_review_missing_design(workspace: Path):
     result = review_model(workspace, "ghost")
     assert result["ok"] is False

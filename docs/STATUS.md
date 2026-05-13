@@ -374,8 +374,8 @@ CI status:
 | P3 — agent authoring UX | ✅ delivered | `agentcad doctor`, `agentcad suggest-checks`, improved suggested_fix (likely_source, next_commands, param_candidates), executable helper cookbook (6 patterns) |
 | P4 — performance and artifact hygiene | ✅ delivered | timing instrumentation (timed_stage, payload timings), SectionCache for triangle-plane intersections, `agentcad clean` with retention policy |
 | V4.5 — iteration tooling | ✅ delivered | SVG dimension annotations, validation run diff, model variants, fix suggestions |
-| V5 — CAD CI | partially delivered | Fast GitHub Actions suite, separate slow-test workflow, and publish workflow are present; workspace-wide `validate all`, regression snapshots, and benchmarks remain planned |
+| V5 — CAD CI | partially delivered | Fast GitHub Actions suite, separate slow-test workflow, publish workflow, workspace-wide `validate all`, and regression snapshots are present; benchmark reporting remains planned |
 
 Next planned work is tracked in [`DESIGN.md`](DESIGN.md) and
-[`ROADMAP.md`](ROADMAP.md), with V5 focusing on workspace-wide validation,
-regression snapshots, and benchmark reporting.
+[`ROADMAP.md`](ROADMAP.md), with V5 focusing on benchmark reporting and
+optional CI artifact publication.

@@ -99,6 +99,15 @@ def test_version():
     assert exc_info.value.code == 0
 
 
+def test_package_version_matches_pyproject():
+    import tomllib
+    import agentcad
+
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    expected = tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["version"]
+    assert agentcad.__version__ == expected
+
+
 def test_sync_updates_workspace(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     main(["new", "bracket"])

@@ -30,17 +30,22 @@ import itertools
 from pathlib import Path
 from typing import Any
 
-from .contract import evaluate_weak_check_warnings_dict, HOLE_WORDS
+from .contract import (
+    HOLE_WORDS,
+    evaluate_feature_evidence_matrix_dict,
+    evaluate_weak_check_warnings_dict,
+)
 from .geometry import min_clearance_3d, parse_shape
 from .jsonio import read_json, write_json
 from .runner import utc_now
-from .workspace import model_dir, outputs_dir
+from .workspace import model_dir, outputs_dir_for_variant
 
 
-def review_model(project: Path, name: str) -> dict:
-    out_dir = outputs_dir(project, name)
+def review_model(project: Path, name: str, variant: str | None = None) -> dict:
+    out_dir = outputs_dir_for_variant(project, name, variant)
     out_dir.mkdir(parents=True, exist_ok=True)
     review_path = out_dir / "review.json"
+    target = _target_name(name, variant)
 
     design_path = model_dir(project, name) / "design.json"
     validation_path = out_dir / "validation.json"
@@ -59,13 +64,13 @@ def review_model(project: Path, name: str) -> dict:
         evidence={"path": str(design_path)},
     ))
     if design is None:
-        return _payload(name, checklist, [], [], [], review_path)
+        return _payload(name, checklist, [], [], [], review_path, variant=variant)
 
     checklist.append(_item(
         "validation_passes",
         bool(validation and validation.get("ok")),
         title="agentcad validate is green",
-        action="run 'agentcad validate <name> --json' and fix the first failing check",
+        action=f"run 'agentcad validate {target}' and fix the first failing check",
         evidence={
             "path": str(validation_path),
             "failed_checks": [
@@ -81,6 +86,19 @@ def review_model(project: Path, name: str) -> dict:
         title="every feature references at least one geometry check",
         action="link the feature to a check id via its 'checks' array",
         evidence={"features": [f.get("id") for f in design.get("features", [])]},
+    ))
+
+    feature_evidence_matrix = evaluate_feature_evidence_matrix_dict(design)
+    missing_evidence = [row for row in feature_evidence_matrix if not row.get("ok")]
+    checklist.append(_item(
+        "feature_evidence_matrix",
+        not missing_evidence,
+        title="every feature has required position, dimension, access, wall, and interface-risk evidence",
+        action=(
+            "add or link checks for each missing evidence column. Use suggest-checks "
+            "and the probe planner to pick concrete section/probe points."
+        ),
+        evidence={"missing": missing_evidence, "matrix": feature_evidence_matrix},
     ))
 
     has_clearance = _has_min_clearance_for_each_hole(design)
@@ -172,6 +190,8 @@ def review_model(project: Path, name: str) -> dict:
         name, checklist, relations, must_view,
         deferred_followups, review_path,
         warnings=geom_warnings,
+        feature_evidence_matrix=feature_evidence_matrix,
+        variant=variant,
     )
     write_json(review_path, payload)
     return payload
@@ -458,16 +478,20 @@ def _payload(
     deferred_followups: list[dict],
     review_path: Path,
     warnings: list[dict] | None = None,
+    feature_evidence_matrix: list[dict] | None = None,
+    variant: str | None = None,
 ) -> dict:
     ready = all(item.get("ok") for item in checklist)
     payload: dict[str, Any] = {
         "ok": ready,
         "stage": "review",
         "model": name,
+        "variant": variant,
         "reviewedAt": utc_now(),
         "ready_to_deliver": ready,
         "checklist": checklist,
         "relations": relations,
+        "feature_evidence_matrix": feature_evidence_matrix or [],
         "must_view": must_view,
         "deferred_followups": deferred_followups,
         "artifacts": {"review": str(review_path)},
@@ -479,3 +503,7 @@ def _payload(
     if warnings:
         payload["open_warnings"] = warnings
     return payload
+
+
+def _target_name(name: str, variant: str | None) -> str:
+    return f"{name}:{variant}" if variant else name

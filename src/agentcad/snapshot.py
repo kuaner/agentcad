@@ -34,8 +34,8 @@ def snapshot_target(
     """
     checks = payload.get("checks") or []
     check_summary: dict[str, dict] = {}
-    for c in checks:
-        cid = c.get("name") or c.get("id", "")
+    for index, c in enumerate(checks):
+        cid = c.get("name") or c.get("id") or f"check_{index}"
         check_summary[cid] = {
             "type": c.get("type"),
             "ok": bool(c.get("ok")),
@@ -44,25 +44,26 @@ def snapshot_target(
         if c.get("actual") is not None:
             check_summary[cid]["actual"] = c.get("actual")
 
-    geometry: dict[str, Any] = {}
-    # Extract geometry from the payload if available.
-    for key in ("bbox_size", "volume", "triangles", "mesh_stats"):
-        val = payload.get(key)
-        if val is not None:
-            geometry[key] = val
+    geometry = _extract_geometry_metrics(payload)
 
-    # Try reading geometry.json for richer data.
+    # Try reading the generated geometry artifact for richer stable metrics.
     kind = target.get("kind", "model")
     name = target.get("name", "")
     variant = target.get("variant")
+    geo_path: Path | None = None
+    artifact_geometry = (payload.get("artifacts") or {}).get("geometry")
+    if isinstance(artifact_geometry, str) and artifact_geometry:
+        geo_path = Path(artifact_geometry)
     if kind == "model" and name:
         from .workspace import outputs_dir_for_variant
-        geo_path = outputs_dir_for_variant(project, name, variant) / "geometry.json"
+        geo_path = geo_path or outputs_dir_for_variant(project, name, variant) / "geometry.json"
+    elif kind == "assembly" and name:
+        from .assembly import assembly_outputs_dir
+        geo_path = geo_path or assembly_outputs_dir(project, name) / "assembly_geometry.json"
+    if geo_path is not None:
         geo_data = read_json(geo_path, default=None)
-        if geo_data:
-            for k in ("bbox_size", "volume", "triangles", "mesh_stats"):
-                if k in geo_data and k not in geometry:
-                    geometry[k] = geo_data[k]
+        if isinstance(geo_data, dict):
+            geometry.update({k: v for k, v in _extract_geometry_metrics(geo_data).items() if k not in geometry})
 
     # Determine artifact presence from payload.
     artifacts = payload.get("artifacts") or {}
@@ -82,6 +83,49 @@ def snapshot_target(
         "geometry": geometry,
         "artifacts": artifact_presence,
     }
+
+
+def _extract_geometry_metrics(payload: dict) -> dict[str, Any]:
+    """Extract stable geometry metrics from validation or geometry payloads."""
+    geometry: dict[str, Any] = {}
+
+    def set_if_missing(key: str, value: Any) -> None:
+        if value is not None and key not in geometry:
+            geometry[key] = value
+
+    def visit(data: Any) -> None:
+        if not isinstance(data, dict):
+            return
+        set_if_missing("bbox_size", data.get("bbox_size"))
+        set_if_missing("volume", data.get("volume"))
+        set_if_missing("triangles", data.get("triangles"))
+        set_if_missing("mesh_stats", data.get("mesh_stats"))
+
+        bbox = data.get("bbox")
+        if isinstance(bbox, dict):
+            set_if_missing("bbox_size", bbox.get("size"))
+
+        mesh = data.get("mesh")
+        if isinstance(mesh, dict):
+            set_if_missing("triangles", mesh.get("triangles"))
+            set_if_missing("mesh_stats", mesh)
+
+        mass = data.get("mass_properties")
+        if isinstance(mass, dict):
+            set_if_missing("volume", mass.get("volume"))
+
+        assembly_geometry = data.get("assembly_geometry") or data.get("geometry_summary")
+        if isinstance(assembly_geometry, dict):
+            set_if_missing("triangles", assembly_geometry.get("triangle_count"))
+            assembly_bbox = assembly_geometry.get("bbox")
+            if isinstance(assembly_bbox, dict):
+                set_if_missing("bbox_size", assembly_bbox.get("size"))
+
+    visit(payload)
+    visit(payload.get("geometry"))
+    visit(payload.get("geometry_summary"))
+    visit(payload.get("assembly_geometry"))
+    return geometry
 
 
 def _snapshot_path(project: Path, target: dict) -> Path:

@@ -11,6 +11,7 @@ from pathlib import Path
 
 from agentcad.contract import (
     classify_feature,
+    evaluate_feature_evidence_matrix_dict,
     evaluate_weak_check_warnings_dict,
 )
 from agentcad.review import review_model
@@ -188,6 +189,46 @@ class TestWeakCheckSeverity:
         )
         hole_warnings = [w for w in warnings if "hole" in w.get("category", [])]
         assert hole_warnings == []
+
+
+class TestFeatureEvidenceMatrix:
+    def test_hole_requires_access_and_interface_risk_evidence(self):
+        matrix = evaluate_feature_evidence_matrix_dict({
+            "features": [{"id": "m4_hole", "intent": "M4 mounting hole", "checks": ["diameter"]}],
+            "checks": [
+                {"id": "diameter", "type": "inner_diameter_at_z", "z": 3.0, "expected": 4.0, "center": [0, 0]},
+            ],
+        })
+
+        row = matrix[0]
+        assert row["evidence"]["position"]["ok"] is True
+        assert row["evidence"]["dimensions"]["ok"] is True
+        assert row["evidence"]["access"]["ok"] is False
+        assert row["evidence"]["interface_risk"]["ok"] is False
+        assert row["missing"] == ["access", "interface_risk"]
+
+    def test_review_exposes_feature_evidence_matrix_gate(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "m4_hole", "intent": "M4 hole", "checks": ["diameter", "access"]}],
+            "checks": [
+                {"id": "diameter", "type": "inner_diameter_at_z", "z": 5.0, "expected": 4.0, "center": [0, 0]},
+                {
+                    "id": "access",
+                    "type": "hole_accessibility",
+                    "axis": "z",
+                    "z": 5.0,
+                    "center": [0, 0],
+                    "hole_diameter": 4.0,
+                    "clearance_diameter": 8.0,
+                },
+            ],
+        })
+
+        result = review_model(project, "thing")
+        gate = next(item for item in result["checklist"] if item["id"] == "feature_evidence_matrix")
+        assert gate["ok"] is False
+        assert result["feature_evidence_matrix"][0]["missing"] == ["interface_risk"]
 
 
 # ── review blocking gates ────────────────────────────────────────────────────

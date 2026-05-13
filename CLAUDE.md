@@ -91,10 +91,11 @@ agentcad render <model> --section-z <z>                 # Cross-section SVG at Z
 agentcad validate <model>[:<variant>]                    # Full validation pipeline
 agentcad validate all [--models] [--assemblies] [--include-variants] \
   [--include-slow] [--fail-fast] [--output <path>]      # Batch validate all workspace targets
-agentcad snapshot write [--target <name>]                # Write regression snapshots
-agentcad snapshot compare [--target <name>]              # Compare current vs baseline snapshots
+agentcad validate all --changed-only                     # Currently returns explicit NotImplemented JSON
+agentcad snapshot write [--target <name>|<model>:<variant>]    # Write regression snapshots
+agentcad snapshot compare [--target <name>|<model>:<variant>]  # Compare current vs baseline snapshots
 agentcad diff <model> [--last]                   # Compare validation runs
-agentcad review <model>                          # Pre-delivery checklist + relations matrix
+agentcad review <model>[:<variant>]              # Pre-delivery checklist + relations matrix
 agentcad deliver <model>[:<variant>]                     # Delivery manifest
 agentcad probe <model> --z <z> --cx <x> --cy <y> # Radial center aliases
 agentcad probe <model> --scan --axis z|x|y       # Profile scan for step changes / void detection
@@ -159,7 +160,7 @@ you must update **both** — not just one.
 
 2. **Template `CLAUDE.md`**
    (`src/agentcad/_templates/workspace/CLAUDE.md`) — audience: agents **using**
-   agentcad to create CAD models. Covers 14-stage workflow, iteration loop, hard
+   agentcad to create CAD models. Covers 16-stage workflow, iteration loop, hard
    rules, workspace layout, CLI quick reference. Update this file when:
    - Adding new CLI commands (update CLI Quick Reference)
    - Changing workflow stages or hard rules
@@ -222,7 +223,9 @@ Use `agentcad.features` for repeated mechanical primitives when it fits the mode
 The publish workflow is triggered by pushing a git tag (`vX.Y.Z`). **Never create a GitHub release manually** — the workflow handles PyPI upload and GitHub Release creation. Manual release creation causes a 422 conflict.
 
 Steps to release:
-1. Bump `version` in `pyproject.toml`
+1. Bump `version` in `pyproject.toml` only. Do not manually edit
+   `src/agentcad/__init__.py`; `agentcad.__version__` is derived from
+   `pyproject.toml` in a source checkout and package metadata when installed.
 2. Commit with message `Release X.Y.Z`
 3. Tag: `git tag vX.Y.Z`
 4. Push: `git push && git push --tags`
@@ -235,7 +238,8 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-Tests currently collect 657 cases. Coverage includes CLI dispatch, workspace
+The fast suite currently reports 670 passed and 8 slow tests deselected with
+`uv run pytest -q -m "not slow"`. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
 hardware lookup tables, variants, diff, assemblies, precheck, review, batch

@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from .jsonio import read_json
-from .workspace import model_dir, outputs_dir, outputs_dir_for_variant
+from .workspace import model_dir, outputs_dir_for_variant, variant_params_path
 
 # ── Data structures ────────────────────────────────────────────────────────
 
@@ -58,7 +58,7 @@ def run_model_doctor(project: Path, name: str, variant: str | None = None) -> di
     """Inspect model artifacts and report workflow gaps."""
     mdir = model_dir(project, name)
     out_dir = outputs_dir_for_variant(project, name, variant)
-    artifacts = _model_artifact_state(mdir, out_dir)
+    artifacts = _model_artifact_state(project, name, variant, mdir, out_dir)
     findings: list[DoctorFinding] = []
     for rule in MODEL_DOCTOR_RULES:
         finding = rule(project, name, variant, artifacts)
@@ -82,6 +82,7 @@ def run_model_doctor(project: Path, name: str, variant: str | None = None) -> di
         "ok": ok,
         "stage": "doctor",
         "model": name,
+        "variant": variant,
         "state": state,
         "findings": [_finding_to_dict(f) for f in findings],
         "next_command": next_cmd,
@@ -92,7 +93,7 @@ def run_model_doctor(project: Path, name: str, variant: str | None = None) -> di
 # ── Artifact state ────────────────────────────────────────────────────────
 
 
-def _model_artifact_state(mdir: Path, out_dir: Path) -> dict[str, Any]:
+def _model_artifact_state(project: Path, name: str, variant: str | None, mdir: Path, out_dir: Path) -> dict[str, Any]:
     """Check which artifacts exist and their timestamps."""
     design = mdir / "design.json"
     params = mdir / "params.json"
@@ -101,9 +102,12 @@ def _model_artifact_state(mdir: Path, out_dir: Path) -> dict[str, Any]:
     build_json = out_dir / "build.json"
     geometry_json = out_dir / "geometry.json"
     validation_json = out_dir / "validation.json"
-    precheck_json = out_dir / "precheck.json"
+    # Precheck is design-level and currently written to the base model output
+    # directory even when doctor is inspecting a variant.
+    precheck_json = outputs_dir_for_variant(project, name, None) / "precheck.json"
     review_json = out_dir / "review.json"
     preview_html = out_dir / "preview.html"
+    variant_params = variant_params_path(project, name, variant) if variant else None
 
     state = {
         "design_json": design.exists(),
@@ -119,6 +123,7 @@ def _model_artifact_state(mdir: Path, out_dir: Path) -> dict[str, Any]:
         "preview_svgs": len(list(out_dir.glob("preview.*.svg"))) > 0,
         "stl": (out_dir / f"{mdir.name}.stl").exists(),
         "step": (out_dir / f"{mdir.name}.step").exists(),
+        "variant_params_json": bool(variant_params and variant_params.exists()),
     }
 
     # Freshness checks: source newer than build?
@@ -131,6 +136,11 @@ def _model_artifact_state(mdir: Path, out_dir: Path) -> dict[str, Any]:
         state["params_newer_than_build"] = params.stat().st_mtime > build_json.stat().st_mtime
     else:
         state["params_newer_than_build"] = False
+
+    if variant_params and variant_params.exists() and build_json.exists():
+        state["variant_params_newer_than_build"] = variant_params.stat().st_mtime > build_json.stat().st_mtime
+    else:
+        state["variant_params_newer_than_build"] = False
 
     # Validation older than build?
     if validation_json.exists() and build_json.exists():
@@ -180,30 +190,37 @@ def _rule_precheck_missing(project: Path, name: str, variant: str | None, artifa
 
 def _rule_build_missing(project: Path, name: str, variant: str | None, artifacts: dict) -> DoctorFinding | None:
     if not artifacts.get("build_json") or not artifacts.get("stl"):
+        target = _target_name(name, variant)
         return DoctorFinding(
             "build_missing", "blocking",
             "STL or build.json is missing — model has not been built",
-            next_command=f"agentcad build {name}",
+            next_command=f"agentcad build {target}",
         )
     return None
 
 
 def _rule_source_newer(project: Path, name: str, variant: str | None, artifacts: dict) -> DoctorFinding | None:
-    if artifacts.get("source_newer_than_build") or artifacts.get("params_newer_than_build"):
+    if (
+        artifacts.get("source_newer_than_build")
+        or artifacts.get("params_newer_than_build")
+        or artifacts.get("variant_params_newer_than_build")
+    ):
+        target = _target_name(name, variant)
         return DoctorFinding(
             "source_newer_than_build", "blocking",
             "part.py or params.json is newer than build.json — build is stale",
-            next_command=f"agentcad build {name}",
+            next_command=f"agentcad build {target}",
         )
     return None
 
 
 def _rule_validation_missing(project: Path, name: str, variant: str | None, artifacts: dict) -> DoctorFinding | None:
     if artifacts.get("build_json") and not artifacts.get("validation_json"):
+        target = _target_name(name, variant)
         return DoctorFinding(
             "validation_missing", "blocking",
             "validation.json is missing — model has not been validated",
-            next_command=f"agentcad validate {name}",
+            next_command=f"agentcad validate {target}",
         )
     return None
 
@@ -211,40 +228,44 @@ def _rule_validation_missing(project: Path, name: str, variant: str | None, arti
 def _rule_validation_failed(project: Path, name: str, variant: str | None, artifacts: dict) -> DoctorFinding | None:
     val_ok = artifacts.get("validation_ok")
     if val_ok is False:
+        target = _target_name(name, variant)
         return DoctorFinding(
             "validation_failed", "blocking",
             "validation.json exists but ok=false — validation failed",
-            next_command=f"agentcad validate {name}",
+            next_command=f"agentcad validate {target}",
         )
     return None
 
 
 def _rule_validation_stale(project: Path, name: str, variant: str | None, artifacts: dict) -> DoctorFinding | None:
     if artifacts.get("validation_older_than_build") and artifacts.get("validation_ok") is not None:
+        target = _target_name(name, variant)
         return DoctorFinding(
             "validation_stale", "warning",
             "validation.json is older than build.json — re-validate after rebuild",
-            next_command=f"agentcad validate {name}",
+            next_command=f"agentcad validate {target}",
         )
     return None
 
 
 def _rule_review_missing(project: Path, name: str, variant: str | None, artifacts: dict) -> DoctorFinding | None:
     if artifacts.get("validation_ok") is True and not artifacts.get("review_json"):
+        target = _target_name(name, variant)
         return DoctorFinding(
             "review_missing", "warning",
             "validation passed but review.json is missing — run review before delivery",
-            next_command=f"agentcad review {name}",
+            next_command=f"agentcad review {target}",
         )
     return None
 
 
 def _rule_preview_missing(project: Path, name: str, variant: str | None, artifacts: dict) -> DoctorFinding | None:
     if artifacts.get("validation_ok") is True and not artifacts.get("preview_html"):
+        target = _target_name(name, variant)
         return DoctorFinding(
             "preview_missing", "warning",
             "preview.html is missing — interactive preview not available",
-            next_command=f"agentcad preview {name}",
+            next_command=f"agentcad preview {target}",
         )
     return None
 
@@ -298,3 +319,7 @@ def _finding_to_dict(f: DoctorFinding) -> dict[str, Any]:
     if f.artifact:
         d["artifact"] = f.artifact
     return d
+
+
+def _target_name(name: str, variant: str | None) -> str:
+    return f"{name}:{variant}" if variant else name

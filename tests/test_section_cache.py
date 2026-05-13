@@ -32,7 +32,7 @@ class TestSectionCache:
         assert segs1 == segs2
         # Second call should hit cache, not recompute.
         # Verify by checking that the cache holds the key.
-        assert (AXIS_Z, 0.0) in cache._segments
+        assert (id(tris), AXIS_Z, 0.0) in cache._segments
 
     def test_analysis_cached(self):
         tris = _box_triangles()
@@ -40,7 +40,7 @@ class TestSectionCache:
         analysis1 = cache.analysis(tris, AXIS_Z, 0.0)
         analysis2 = cache.analysis(tris, AXIS_Z, 0.0)
         assert analysis1 == analysis2
-        assert (AXIS_Z, 0.0) in cache._analysis
+        assert (id(tris), AXIS_Z, 0.0) in cache._analysis
 
     def test_different_positions_not_shared(self):
         tris = _box_triangles()
@@ -50,8 +50,8 @@ class TestSectionCache:
         # Both should produce results (box has sections at both Z positions).
         assert len(segs0) > 0
         assert len(segs5) > 0
-        assert (AXIS_Z, 0.0) in cache._segments
-        assert (AXIS_Z, 5.0) in cache._segments
+        assert (id(tris), AXIS_Z, 0.0) in cache._segments
+        assert (id(tris), AXIS_Z, 5.0) in cache._segments
 
     def test_rounding_avoids_duplicate_keys(self):
         tris = _box_triangles()
@@ -59,9 +59,17 @@ class TestSectionCache:
         segs1 = cache.segments(tris, AXIS_Z, 0.000001)
         segs2 = cache.segments(tris, AXIS_Z, 0.000002)
         # Both round to 0.0 with 5 decimal places.
-        assert (AXIS_Z, 0.0) in cache._segments
+        assert (id(tris), AXIS_Z, 0.0) in cache._segments
         # Only one key should exist for both calls.
         assert len(cache._segments) == 1
+
+    def test_different_mesh_lists_do_not_share_cache_entry(self):
+        tris1 = _box_triangles()
+        tris2 = list(tris1)
+        cache = SectionCache()
+        cache.segments(tris1, AXIS_Z, 0.0)
+        cache.segments(tris2, AXIS_Z, 0.0)
+        assert len(cache._segments) == 2
 
     def test_cache_matches_direct_computation(self):
         tris = _box_triangles()

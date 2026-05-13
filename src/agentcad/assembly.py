@@ -737,12 +737,13 @@ def _descriptor_center(desc: dict, axis: str) -> tuple[float, ...]:
 
 
 def _cylinder_endpoints(desc: dict) -> tuple[Vec3, Vec3]:
-    axis = desc.get("axis", "z")
-    z_range = desc.get("z_range") or desc.get("range") or [0.0, 0.0]
-    if not isinstance(z_range, (list, tuple)) or len(z_range) != 2:
-        raise AssemblyError("CylinderDescriptorInvalid", "cylinder z_range must contain two values")
-    start = _descriptor_float(z_range[0], "cylinder z_range[0]")
-    end = _descriptor_float(z_range[1], "cylinder z_range[1]")
+    axis = str(desc.get("axis", "z")).lower()
+    range_key = f"{axis}_range"
+    axis_range = desc.get(range_key) or desc.get("range") or [0.0, 0.0]
+    if not isinstance(axis_range, (list, tuple)) or len(axis_range) != 2:
+        raise AssemblyError("CylinderDescriptorInvalid", f"cylinder {range_key} must contain two values")
+    start = _descriptor_float(axis_range[0], f"cylinder {range_key}[0]")
+    end = _descriptor_float(axis_range[1], f"cylinder {range_key}[1]")
     center = _descriptor_center(desc, str(axis))
     if axis == "z":
         return ((center[0], center[1], start), (center[0], center[1], end))

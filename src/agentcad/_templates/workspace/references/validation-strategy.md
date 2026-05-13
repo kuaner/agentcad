@@ -6,6 +6,16 @@ Before writing `expected` values in design.json, run `agentcad probe` after the
 first successful build. It returns actual measured geometry plus `suggested_checks`
 that you can paste directly into design.json.
 
+If you know the feature/check type but not the most informative section plane,
+run the planner first:
+
+```bash
+agentcad probe my_model --plan
+```
+
+Use the resulting `suggested_probes` commands before guessing `z`, `center`, or
+`region` values.
+
 ```bash
 # 1. Build the model first
 agentcad build my_model

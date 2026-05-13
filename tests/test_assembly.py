@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from agentcad.assembly import init_assembly, list_assemblies, validate_assembly
+from agentcad.assembly import _cylinder_endpoints, init_assembly, list_assemblies, validate_assembly
 from agentcad.workspace import init_workspace, new_model
 
 
@@ -373,3 +373,20 @@ def test_assembly_metadata_schema_checks_invalid_interface(tmp_path):
     # The reference to pin.interfaces.pin.axis won't resolve because
     # the interface has no kind/axis, so the assembly should fail.
     assert result2["ok"] is False
+
+
+def test_cylinder_endpoints_use_axis_specific_range_keys():
+    assert _cylinder_endpoints({
+        "type": "cylinder",
+        "axis": "x",
+        "center": [2, 3],
+        "radius": 1,
+        "x_range": [-4, 4],
+    }) == ((-4.0, 2.0, 3.0), (4.0, 2.0, 3.0))
+    assert _cylinder_endpoints({
+        "type": "cylinder",
+        "axis": "y",
+        "center": [2, 3],
+        "radius": 1,
+        "y_range": [-5, 5],
+    }) == ((2.0, -5.0, 3.0), (2.0, 5.0, 3.0))

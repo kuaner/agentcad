@@ -368,6 +368,43 @@ class TestValidateAllIntegration:
         report = json.loads(custom_output.read_text())
         assert report["stage"] == "validate_all"
 
+    def test_written_report_includes_own_artifact_path(self, tmp_path, monkeypatch):
+        project = _make_workspace(tmp_path, models=[{"name": "bracket"}])
+        output = tmp_path / "all.json"
+        monkeypatch.setattr("agentcad.batch.validate_target", lambda project, target: {"ok": True, "stage": "validate", "checks": []})
+
+        result = validate_all(project, output=output)
+        report = json.loads(output.read_text())
+
+        assert result["artifacts"]["validation_all"] == str(output)
+        assert report["artifacts"]["validation_all"] == str(output)
+
+    def test_target_exception_is_recorded_and_report_is_written(self, tmp_path, monkeypatch):
+        project = _make_workspace(tmp_path, models=[{"name": "bracket"}])
+        output = tmp_path / "all.json"
+
+        def _raise(project, target):
+            raise RuntimeError("synthetic validator crash")
+
+        monkeypatch.setattr("agentcad.batch.validate_target", _raise)
+        result = validate_all(project, output=output)
+
+        assert result["ok"] is False
+        assert output.exists()
+        assert result["targets"][0]["error"]["type"] == "RuntimeError"
+        assert result["targets"][0]["error"]["message"] == "synthetic validator crash"
+
+    def test_changed_only_is_explicitly_not_implemented(self, tmp_path):
+        project = _make_workspace(tmp_path, models=[{"name": "bracket"}])
+        output = tmp_path / "all.json"
+
+        result = validate_all(project, output=output, changed_only=True)
+        report = json.loads(output.read_text())
+
+        assert result["ok"] is False
+        assert result["error"]["type"] == "NotImplemented"
+        assert report["error"]["type"] == "NotImplemented"
+
 
 class TestValidateAllCLI:
     """CLI-level tests for `agentcad validate all`."""
@@ -418,3 +455,13 @@ class TestValidateAllCLI:
         main(["build", "compat_test"])
         result = main(["validate", "compat_test"])
         assert result == 0
+
+    def test_validate_all_changed_only_cli_returns_clear_error(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        main(["new", "changed_project"])
+        project = tmp_path / "changed_project"
+        monkeypatch.chdir(project)
+
+        result = main(["validate", "all", "--changed-only"])
+
+        assert result == 1

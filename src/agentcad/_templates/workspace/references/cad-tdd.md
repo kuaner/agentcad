@@ -99,6 +99,15 @@ paste into `design.json`.
 When you do not know which Z to probe, run `agentcad probe <model> --scan` to
 surface step changes such as cavity starts and wall transitions.
 
+When you know the feature/check type but not the best section, run:
+
+```bash
+agentcad probe <model> --plan
+```
+
+The planner reads `design.json`, `params.json`, `metadata.json`, and existing
+measure/scan artifacts. Prefer its commands over guessing section planes.
+
 ## Connection Red Phase
 
 For attached features, write two checks before coding:

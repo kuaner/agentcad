@@ -11,7 +11,7 @@ from .inspect import inspect_model
 from .jsonio import print_payload
 from .measure import measure_model
 from .precheck import precheck_model
-from .probe import probe_model, probe_scan
+from .probe import plan_probes, probe_model, probe_scan
 from .preview import open_preview, serve_preview, write_assembly_preview, write_model_preview
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .report import report_model
@@ -109,6 +109,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("--assemblies", action="store_true", help="when validating all, include assemblies")
     validate.add_argument("--include-variants", action="store_true", help="when validating all, include model variants")
     validate.add_argument("--include-slow", action="store_true", help="when validating all, include slow targets")
+    validate.add_argument("--changed-only", action="store_true", help="when validating all, validate only changed targets (not implemented yet)")
     validate.add_argument("--fail-fast", action="store_true", help="stop after first validation failure")
     validate.add_argument("--output", type=Path, default=None, help="path for batch validation report (default: .agentcad/validation/all.json)")
 
@@ -134,6 +135,7 @@ def build_parser() -> argparse.ArgumentParser:
     probe.add_argument("--line-v", type=float, default=None, help="measure contour intersections at fixed section V coordinate")
     probe.add_argument("--point", default=None, help="u,v in the active section plane for nearest-contour distance")
     probe.add_argument("--scan", action="store_true", help="scan the full axis profile instead of a single section")
+    probe.add_argument("--plan", action="store_true", help="suggest high-value probe/render commands from design.json")
     probe.add_argument("--axis", choices=["x", "y", "z"], default="z", help="axis to scan (default: z)")
     probe.add_argument("--samples", type=int, default=20, help="number of scan samples (default: 20)")
 
@@ -310,6 +312,7 @@ def dispatch(args: argparse.Namespace) -> dict:
                 include_assemblies=include_assemblies,
                 include_variants=getattr(args, "include_variants", False),
                 include_slow=getattr(args, "include_slow", False),
+                changed_only=getattr(args, "changed_only", False),
                 fail_fast=getattr(args, "fail_fast", False),
                 output=getattr(args, "output", None),
             )
@@ -324,6 +327,8 @@ def dispatch(args: argparse.Namespace) -> dict:
         model_name, _ = _parse_model_target(args.model)
         return diff_model(project, model_name, last=getattr(args, "last", False))
     if args.command == "probe":
+        if args.plan:
+            return plan_probes(project, args.model)
         if args.scan:
             return probe_scan(project, args.model, axis=args.axis, samples=args.samples)
         z_values = [float(v.strip()) for v in args.z.split(",") if v.strip()] if args.z else None
@@ -360,9 +365,11 @@ def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "inspect":
         return inspect_model(project, args.model, scan_samples=args.samples)
     if args.command == "precheck":
-        return precheck_model(project, args.model)
+        model_name, _ = _parse_model_target(args.model)
+        return precheck_model(project, model_name)
     if args.command == "review":
-        return review_model(project, args.model)
+        model_name, variant_name = _parse_model_target(args.model)
+        return review_model(project, model_name, variant=variant_name)
     if args.command == "doctor":
         from .doctor import run_model_doctor
         model_name, variant_name = _parse_model_target(args.model)
@@ -453,10 +460,15 @@ def _dispatch_snapshot(project: Path, args: argparse.Namespace) -> dict:
     from .batch import discover_validation_targets
     from .jsonio import read_json
 
-    targets = discover_validation_targets(project, include_variants=getattr(args, "include_variants", False))
     target_name = getattr(args, "target", None)
+    include_variants = getattr(args, "include_variants", False) or (isinstance(target_name, str) and ":" in target_name)
+    targets = discover_validation_targets(project, include_variants=include_variants)
     if target_name:
-        targets = [t for t in targets if t.name == target_name]
+        if ":" in target_name:
+            model_name, variant_name = _parse_model_target(target_name)
+            targets = [t for t in targets if t.kind == "model" and t.name == model_name and t.variant == variant_name]
+        else:
+            targets = [t for t in targets if t.name == target_name]
     if not targets:
         return {"ok": False, "stage": f"snapshot_{args.snapshot_command}", "error": {"type": "NoTargets", "message": "no validation targets found"}}
 

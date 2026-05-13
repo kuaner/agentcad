@@ -5,6 +5,30 @@ Run this before writing `models/<name>/design.json`.
 Do not jump from a sparse request straight into geometry. First decide whether
 the design intent is specified enough to build a measurable contract.
 
+## Required Discovery Table
+
+Before modeling, write a compact table in your working notes or response. Every
+row must either have a measurable assumption or be marked as blocked.
+
+| Field | Required answer |
+|---|---|
+| Functional surfaces | Faces that mount, seal, slide, locate, support, or carry load |
+| Interfaces | Holes, bosses, sockets, rails, lids, pins, gears, fasteners, or mating parts |
+| Envelope / keep-out | External bounds, insertion paths, tool approach, motion clearance |
+| Critical dimensions | Dimensions that must appear in `params.json` or `design.json.checks` |
+| Failure modes | Shallow hole, edge breakout, thin wall, blocked access, detached rib/tab, wrong orientation, assembly eccentricity |
+| Evidence plan | The check/probe/section that would fail for each failure mode |
+
+Minimum evidence per feature:
+
+| Feature risk | Evidence that must be planned |
+|---|---|
+| Any functional feature | Position and dimensions |
+| Hole / bore / screw path | Diameter, position, access envelope, edge or adjacent-solid clearance |
+| Thin wall / shell / sleeve | `min_wall_thickness` region or range |
+| Rib / boss / tab / hook / arm | Body check plus root/interface connection check |
+| Socket / pin / rail / gear / mating face | Clearance or metadata-backed interface check |
+
 ## When Discovery Is Blocked
 
 Ask the user before writing `design.json` when any material choice is missing

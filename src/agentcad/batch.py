@@ -88,11 +88,15 @@ def discover_validation_targets(
     include_assemblies: bool = True,
     include_variants: bool = False,
     include_slow: bool = False,
+    changed_only: bool = False,
 ) -> list[ValidationTarget]:
     """Discover all validation targets in the workspace.
 
     Returns a deterministic sorted list by (kind, name, variant).
     """
+    if changed_only:
+        raise NotImplementedError("changed-only target discovery is not implemented yet")
+
     targets: list[ValidationTarget] = []
 
     if include_models:
@@ -123,6 +127,19 @@ def validate_target(project: Path, target: ValidationTarget) -> dict:
         from .assembly import validate_assembly
         return validate_assembly(project, target.name)
     raise ValueError(f"unknown target kind: {target.kind}")
+
+
+def _target_exception_payload(target: ValidationTarget, exc: Exception) -> dict:
+    return {
+        "ok": False,
+        "stage": "validate_target",
+        "error": {
+            "type": type(exc).__name__,
+            "message": str(exc),
+            "target": target.display_name,
+            "kind": target.kind,
+        },
+    }
 
 
 def _target_summary(target: ValidationTarget, payload: dict) -> dict:
@@ -166,22 +183,50 @@ def validate_all(
     include_assemblies: bool = True,
     include_variants: bool = False,
     include_slow: bool = False,
+    changed_only: bool = False,
     fail_fast: bool = False,
     output: Path | None = None,
 ) -> dict:
     """Validate all targets in the workspace and produce a project-level report."""
     start = perf_counter()
+    output_path = output or project / ".agentcad" / "validation" / "all.json"
+    if changed_only:
+        payload = {
+            "ok": False,
+            "stage": "validate_all",
+            "project": str(project),
+            "summary": {
+                "total": 0,
+                "passed": 0,
+                "failed": 0,
+                "skipped": 0,
+                "durationMs": round((perf_counter() - start) * 1000, 3),
+            },
+            "targets": [],
+            "artifacts": {"validation_all": str(output_path)},
+            "error": {
+                "type": "NotImplemented",
+                "message": "--changed-only is not implemented yet; run without it or choose --models/--assemblies filters",
+            },
+        }
+        write_json(output_path, payload)
+        return payload
+
     targets = discover_validation_targets(
         project,
         include_models=include_models,
         include_assemblies=include_assemblies,
         include_variants=include_variants,
         include_slow=include_slow,
+        changed_only=changed_only,
     )
 
     summaries: list[dict] = []
     for target in targets:
-        result = validate_target(project, target)
+        try:
+            result = validate_target(project, target)
+        except Exception as exc:
+            result = _target_exception_payload(target, exc)
         summaries.append(_target_summary(target, result))
         if fail_fast and not result.get("ok"):
             break
@@ -202,11 +247,7 @@ def validate_all(
             "durationMs": total_duration,
         },
         "targets": summaries,
-        "artifacts": {},
+        "artifacts": {"validation_all": str(output_path)},
     }
-
-    output_path = output or project / ".agentcad" / "validation" / "all.json"
-    output_path.parent.mkdir(parents=True, exist_ok=True)
     write_json(output_path, payload)
-    payload["artifacts"]["validation_all"] = str(output_path)
     return payload
