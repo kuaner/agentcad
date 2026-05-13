@@ -6,47 +6,41 @@ models using the `agentcad` CLI and build123d geometry library.
 ## Workflow (16 stages, do not skip)
 
 1. **Understand**: read the user request, identify every feature, and pass the
-   Discovery Gate in `references/discovery.md`.
-2. **Concept**: when the model is non-trivial, compare 2-3 topology concepts
-   using `references/concept-design.md`. Commit to one concept before writing
-   the contract.
-3. **Contract**: write `models/<name>/design.json` with features and checks.
-   Load `references/contract-design.md` before editing the contract.
-4. **Suggest**: run `agentcad suggest-checks <name>` to find missing checks.
-   Paste suggested templates into `design.json` after filling concrete values.
+   Discovery Gate. Read `references/discovery.md`.
+2. **Concept**: compare 2-3 topology concepts for non-trivial models, commit to
+   one. Read `references/concept-design.md`.
+3. **Contract**: write `models/<name>/design.json` with features and checks. Read
+   `references/contract-design.md`. Optionally add `param_ref` fields to checks
+   for targeted fix suggestions on failure.
+4. **Suggest**: run `agentcad suggest-checks <name>` to find missing checks. Paste
+   suggested templates into `design.json` after filling concrete values.
 5. **Params**: put tunable dimensions in `models/<name>/params.json`.
 6. **Precheck**: run `agentcad precheck <name>`. Do not write `part.py` while
    precheck fails.
-7. **Implement**: write `models/<name>/part.py` using build123d. The final
-   object must be assigned to global variable `result`. Read
-   `references/build123d-guide.md` for build123d patterns and API usage;
-   read `references/feature/index.md` for feature helpers that auto-emit
-   contract checks and metadata interfaces.
-8. **Build**: run `agentcad build <name>`. If the build fails, consult
-   `references/debugging.md` for triage guidance.
+7. **Implement**: write `models/<name>/part.py` using build123d. The final object
+   must be assigned to global variable `result`. Read
+   `references/build123d-guide.md` for API patterns and
+   `references/feature/index.md` for feature helpers. Consult
+   `references/feature/hardware.md` for screw/nut/washer/insert dimensions.
+8. **Build**: run `agentcad build <name>`. If it fails, read
+   `references/debugging.md` for triage guidance. Read
+   `references/cad-tdd.md` for the checks-first implementation loop.
 9. **Measure**: run `agentcad measure <name>`.
 10. **Render**: run `agentcad render <name> --views iso,front,top,side,back`.
-11. **Validate**: run `agentcad validate <name>`. It must pass. For check
-   details, tolerances, and probe usage, read
-   `references/validation-strategy.md`.
+11. **Validate**: run `agentcad validate <name>`. It must pass. Read
+   `references/validation-strategy.md` for check details, tolerances, and probe
+   usage.
 12. **Review**: run `agentcad review <name>` and inspect every `must_view`
     artifact.
-13. **Preview**: run `agentcad preview <name>` to launch an interactive 3D
-    preview — it auto-opens the browser. `--static` generates a self-contained
-    HTML file (no server). Do NOT manually `open` the preview file; the command
-    already opens it. Use the 3D view to
-    inspect topology, section SVGs, geometry values, and failing checks. For an
-    assembly, run `agentcad preview <name>` (auto-detected). Add `--static` to
-    generate a self-contained HTML file that works offline without a server.
-14. **Quality Review**: apply `references/design-quality-review.md`. If the
-    model is merely valid but not good, revise the concept, contract, or
-    geometry and repeat validation.
+13. **Preview**: run `agentcad preview <name>` (auto-opens browser; do NOT
+    manually open the file). Use `--static` for offline HTML. See CLI Quick
+    Reference for assembly and kind options.
+14. **Quality Review**: apply `references/design-quality-review.md`. If the model
+    is valid but not good, revise and repeat from the relevant stage.
 15. **Deliver**: run `agentcad deliver <name>` only after review and quality
     review pass.
-16. **Resume**: if interrupted at any stage, run `agentcad doctor <name>` to
-    diagnose workflow gaps and get the next command to run.
-
-Do not manually export STEP/STL from `part.py`. The runner owns all exports.
+16. **Resume**: if interrupted, run `agentcad doctor <name>` for workflow state
+    and recommended next command.
 
 ## Iteration Loop
 
@@ -74,48 +68,12 @@ workflow state and the next recommended command.
 To create the same model with different dimensions:
 
 1. Create a variant: `agentcad new <model>:<variant_name>`
-2. Edit `models/<model>/variants/<variant_name>/params.json` with variant-specific dimensions.
+2. Edit `models/<model>/variants/<variant_name>/params.json` with
+   variant-specific dimensions.
 3. Run any command with `<model>:<variant_name>` instead of `<model>`.
 
 Variants share `part.py`, `design.json`, and `metadata.json`. Only `params.json`
 differs. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
-
-## Fix Suggestions (param_ref)
-
-Add an optional `param_ref` field to checks in `design.json` to get targeted
-fix suggestions when the check fails:
-
-```json
-{
-  "id": "hole_diameter",
-  "type": "inner_diameter_at_z",
-  "z": 2.5,
-  "expected": 5.0,
-  "tolerance": 0.3,
-  "center": [0, 0],
-  "param_ref": "hole_diameter"
-}
-```
-
-Without `param_ref`, failing checks still get fix suggestions — but they are
-generic action strings instead of param-targeted values.
-
-## Stage References
-
-Read only the references needed for the current stage.
-
-| Stage | Reference |
-|---|---|
-| Requirements, ambiguity, user choices | `references/discovery.md` |
-| Topology options, tradeoffs, concept choice | `references/concept-design.md` |
-| `design.json`, feature coverage, check selection | `references/contract-design.md` |
-| Feature helpers overview and index | `references/feature/index.md` |
-| Hardware database (screws, nuts, washers, inserts) | `references/feature/hardware.md` |
-| Checks-first implementation loop | `references/cad-tdd.md` |
-| Check details, tolerances, probe usage, validation failures | `references/validation-strategy.md` |
-| build123d API patterns and geometry construction | `references/build123d-guide.md` |
-| Build/debug triage and external docs lookup | `references/debugging.md` |
-| Post-validation design quality critique | `references/design-quality-review.md` |
 
 ## Hard Rules
 
@@ -123,12 +81,11 @@ Read only the references needed for the current stage.
 - Coordinate convention: +X right, +Y back, +Z up.
 - Do not write generated artifacts outside `models/<name>/outputs/` or
   `assemblies/<name>/outputs/`.
+- Do not manually export STEP/STL from `part.py`. The runner owns all exports.
 - Do not create an assembly unless the user asks for multiple parts, fit,
   motion, enclosure/cover relationships, or another inter-model relationship.
-  Assembly is optional and on-demand; preview is a universal review command.
-- Treat `design.json` as the design contract: source of truth for what the
-  model should be.
-- Treat CLI JSON output as the source of truth for what the model actually is.
+- Treat `design.json` as the design contract: source of truth for intent.
+  Treat CLI JSON output as the source of truth for actual state.
 - Prefer structured geometry measurements over visual impressions. When a
   section SVG exists, read its same-name `.json` analysis before judging it.
 - Do not claim a model is complete until `agentcad validate` and
@@ -149,11 +106,9 @@ Read only the references needed for the current stage.
 - Reason edge-to-edge, never center-to-face.
 - `section_bbox_at_z` with `expected: "void"` must include a `region` field
   `[[x0,y0],[x1,y1]]` to avoid false passes on empty slices where the STL has
-  no mesh at that Z. Without region, an empty global slice passes as void even
-  if solid material exists nearby.
+  no mesh at that Z.
 - `min_wall_thickness` supports range mode: use `axis`, `range` `[start, end]`,
-  `samples`, `region`, and `min_mm` instead of a single `z` plane. Range mode
-  evaluates multiple slices and reports the worst result.
+  `samples`, `region`, and `min_mm` instead of a single `z` plane.
 
 ## Workspace Layout
 
@@ -169,29 +124,20 @@ models/<name>/
     build.json          Build report
     geometry.json       STL measurement report
     validation.json     Validation results
-    validation-history/ Archived validation runs (for diff)
-    observability.json  Aggregate previews, scans, and section measurements
-    preview.html        Lightweight interactive preview (served by `agentcad preview`)
     precheck.json       Static contract report
     review.json         Pre-delivery review report
     deliverable.json    Delivery manifest
-    preview.iso.svg     SVG preview
-    section.z10.00.svg  Section preview
-    section.z10.00.json Section measurement sidecar
+    preview.html        Interactive preview (agentcad preview)
     <name>.step         STEP export
     <name>.stl          STL export
-  outputs/<variant>/    Variant-specific output directory
 
 assemblies/<name>/
   assembly.json          Optional multi-model fit/mate contract
   outputs/
     assembly_geometry.json
     assembly_validation.json
-    assembly_observability.json
     assembly_review.json
-    preview.html          Lightweight interactive assembly preview
-    preview.combined.iso.svg
-    preview.exploded.iso.svg
+    preview.html          Interactive assembly preview
     <name>.mjcf.xml       MJCF verification artifact
 ```
 
