@@ -195,6 +195,45 @@ def test_probe_plan_uses_design_checks(cube_project):
     assert result["feature_evidence_matrix"]
     commands = [item["command"] for item in result["suggested_probes"]]
     assert "agentcad probe cube --z 5 --cx 5 --cy 5" in commands
+    first = result["suggested_probes"][0]
+    assert "commands" in first
+    assert first["information_gain"] in {"high", "medium", "low"}
+
+
+def test_probe_plan_uses_failure_modes(cube_project):
+    design_path = cube_project / "models" / "cube" / "design.json"
+    design_path.write_text("""{
+      "features": [{"id": "mounting_hole", "checks": ["hole_dia"]}],
+      "checks": [
+        {"id": "hole_dia", "type": "inner_diameter_at_z", "z": 5.0, "expected": 4.0, "center": [5.0, 5.0]}
+      ],
+      "failure_modes": [
+        {"id": "breakout", "mode": "edge_breakout", "severity": "high", "affects": ["mounting_hole"]}
+      ]
+    }""", encoding="utf-8")
+
+    result = plan_probes(cube_project, "cube")
+
+    edge_probe = next(item for item in result["suggested_probes"] if item.get("linked_failure_mode") == "breakout")
+    assert edge_probe["information_gain"] == "high"
+    assert "--point 5,5" in edge_probe["command"]
+
+
+def test_probe_plan_run_writes_artifact(cube_project):
+    design_path = cube_project / "models" / "cube" / "design.json"
+    design_path.write_text("""{
+      "features": [{"id": "center_hole", "checks": ["hole_dia"]}],
+      "checks": [
+        {"id": "hole_dia", "type": "inner_diameter_at_z", "z": 5.0, "expected": 4.0, "center": [5.0, 5.0]}
+      ]
+    }""", encoding="utf-8")
+
+    result = plan_probes(cube_project, "cube", run=True)
+
+    assert result["ok"] is True
+    probes_path = cube_project / "models" / "cube" / "outputs" / "probes.json"
+    assert probes_path.exists()
+    assert result["execution"]["count"] >= 1
 
 
 def test_inspect_suggested_commands_use_supported_cli_flags(cube_project):

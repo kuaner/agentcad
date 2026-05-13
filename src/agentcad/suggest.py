@@ -25,6 +25,7 @@ from .contract import (
     DIMENSION_CHECK_TYPES,
     GEOMETRY_CHECK_TYPES,
     classify_feature,
+    evaluate_design_intent_lint_dict,
     evaluate_feature_evidence_matrix_dict,
 )
 from .jsonio import read_json
@@ -67,6 +68,7 @@ def suggest_checks(project: Path, name: str) -> dict[str, Any]:
     validation = read_json(out_dir / "validation.json", default={}) or {}
     observability = read_json(out_dir / "observability.json", default={}) or {}
     feature_evidence_matrix = evaluate_feature_evidence_matrix_dict(design)
+    design_intent_lint = evaluate_design_intent_lint_dict(design)
     probe_plan = plan_probe_points(
         name,
         design,
@@ -177,6 +179,7 @@ def suggest_checks(project: Path, name: str) -> dict[str, Any]:
         "model": name,
         "suggestions": suggestions,
         "feature_evidence_matrix": feature_evidence_matrix,
+        "design_intent_lint": design_intent_lint,
         "probe_plan": probe_plan,
         "design_found": True,
     }

@@ -31,6 +31,9 @@ class ContractBuilder:
         self._checks: list[dict[str, Any]] = []
         self._meta: dict[str, Any] = {}
         self._interfaces: dict[str, dict[str, Any]] = {}
+        self._design_interfaces: list[dict[str, Any]] = []
+        self._failure_modes: list[dict[str, Any]] = []
+        self._functional_surfaces: list[dict[str, Any]] = []
 
     @property
     def features(self) -> list[dict[str, Any]]:
@@ -71,9 +74,41 @@ class ContractBuilder:
             raise ValueError(f"duplicate interface name: {name!r}")
         self._interfaces[name] = interface
 
+    def add_design_interface(self, interface: dict[str, Any]) -> None:
+        iid = interface.get("id", "")
+        if not iid:
+            raise ValueError("design interface requires id")
+        if any(item.get("id") == iid for item in self._design_interfaces):
+            raise ValueError(f"duplicate design interface id: {iid!r}")
+        self._design_interfaces.append(interface)
+
+    def add_failure_mode(self, failure_mode: dict[str, Any]) -> None:
+        fid = failure_mode.get("id", "")
+        if not fid:
+            raise ValueError("failure mode requires id")
+        if any(item.get("id") == fid for item in self._failure_modes):
+            raise ValueError(f"duplicate failure mode id: {fid!r}")
+        self._failure_modes.append(failure_mode)
+
+    def add_functional_surface(self, surface: dict[str, Any]) -> None:
+        sid = surface.get("id", "")
+        if not sid:
+            raise ValueError("functional surface requires id")
+        if any(item.get("id") == sid for item in self._functional_surfaces):
+            raise ValueError(f"duplicate functional surface id: {sid!r}")
+        self._functional_surfaces.append(surface)
+
     @property
     def interfaces(self) -> dict[str, dict[str, Any]]:
         return dict(self._interfaces)
+
+    @property
+    def design_interfaces(self) -> list[dict[str, Any]]:
+        return list(self._design_interfaces)
+
+    @property
+    def failure_modes(self) -> list[dict[str, Any]]:
+        return list(self._failure_modes)
 
     def to_design(self) -> dict[str, Any]:
         """Build a design.json-compatible dict."""
@@ -85,6 +120,12 @@ class ContractBuilder:
         }
         if self.intent:
             doc["intent"] = self.intent
+        if self._design_interfaces:
+            doc["interfaces"] = list(self._design_interfaces)
+        if self._failure_modes:
+            doc["failure_modes"] = list(self._failure_modes)
+        if self._functional_surfaces:
+            doc["functional_surfaces"] = list(self._functional_surfaces)
         return doc
 
     def write_to(self, project: Path, name: str, *, merge: bool = True) -> dict[str, Any]:
@@ -103,9 +144,13 @@ class ContractBuilder:
         new_feature_ids = {f.get("id") for f in new.get("features", [])}
         new_check_ids = {c.get("id") for c in new.get("checks", [])}
 
-        for key in ("features", "checks"):
+        for key in ("features", "checks", "interfaces", "failure_modes", "functional_surfaces"):
             existing_list = existing.get(key, [])
             new_list = new.get(key, [])
+            if not new_list:
+                continue
+            if not isinstance(existing_list, list):
+                existing_list = []
             existing_ids = {e.get("id") for e in existing_list}
             # Update or add entries from builder
             for entry in new_list:
@@ -128,7 +173,7 @@ class ContractBuilder:
                 else:
                     existing_list.append(entry)
             # Remove scaffold entries replaced by builder entries
-            new_ids = new_feature_ids if key == "features" else new_check_ids
+            new_ids = new_feature_ids if key == "features" else new_check_ids if key == "checks" else {e.get("id") for e in new_list}
             if new_ids:
                 existing[key] = [
                     e for e in existing_list

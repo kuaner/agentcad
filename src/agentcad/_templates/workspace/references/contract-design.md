@@ -59,10 +59,43 @@ Run:
 ```bash
 agentcad suggest-checks <model>
 agentcad probe <model> --plan
+agentcad probe <model> --plan --run
 ```
 
 Use the suggested probe plan to choose section planes before guessing `z`,
 `center`, or `region` values.
+
+For risky models, also record structured intent fields so review can check the
+contract itself:
+
+```json
+{
+  "functional_surfaces": [
+    {"id": "mount_face", "feature_id": "base_plate", "role": "mounting_face", "critical": true}
+  ],
+  "interfaces": [
+    {
+      "id": "m3_mount",
+      "type": "fastener_clearance",
+      "feature_ids": ["mounting_holes"],
+      "access_axis": "z",
+      "failure_modes": ["hole_blocked", "edge_breakout"]
+    }
+  ],
+  "failure_modes": [
+    {
+      "id": "mount_edge_breakout",
+      "mode": "edge_breakout",
+      "severity": "high",
+      "affects": ["mounting_holes"],
+      "required_evidence": ["position", "dimensions", "access", "interface_risk"]
+    }
+  ]
+}
+```
+
+High-severity failure modes are blocking review gates until the evidence matrix
+has the required columns.
 
 ## Check Types
 

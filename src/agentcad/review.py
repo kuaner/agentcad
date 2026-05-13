@@ -32,6 +32,7 @@ from typing import Any
 
 from .contract import (
     HOLE_WORDS,
+    evaluate_design_intent_lint_dict,
     evaluate_feature_evidence_matrix_dict,
     evaluate_weak_check_warnings_dict,
 )
@@ -99,6 +100,22 @@ def review_model(project: Path, name: str, variant: str | None = None) -> dict:
             "and the probe planner to pick concrete section/probe points."
         ),
         evidence={"missing": missing_evidence, "matrix": feature_evidence_matrix},
+    ))
+
+    design_intent_lint = evaluate_design_intent_lint_dict(design)
+    blocking_intent = [
+        item for item in design_intent_lint
+        if not item.get("ok") and item.get("severity") == "blocking"
+    ]
+    checklist.append(_item(
+        "design_intent_lint",
+        not blocking_intent,
+        title="functional surfaces, interfaces, and failure modes have measurable evidence",
+        action=(
+            "add checks for the missing evidence in each interface/failure-mode row, "
+            "then rerun suggest-checks and review."
+        ),
+        evidence={"blocking": blocking_intent, "lint": design_intent_lint},
     ))
 
     has_clearance = _has_min_clearance_for_each_hole(design)
@@ -191,6 +208,7 @@ def review_model(project: Path, name: str, variant: str | None = None) -> dict:
         deferred_followups, review_path,
         warnings=geom_warnings,
         feature_evidence_matrix=feature_evidence_matrix,
+        design_intent_lint=design_intent_lint,
         variant=variant,
     )
     write_json(review_path, payload)
@@ -479,6 +497,7 @@ def _payload(
     review_path: Path,
     warnings: list[dict] | None = None,
     feature_evidence_matrix: list[dict] | None = None,
+    design_intent_lint: list[dict] | None = None,
     variant: str | None = None,
 ) -> dict:
     ready = all(item.get("ok") for item in checklist)
@@ -492,6 +511,7 @@ def _payload(
         "checklist": checklist,
         "relations": relations,
         "feature_evidence_matrix": feature_evidence_matrix or [],
+        "design_intent_lint": design_intent_lint or [],
         "must_view": must_view,
         "deferred_followups": deferred_followups,
         "artifacts": {"review": str(review_path)},

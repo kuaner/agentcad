@@ -1,0 +1,6 @@
+{
+  "failure_mode": "edge_breakout",
+  "required_evidence": ["position", "dimensions", "access", "interface_risk"],
+  "checks": ["inner_diameter_at_z", "hole_accessibility", "min_clearance"],
+  "probe": "nearest contour distance from hole center"
+}

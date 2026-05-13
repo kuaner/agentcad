@@ -15,8 +15,9 @@ class TestRib:
     def test_registers_wall_thickness(self):
         builder = ContractBuilder()
         rib(length=30, height=10, thickness=3, builder=builder)
-        assert len(builder.checks) == 1
-        assert builder.checks[0]["type"] == "min_wall_thickness"
+        assert len(builder.checks) == 2
+        assert {check["type"] for check in builder.checks} == {"min_wall_thickness", "feature_position"}
+        assert builder.failure_modes[0]["mode"] == "suspended_rib"
 
     def test_invalid_direction(self):
         with pytest.raises(ValueError, match="direction"):

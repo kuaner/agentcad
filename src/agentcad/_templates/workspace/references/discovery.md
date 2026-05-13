@@ -19,6 +19,12 @@ row must either have a measurable assumption or be marked as blocked.
 | Failure modes | Shallow hole, edge breakout, thin wall, blocked access, detached rib/tab, wrong orientation, assembly eccentricity |
 | Evidence plan | The check/probe/section that would fail for each failure mode |
 
+Mirror the rows that affect geometry into `design.json`:
+
+- `functional_surfaces` for critical faces and datums
+- `interfaces` for fasteners, sockets, pins, rails, gears, mating faces, and insertion paths
+- `failure_modes` for every high-risk way the feature could silently pass validation while being unusable
+
 Minimum evidence per feature:
 
 | Feature risk | Evidence that must be planned |

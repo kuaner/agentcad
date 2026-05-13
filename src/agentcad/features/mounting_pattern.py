@@ -116,6 +116,20 @@ class MountingHoles:
                 },
                 checks=checks,
             )
+            builder.add_design_interface({
+                "id": f"{feature_id}_fastener_pattern",
+                "type": "fastener_clearance",
+                "feature_ids": [feature_id],
+                "access_axis": approach_axis,
+                "failure_modes": ["hole_blocked", "edge_breakout"],
+            })
+            builder.add_failure_mode({
+                "id": f"{feature_id}_edge_breakout",
+                "mode": "edge_breakout",
+                "severity": "high",
+                "affects": [feature_id],
+                "required_evidence": ["position", "dimensions", "access", "interface_risk"],
+            })
 
     def cut(self) -> None:
         """Subtract holes from the active BuildPart context.

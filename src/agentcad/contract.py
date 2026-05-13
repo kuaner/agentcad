@@ -58,6 +58,26 @@ INTERFACE_RISK_CHECK_TYPES = frozenset({"min_clearance", "metadata_equals", "hol
 
 WALL_WORDS = frozenset({"wall", "shell", "thin", "sleeve", "tube", "web", "skin", "rim"})
 ROOT_WORDS = frozenset({"root", "base", "interface", "junction", "connected", "attach", "attachment"})
+EVIDENCE_COLUMNS = ("position", "dimensions", "access", "wall", "interface_risk")
+SEVERITIES = frozenset({"info", "low", "medium", "warning", "high", "blocking", "critical"})
+
+FAILURE_MODE_REQUIRED_EVIDENCE = {
+    "shallow_hole": frozenset({"position", "dimensions"}),
+    "blind_hole_too_shallow": frozenset({"position", "dimensions"}),
+    "hole_depth": frozenset({"position", "dimensions"}),
+    "edge_breakout": frozenset({"position", "dimensions", "interface_risk"}),
+    "thin_wall": frozenset({"wall", "dimensions"}),
+    "wall_too_thin": frozenset({"wall", "dimensions"}),
+    "suspended_rib": frozenset({"position", "wall"}),
+    "detached_rib": frozenset({"position", "wall"}),
+    "floating_rib": frozenset({"position", "wall"}),
+    "hole_blocked": frozenset({"position", "access"}),
+    "access_blocked": frozenset({"position", "access"}),
+    "assembly_eccentricity": frozenset({"position", "interface_risk"}),
+    "eccentricity": frozenset({"position", "interface_risk"}),
+    "axis_misalignment": frozenset({"position", "interface_risk"}),
+    "interference": frozenset({"interface_risk"}),
+}
 
 
 @dataclass(frozen=True)
@@ -108,6 +128,10 @@ def _check_path(index: int, field: str | None = None) -> str:
 
 def _feature_path(index: int, field: str | None = None) -> str:
     return f"features[{index}]" + (f".{field}" if field else "")
+
+
+def _intent_path(section: str, index: int, field: str | None = None) -> str:
+    return f"{section}[{index}]" + (f".{field}" if field else "")
 
 
 def valid_check_types() -> frozenset[str]:
@@ -194,6 +218,103 @@ def validate_design_schema_issues(design: dict[str, Any]) -> list[SchemaIssue]:
             # Check-type-specific schema validation.
             issues.extend(_validate_check_by_type(check, i))
 
+    issues.extend(_validate_design_intent_fields(design))
+    return issues
+
+
+def _validate_design_intent_fields(design: dict[str, Any]) -> list[SchemaIssue]:
+    """Validate structured design-intent fields used by review and planners."""
+    issues: list[SchemaIssue] = []
+    feature_ids = _feature_ids(design)
+
+    surfaces = design.get("functional_surfaces")
+    if surfaces is not None:
+        if not isinstance(surfaces, list):
+            issues.append(_issue("functional_surfaces", "'functional_surfaces' must be an array"))
+        else:
+            seen: set[str] = set()
+            for i, surface in enumerate(surfaces):
+                if not isinstance(surface, dict):
+                    issues.append(_issue(_intent_path("functional_surfaces", i), "functional surface must be an object"))
+                    continue
+                sid = surface.get("id")
+                if not sid:
+                    issues.append(_issue(_intent_path("functional_surfaces", i, "id"), "missing required 'id' field"))
+                elif str(sid) in seen:
+                    issues.append(_issue(_intent_path("functional_surfaces", i, "id"), f"duplicate functional surface id: {sid!r}"))
+                else:
+                    seen.add(str(sid))
+                fid = surface.get("feature_id")
+                if not fid:
+                    issues.append(_issue(_intent_path("functional_surfaces", i, "feature_id"), "functional surface requires 'feature_id'"))
+                elif feature_ids and str(fid) not in feature_ids:
+                    issues.append(_issue(
+                        _intent_path("functional_surfaces", i, "feature_id"),
+                        f"unknown feature_id: {fid!r}",
+                        hint="Reference an existing features[].id.",
+                    ))
+                normal = surface.get("normal")
+                if normal is not None and _triple_or_none(normal) is None:
+                    issues.append(_issue(_intent_path("functional_surfaces", i, "normal"), "normal must be [x, y, z] numbers"))
+
+    interfaces_raw = design.get("interfaces")
+    if interfaces_raw is not None and not isinstance(interfaces_raw, (list, dict)):
+        issues.append(_issue("interfaces", "'interfaces' must be an array or object"))
+    for i, interface in enumerate(_iter_design_interfaces(design)):
+        if not isinstance(interface, dict):
+            issues.append(_issue(_intent_path("interfaces", i), "interface must be an object"))
+            continue
+        if not interface.get("id"):
+            issues.append(_issue(_intent_path("interfaces", i, "id"), "interface requires 'id'"))
+        if not interface.get("type"):
+            issues.append(_issue(_intent_path("interfaces", i, "type"), "interface requires 'type'"))
+        refs = _feature_refs_for_intent(interface)
+        if not refs:
+            issues.append(_issue(_intent_path("interfaces", i, "feature_ids"), "interface requires feature_ids or feature_id"))
+        for fid in refs:
+            if feature_ids and fid not in feature_ids:
+                issues.append(_issue(
+                    _intent_path("interfaces", i, "feature_ids"),
+                    f"unknown feature id: {fid!r}",
+                    hint="Reference existing features[].id values.",
+                ))
+        axis = interface.get("access_axis") or interface.get("insertion_axis")
+        if axis is not None and str(axis).lower() not in ("x", "y", "z"):
+            issues.append(_issue(_intent_path("interfaces", i, "access_axis"), "axis must be x, y, or z"))
+        for key in ("clearance_mm", "axis_tolerance_mm"):
+            if key in interface and _num_or_none(interface.get(key)) is None:
+                issues.append(_issue(_intent_path("interfaces", i, key), f"{key} must be numeric"))
+
+    failure_raw = design.get("failure_modes")
+    if failure_raw is not None and not isinstance(failure_raw, (list, dict)):
+        issues.append(_issue("failure_modes", "'failure_modes' must be an array or object"))
+    for i, failure in enumerate(_iter_failure_modes(design)):
+        if not isinstance(failure, dict):
+            issues.append(_issue(_intent_path("failure_modes", i), "failure mode must be an object"))
+            continue
+        if not failure.get("id"):
+            issues.append(_issue(_intent_path("failure_modes", i, "id"), "failure mode requires 'id'"))
+        if not failure.get("mode"):
+            issues.append(_issue(_intent_path("failure_modes", i, "mode"), "failure mode requires 'mode'"))
+        severity = str(failure.get("severity", "medium")).lower()
+        if severity not in SEVERITIES:
+            issues.append(_issue(_intent_path("failure_modes", i, "severity"), f"unknown severity: {severity!r}"))
+        affects = _affects_for_failure(failure)
+        if not affects:
+            issues.append(_issue(_intent_path("failure_modes", i, "affects"), "failure mode requires affects/feature_ids"))
+        for fid in affects:
+            if feature_ids and fid not in feature_ids:
+                issues.append(_issue(
+                    _intent_path("failure_modes", i, "affects"),
+                    f"unknown affected feature id: {fid!r}",
+                    hint="Reference existing features[].id values.",
+                ))
+        for evidence in _required_evidence_from_payload(failure):
+            if evidence not in EVIDENCE_COLUMNS:
+                issues.append(_issue(
+                    _intent_path("failure_modes", i, "required_evidence"),
+                    f"unknown evidence column: {evidence!r}; valid: {list(EVIDENCE_COLUMNS)}",
+                ))
     return issues
 
 
@@ -325,6 +446,7 @@ def evaluate_feature_evidence_matrix_dict(design: dict[str, Any]) -> list[dict]:
         for c in checks
         if isinstance(c, dict) and c.get("id")
     }
+    intent_requirements = _intent_evidence_requirements(design)
     rows: list[dict] = []
     for index, feature in enumerate(features):
         if not isinstance(feature, dict):
@@ -339,6 +461,10 @@ def evaluate_feature_evidence_matrix_dict(design: dict[str, Any]) -> list[dict]:
         categories = classify_feature(feature)
         linked = _linked_check_defs(feature, check_map)
         required = _feature_evidence_requirements(feature, categories)
+        intent_required = intent_requirements.get(feature_id, {})
+        for key in EVIDENCE_COLUMNS:
+            if intent_required.get(key):
+                required[key] = True
         evidence = {
             "position": _evidence_cell(linked, POSITION_CHECK_TYPES, required["position"]),
             "dimensions": _evidence_cell(linked, DIMENSION_CHECK_TYPES, required["dimensions"]),
@@ -353,6 +479,8 @@ def evaluate_feature_evidence_matrix_dict(design: dict[str, Any]) -> list[dict]:
         rows.append({
             "feature": feature_id,
             "categories": sorted(categories) if categories else ["unclassified"],
+            "required_evidence": [key for key in EVIDENCE_COLUMNS if required.get(key)],
+            "requirement_reasons": intent_required.get("reasons", []),
             "linked_checks": [
                 {"id": c.get("id"), "type": c.get("type")}
                 for c in linked
@@ -362,6 +490,84 @@ def evaluate_feature_evidence_matrix_dict(design: dict[str, Any]) -> list[dict]:
             "ok": not missing,
         })
     return rows
+
+
+def evaluate_design_intent_lint_dict(design: dict[str, Any]) -> list[dict]:
+    """Return machine-readable design-intent coverage checks.
+
+    Schema validation answers whether the fields are well shaped. Intent lint
+    answers whether the declared surfaces, interfaces, and failure modes have
+    measurable evidence attached to their affected features.
+    """
+    rows = evaluate_feature_evidence_matrix_dict(design)
+    matrix = {str(row.get("feature")): row for row in rows}
+    checks: list[dict] = []
+
+    for index, surface in enumerate(design.get("functional_surfaces") or []):
+        if not isinstance(surface, dict):
+            continue
+        fid = str(surface.get("feature_id") or "")
+        row = matrix.get(fid)
+        missing = _missing_from_row(row, {"position", "dimensions"})
+        critical = bool(surface.get("critical", False))
+        checks.append({
+            "name": f"functional_surface:{surface.get('id') or index}",
+            "type": "design_intent_lint",
+            "ok": not missing,
+            "severity": "blocking" if critical else "warning",
+            "feature": fid,
+            "missing": sorted(missing),
+            "message": "functional surface needs position and dimension evidence",
+        })
+
+    for index, interface in enumerate(_iter_design_interfaces(design)):
+        if not isinstance(interface, dict):
+            continue
+        required = _interface_required_evidence(interface)
+        refs = _feature_refs_for_intent(interface)
+        per_feature = []
+        ok = True
+        for fid in refs:
+            missing = _missing_from_row(matrix.get(fid), required)
+            if missing:
+                ok = False
+            per_feature.append({"feature": fid, "missing": sorted(missing)})
+        checks.append({
+            "name": f"interface:{interface.get('id') or index}",
+            "type": "design_intent_lint",
+            "ok": ok,
+            "severity": "blocking",
+            "interface_type": interface.get("type"),
+            "required_evidence": sorted(required),
+            "features": per_feature,
+            "message": "interface needs measurable evidence for fit, access, and assembly risk",
+        })
+
+    for index, failure in enumerate(_iter_failure_modes(design)):
+        if not isinstance(failure, dict):
+            continue
+        required = _failure_mode_required_evidence(failure)
+        severity = str(failure.get("severity", "medium")).lower()
+        blocking = severity in {"high", "blocking", "critical"}
+        per_feature = []
+        ok = True
+        for fid in _affects_for_failure(failure):
+            missing = _missing_from_row(matrix.get(fid), required)
+            if missing:
+                ok = False
+            per_feature.append({"feature": fid, "missing": sorted(missing)})
+        checks.append({
+            "name": f"failure_mode:{failure.get('id') or index}",
+            "type": "design_intent_lint",
+            "ok": ok,
+            "severity": "blocking" if blocking else "warning",
+            "mode": failure.get("mode"),
+            "required_evidence": sorted(required),
+            "features": per_feature,
+            "message": "declared failure mode needs matching evidence before delivery",
+        })
+
+    return checks
 
 
 def _linked_check_defs(feature: dict[str, Any], check_map: dict[str, dict]) -> list[dict]:
@@ -385,6 +591,194 @@ def _feature_evidence_requirements(feature: dict[str, Any], categories: set[str]
         "wall": wall_risk,
         "interface_risk": interface_risk,
     }
+
+
+def _intent_evidence_requirements(design: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    requirements: dict[str, dict[str, Any]] = {}
+
+    def require(fid: str, columns: set[str] | frozenset[str], reason: dict[str, Any]) -> None:
+        if not fid:
+            return
+        row = requirements.setdefault(fid, {key: False for key in EVIDENCE_COLUMNS})
+        row.setdefault("reasons", [])
+        for column in columns:
+            if column in EVIDENCE_COLUMNS:
+                row[column] = True
+        row["reasons"].append(reason)
+
+    for surface in design.get("functional_surfaces") or []:
+        if not isinstance(surface, dict):
+            continue
+        columns = {"position", "dimensions"} if surface.get("critical", True) else {"position"}
+        require(str(surface.get("feature_id") or ""), columns, {
+            "source": "functional_surface",
+            "id": surface.get("id"),
+            "role": surface.get("role"),
+        })
+
+    for interface in _iter_design_interfaces(design):
+        if not isinstance(interface, dict):
+            continue
+        columns = _interface_required_evidence(interface)
+        for fid in _feature_refs_for_intent(interface):
+            require(fid, columns, {
+                "source": "interface",
+                "id": interface.get("id"),
+                "type": interface.get("type"),
+            })
+
+    for failure in _iter_failure_modes(design):
+        if not isinstance(failure, dict):
+            continue
+        columns = _failure_mode_required_evidence(failure)
+        for fid in _affects_for_failure(failure):
+            require(fid, columns, {
+                "source": "failure_mode",
+                "id": failure.get("id"),
+                "mode": failure.get("mode"),
+                "severity": failure.get("severity", "medium"),
+            })
+
+    return requirements
+
+
+def _interface_required_evidence(interface: dict[str, Any]) -> frozenset[str]:
+    text = " ".join(
+        str(interface.get(k, ""))
+        for k in ("id", "type", "role", "intent", "description")
+    ).lower()
+    required: set[str] = {"position", "dimensions"}
+    if any(word in text for word in ("fastener", "screw", "bolt", "hole", "bore", "tool")):
+        required.update({"access", "interface_risk"})
+    if any(word in text for word in ("mate", "interface", "socket", "pin", "dovetail", "snap", "gear", "fit")):
+        required.add("interface_risk")
+    if interface.get("clearance_mm") is not None or "clearance" in text:
+        required.add("interface_risk")
+    if interface.get("access_axis") is not None or interface.get("insertion_axis") is not None:
+        required.add("access")
+    for mode in interface.get("failure_modes") or []:
+        if isinstance(mode, str):
+            required.update(FAILURE_MODE_REQUIRED_EVIDENCE.get(_norm_key(mode), frozenset()))
+    return frozenset(required)
+
+
+def _failure_mode_required_evidence(failure: dict[str, Any]) -> frozenset[str]:
+    explicit = _required_evidence_from_payload(failure)
+    if explicit:
+        return frozenset(explicit)
+    mode = _norm_key(failure.get("mode"))
+    return FAILURE_MODE_REQUIRED_EVIDENCE.get(mode, frozenset({"position", "dimensions"}))
+
+
+def _required_evidence_from_payload(payload: dict[str, Any]) -> set[str]:
+    raw = payload.get("required_evidence") or []
+    if isinstance(raw, str):
+        raw = [raw]
+    if not isinstance(raw, list):
+        return set()
+    normalized: set[str] = set()
+    aliases = {
+        "size": "dimensions",
+        "dimension": "dimensions",
+        "clearance": "interface_risk",
+        "interface": "interface_risk",
+        "risk": "interface_risk",
+        "root": "wall",
+        "wall_thickness": "wall",
+        "tool_access": "access",
+    }
+    for item in raw:
+        key = _norm_key(item)
+        normalized.add(aliases.get(key, key))
+    return normalized
+
+
+def _iter_design_interfaces(design: dict[str, Any]) -> list[dict[str, Any]]:
+    raw = design.get("interfaces")
+    if isinstance(raw, list):
+        return [item for item in raw if isinstance(item, dict)]
+    if isinstance(raw, dict):
+        rows = []
+        for key, value in raw.items():
+            if isinstance(value, dict):
+                rows.append({"id": key, **value} if "id" not in value else value)
+        return rows
+    return []
+
+
+def _iter_failure_modes(design: dict[str, Any]) -> list[dict[str, Any]]:
+    raw = design.get("failure_modes")
+    if isinstance(raw, list):
+        return [item for item in raw if isinstance(item, dict)]
+    if isinstance(raw, dict):
+        rows = []
+        for key, value in raw.items():
+            if isinstance(value, dict):
+                rows.append({"id": key, **value} if "id" not in value else value)
+        return rows
+    return []
+
+
+def _feature_refs_for_intent(payload: dict[str, Any]) -> list[str]:
+    values: list[Any] = []
+    for key in ("feature_ids", "features", "affects"):
+        raw = payload.get(key)
+        if isinstance(raw, list):
+            values.extend(raw)
+    for key in ("feature_id", "feature", "feature_a", "feature_b"):
+        if payload.get(key) is not None:
+            values.append(payload.get(key))
+    refs: list[str] = []
+    for value in values:
+        if isinstance(value, str) and value not in refs:
+            refs.append(value)
+    return refs
+
+
+def _affects_for_failure(failure: dict[str, Any]) -> list[str]:
+    return _feature_refs_for_intent(failure)
+
+
+def _feature_ids(design: dict[str, Any]) -> set[str]:
+    return {
+        str(feature.get("id"))
+        for feature in (design.get("features") or [])
+        if isinstance(feature, dict) and feature.get("id")
+    }
+
+
+def _missing_from_row(row: dict | None, required: set[str] | frozenset[str]) -> set[str]:
+    if not row:
+        return set(required)
+    evidence = row.get("evidence") or {}
+    missing = set()
+    for key in required:
+        cell = evidence.get(key) or {}
+        if not cell.get("ok"):
+            missing.add(key)
+    return missing
+
+
+def _norm_key(value: Any) -> str:
+    return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+
+
+def _num_or_none(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _triple_or_none(value: Any) -> tuple[float, float, float] | None:
+    if not isinstance(value, list) or len(value) != 3:
+        return None
+    x = _num_or_none(value[0])
+    y = _num_or_none(value[1])
+    z = _num_or_none(value[2])
+    if x is None or y is None or z is None:
+        return None
+    return x, y, z
 
 
 def _evidence_cell(checks: list[dict], accepted_types: frozenset[str], required: bool) -> dict:

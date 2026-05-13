@@ -5,7 +5,7 @@ from typing import Any
 
 from .contract import classify_feature, evaluate_feature_evidence_matrix_dict
 from .geometry import shape_aabb
-from .jsonio import read_json
+from .jsonio import read_json, write_json
 from .section import (
     AXIS_X,
     AXIS_Y,
@@ -22,7 +22,7 @@ _AXIS_MAP = {"x": AXIS_X, "y": AXIS_Y, "z": AXIS_Z}
 _AXIS_NAME = {AXIS_X: "X", AXIS_Y: "Y", AXIS_Z: "Z"}
 
 
-def plan_probes(project: Path, name: str) -> dict:
+def plan_probes(project: Path, name: str, *, run: bool = False) -> dict:
     """Suggest high-value probe/render commands from contract and artifacts."""
     mdir = model_dir(project, name)
     design = read_json(mdir / "design.json", default=None)
@@ -55,12 +55,75 @@ def plan_probes(project: Path, name: str) -> dict:
         observability=observability,
         feature_evidence_matrix=matrix,
     )
-    return {
+    payload = {
         "ok": True,
         "stage": "probe-plan",
         "model": name,
         "suggested_probes": suggested,
         "feature_evidence_matrix": matrix,
+    }
+    if run:
+        execution = run_probe_plan(project, name, suggested)
+        probes_path = out_dir / "probes.json"
+        payload["execution"] = execution
+        payload["artifacts"] = {"probes": str(probes_path)}
+        payload["ok"] = bool(execution.get("ok"))
+        write_json(probes_path, payload)
+    return payload
+
+
+def run_probe_plan(project: Path, name: str, suggested: list[dict[str, Any]]) -> dict:
+    """Execute planned probe entries without shelling out to the CLI."""
+    results: list[dict[str, Any]] = []
+    for item in suggested:
+        probe = item.get("probe") or {}
+        if probe.get("static"):
+            results.append({
+                "id": item.get("id"),
+                "ok": True,
+                "skipped": True,
+                "reason": "static command; run the listed precheck/review command separately",
+                "command": item.get("command"),
+            })
+            continue
+        axis = str(probe.get("axis", "z")).lower()
+        pos = _num(probe.get("position"))
+        if axis not in ("x", "y", "z") or pos is None:
+            results.append({
+                "id": item.get("id"),
+                "ok": False,
+                "error": {"type": "UnsupportedProbe", "message": "planned probe needs axis and numeric position"},
+                "command": item.get("command"),
+            })
+            continue
+        center = _pair(probe.get("center")) or (0.0, 0.0)
+        point = _pair(probe.get("point"))
+        region = _region(probe.get("region"))
+        kwargs: dict[str, Any] = {
+            "center": center,
+            "section_region": region,
+            "point": point,
+        }
+        if axis == "z":
+            result = probe_model(project, name, z_values=[pos], **kwargs)
+        elif axis == "x":
+            result = probe_model(project, name, x_values=[pos], **kwargs)
+        else:
+            result = probe_model(project, name, y_values=[pos], **kwargs)
+        results.append({
+            "id": item.get("id"),
+            "ok": bool(result.get("ok")),
+            "command": item.get("command"),
+            "result": result,
+        })
+    failed = [item for item in results if not item.get("ok")]
+    return {
+        "ok": not failed,
+        "stage": "probe-plan-run",
+        "model": name,
+        "count": len(results),
+        "failed": len(failed),
+        "results": results,
     }
 
 
@@ -87,6 +150,7 @@ def plan_probe_points(
     observability = observability if isinstance(observability, dict) else {}
     matrix = feature_evidence_matrix or evaluate_feature_evidence_matrix_dict(design)
     matrix_by_feature = {row.get("feature"): row for row in matrix}
+    failures_by_feature = _failure_modes_by_feature(design)
 
     checks = [
         c for c in (design.get("checks") or [])
@@ -105,6 +169,19 @@ def plan_probe_points(
             for cid in (feature.get("checks") or [])
             if str(cid) in check_map
         ]
+        for failure in failures_by_feature.get(fid, []):
+            suggestion = _probe_for_failure_mode(
+                name,
+                fid,
+                failure,
+                params=params,
+                metadata=metadata,
+                geometry=geometry,
+                validation=validation,
+                linked_checks=linked,
+            )
+            if suggestion:
+                suggestions.append(suggestion)
         for check in linked:
             suggestion = _probe_for_check(name, fid, check)
             if suggestion:
@@ -120,6 +197,7 @@ def plan_probe_points(
                 metadata=metadata,
                 geometry=geometry,
                 validation=validation,
+                failure_modes=failures_by_feature.get(fid, []),
             ))
 
     for step in _interesting_step_changes(geometry, validation, observability)[:3]:
@@ -460,6 +538,7 @@ def _probe_for_missing_evidence(
     metadata: dict[str, Any],
     geometry: dict[str, Any],
     validation: dict[str, Any],
+    failure_modes: list[dict[str, Any]] | None = None,
 ) -> dict:
     metadata_probe = _metadata_probe(fid, metadata)
     z = _best_z(params, geometry, validation, metadata_probe)
@@ -478,6 +557,7 @@ def _probe_for_missing_evidence(
             "priority": 80,
             "source": "feature_evidence_matrix",
             "feature": fid,
+            "failure_mode": _primary_failure_mode_id(failure_modes),
             "missing": missing,
             "purpose": f"collect evidence for missing {missing} coverage on a hole-like feature",
             "command": command,
@@ -491,6 +571,7 @@ def _probe_for_missing_evidence(
             "priority": 75,
             "source": "feature_evidence_matrix",
             "feature": fid,
+            "failure_mode": _primary_failure_mode_id(failure_modes),
             "missing": missing,
             "purpose": "plan edge-to-edge clearance descriptors for the mating or assembly risk",
             "command": f"agentcad precheck {name}",
@@ -504,6 +585,7 @@ def _probe_for_missing_evidence(
             "priority": 75,
             "source": "feature_evidence_matrix",
             "feature": fid,
+            "failure_mode": _primary_failure_mode_id(failure_modes),
             "missing": missing,
             "purpose": "inspect the most likely thin-wall/root plane before writing a wall-thickness check",
             "command": f"agentcad probe {name} --z {_fmt(z)} --section-region {_region_arg(region)}",
@@ -525,12 +607,133 @@ def _probe_for_missing_evidence(
         "priority": 70,
         "source": "feature_evidence_matrix",
         "feature": fid,
+        "failure_mode": _primary_failure_mode_id(failure_modes),
         "missing": missing,
         "purpose": f"collect evidence for missing {missing} coverage",
         "command": command,
         "render_command": f"agentcad render {name} --section-z {_fmt(z)}",
         "probe": probe,
     }
+
+
+def _probe_for_failure_mode(
+    name: str,
+    fid: str,
+    failure: dict[str, Any],
+    *,
+    params: dict[str, Any],
+    metadata: dict[str, Any],
+    geometry: dict[str, Any],
+    validation: dict[str, Any],
+    linked_checks: list[dict[str, Any]],
+) -> dict | None:
+    mode = _norm(str(failure.get("mode") or failure.get("id") or ""))
+    failure_id = str(failure.get("id") or mode or "failure_mode")
+    metadata_probe = _metadata_probe(fid, metadata)
+    z = _best_z(params, geometry, validation, metadata_probe)
+    center = _best_center(params, geometry, metadata_probe)
+    linked_probe = _probe_facts_from_checks(linked_checks)
+    if linked_probe.get("position") is not None:
+        z = float(linked_probe["position"])
+    if linked_probe.get("center") is not None:
+        center = linked_probe["center"]
+
+    if any(token in mode for token in ("shallowhole", "blindhole", "holedepth")):
+        depth = _num(failure.get("expected_depth_mm")) or _param_by_words(params, {"hole_depth", "depth", "blind_depth"})
+        target_z = float(depth) if depth is not None else z
+        return {
+            "id": f"{fid}_{failure_id}_depth_probe",
+            "priority": 105,
+            "source": "failure_mode",
+            "feature": fid,
+            "failure_mode": failure_id,
+            "purpose": "inspect the blind-hole bottom/depth plane instead of only checking the mouth diameter",
+            "command": f"agentcad probe {name} --z {_fmt(target_z)} --cx {_fmt(center[0])} --cy {_fmt(center[1])}",
+            "render_command": f"agentcad render {name} --section-z {_fmt(target_z)}",
+            "expected": {"hole_depth_mm": depth},
+            "probe": {"axis": "z", "position": target_z, "center": [center[0], center[1]]},
+        }
+
+    if "edgebreakout" in mode:
+        return {
+            "id": f"{fid}_{failure_id}_edge_probe",
+            "priority": 105,
+            "source": "failure_mode",
+            "feature": fid,
+            "failure_mode": failure_id,
+            "purpose": "measure nearest contour distance from the risky hole/interface center to catch edge breakout",
+            "command": f"agentcad probe {name} --z {_fmt(z)} --point {_fmt(center[0])},{_fmt(center[1])}",
+            "render_command": f"agentcad render {name} --section-z {_fmt(z)}",
+            "expected": {"min_edge_clearance_mm": failure.get("min_edge_clearance_mm")},
+            "probe": {"axis": "z", "position": z, "point": [center[0], center[1]]},
+        }
+
+    if "thinwall" in mode or "walltoothin" in mode:
+        region = _bbox_region(geometry, pad=-0.25) or ((center[0] - 5.0, center[1] - 5.0), (center[0] + 5.0, center[1] + 5.0))
+        return {
+            "id": f"{fid}_{failure_id}_wall_probe",
+            "priority": 100,
+            "source": "failure_mode",
+            "feature": fid,
+            "failure_mode": failure_id,
+            "purpose": "sample the likely minimum wall/root section for thin-wall evidence",
+            "command": f"agentcad probe {name} --z {_fmt(z)} --section-region {_region_arg(region)}",
+            "render_command": f"agentcad render {name} --section-z {_fmt(z)}",
+            "expected": {"min_wall_mm": failure.get("min_wall_mm")},
+            "probe": {"axis": "z", "position": z, "region": [[region[0][0], region[0][1]], [region[1][0], region[1][1]]]},
+        }
+
+    if any(token in mode for token in ("suspendedrib", "detachedrib", "floatingrib")):
+        root_z = _num(failure.get("root_z")) or 0.0
+        region = _bbox_region(geometry, pad=-0.25) or ((center[0] - 5.0, center[1] - 5.0), (center[0] + 5.0, center[1] + 5.0))
+        return {
+            "id": f"{fid}_{failure_id}_root_probe",
+            "priority": 100,
+            "source": "failure_mode",
+            "feature": fid,
+            "failure_mode": failure_id,
+            "purpose": "inspect the rib root plane to prove the rib is attached to parent material",
+            "command": f"agentcad probe {name} --z {_fmt(root_z)} --section-region {_region_arg(region)}",
+            "render_command": f"agentcad render {name} --section-z {_fmt(root_z)}",
+            "probe": {"axis": "z", "position": root_z, "region": [[region[0][0], region[0][1]], [region[1][0], region[1][1]]]},
+        }
+
+    if any(token in mode for token in ("assemblyeccentricity", "eccentricity", "axismisalignment")):
+        axis = metadata_probe.get("axis", "z") if metadata_probe else "z"
+        pos = metadata_probe.get("position", z) if metadata_probe else z
+        return {
+            "id": f"{fid}_{failure_id}_axis_probe",
+            "priority": 95,
+            "source": "failure_mode",
+            "feature": fid,
+            "failure_mode": failure_id,
+            "purpose": "inspect the interface axis/center used by assembly eccentricity checks",
+            "command": f"agentcad probe {name} --{axis} {_fmt(pos)} --point {_fmt(center[0])},{_fmt(center[1])}",
+            "render_command": f"agentcad render {name} --section-{axis} {_fmt(pos)}",
+            "probe": {"axis": axis, "position": pos, "point": [center[0], center[1]]},
+        }
+
+    if "blocked" in mode or "access" in mode:
+        axis = metadata_probe.get("axis", "z") if metadata_probe else "z"
+        pos = metadata_probe.get("position", z) if metadata_probe else z
+        command = f"agentcad probe {name} --{axis} {_fmt(pos)}"
+        if axis == "z":
+            command += f" --cx {_fmt(center[0])} --cy {_fmt(center[1])}"
+        else:
+            command += f" --point {_fmt(center[0])},{_fmt(center[1])}"
+        return {
+            "id": f"{fid}_{failure_id}_access_probe",
+            "priority": 95,
+            "source": "failure_mode",
+            "feature": fid,
+            "failure_mode": failure_id,
+            "purpose": "inspect the declared access corridor for obstruction",
+            "command": command,
+            "render_command": f"agentcad render {name} --section-{axis} {_fmt(pos)}",
+            "probe": {"axis": axis, "position": pos, "center": [center[0], center[1]]},
+        }
+
+    return None
 
 
 def _metadata_probe(fid: str, metadata: dict[str, Any]) -> dict[str, Any]:
@@ -568,6 +771,37 @@ def _metadata_probe(fid: str, metadata: dict[str, Any]) -> dict[str, Any]:
             if axis_name in ("x", "y", "z") and center:
                 pos = _mid_pair(rng) if isinstance(rng, list) else 0.0
                 return {"axis": axis_name, "position": pos, "center": center}
+    return {}
+
+
+def _probe_facts_from_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
+    for check in checks:
+        check_type = str(check.get("type") or "")
+        if check_type in ("inner_diameter_at_z", "outer_diameter_at_z", "section_bbox_at_z"):
+            z = _num(check.get("z"))
+            center = _pair(check.get("center"))
+            facts: dict[str, Any] = {}
+            if z is not None:
+                facts["position"] = z
+            if center is not None:
+                facts["center"] = center
+            if facts:
+                return facts
+        if check_type == "hole_accessibility":
+            axis = str(check.get("axis", "z")).lower()
+            pos = _axis_position(check, axis)
+            center = _pair(check.get("center"))
+            facts = {}
+            if pos is not None:
+                facts["position"] = pos
+            if center is not None:
+                facts["center"] = center
+            if facts:
+                return facts
+        if check_type == "feature_position":
+            point = _triple(check.get("point"))
+            if point is not None:
+                return {"position": point[2], "center": (point[0], point[1])}
     return {}
 
 
@@ -695,10 +929,82 @@ def _dedupe_probe_suggestions(suggestions: list[dict]) -> list[dict]:
         command = str(item.get("command") or item.get("id") or "")
         if not command:
             continue
+        item = _normalize_probe_suggestion(item)
         current = deduped.get(command)
         if current is None or int(item.get("priority", 0)) > int(current.get("priority", 0)):
             deduped[command] = item
     return sorted(deduped.values(), key=lambda s: int(s.get("priority", 0)), reverse=True)
+
+
+def _normalize_probe_suggestion(item: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(item)
+    priority = int(normalized.get("priority", 0))
+    normalized.setdefault("information_gain", _information_gain(priority))
+    if "feature" in normalized:
+        normalized.setdefault("linked_feature", normalized.get("feature"))
+    if "failure_mode" in normalized and normalized.get("failure_mode"):
+        normalized.setdefault("linked_failure_mode", normalized.get("failure_mode"))
+    commands = []
+    for key in ("command", "render_command", "precheck_command"):
+        value = normalized.get(key)
+        if isinstance(value, str) and value and value not in commands:
+            commands.append(value)
+    if commands:
+        normalized["commands"] = commands
+    return normalized
+
+
+def _information_gain(priority: int) -> str:
+    if priority >= 90:
+        return "high"
+    if priority >= 70:
+        return "medium"
+    return "low"
+
+
+def _failure_modes_by_feature(design: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    raw = design.get("failure_modes") or []
+    if isinstance(raw, dict):
+        iterable = [
+            {"id": key, **value} if isinstance(value, dict) and "id" not in value else value
+            for key, value in raw.items()
+        ]
+    elif isinstance(raw, list):
+        iterable = raw
+    else:
+        iterable = []
+    for failure in iterable:
+        if not isinstance(failure, dict):
+            continue
+        refs = []
+        for key in ("affects", "feature_ids", "features"):
+            value = failure.get(key)
+            if isinstance(value, list):
+                refs.extend(str(item) for item in value if isinstance(item, str))
+        for key in ("feature", "feature_id"):
+            if isinstance(failure.get(key), str):
+                refs.append(str(failure[key]))
+        for fid in refs:
+            grouped.setdefault(fid, []).append(failure)
+    return grouped
+
+
+def _primary_failure_mode_id(failure_modes: list[dict[str, Any]] | None) -> str | None:
+    if not failure_modes:
+        return None
+    first = failure_modes[0]
+    return str(first.get("id") or first.get("mode") or "") or None
+
+
+def _param_by_words(params: dict[str, Any], words: set[str]) -> float | None:
+    for key, value in params.items():
+        key_norm = _norm(str(key))
+        if any(_norm(word) in key_norm for word in words):
+            num = _num(value)
+            if num is not None:
+                return num
+    return None
 
 
 def _axis_position(check: dict[str, Any], axis: str) -> float | None:

@@ -136,6 +136,7 @@ def build_parser() -> argparse.ArgumentParser:
     probe.add_argument("--point", default=None, help="u,v in the active section plane for nearest-contour distance")
     probe.add_argument("--scan", action="store_true", help="scan the full axis profile instead of a single section")
     probe.add_argument("--plan", action="store_true", help="suggest high-value probe/render commands from design.json")
+    probe.add_argument("--run", action="store_true", help="with --plan, execute planned probes and write outputs/probes.json")
     probe.add_argument("--axis", choices=["x", "y", "z"], default="z", help="axis to scan (default: z)")
     probe.add_argument("--samples", type=int, default=20, help="number of scan samples (default: 20)")
 
@@ -328,7 +329,7 @@ def dispatch(args: argparse.Namespace) -> dict:
         return diff_model(project, model_name, last=getattr(args, "last", False))
     if args.command == "probe":
         if args.plan:
-            return plan_probes(project, args.model)
+            return plan_probes(project, args.model, run=getattr(args, "run", False))
         if args.scan:
             return probe_scan(project, args.model, axis=args.axis, samples=args.samples)
         z_values = [float(v.strip()) for v in args.z.split(",") if v.strip()] if args.z else None

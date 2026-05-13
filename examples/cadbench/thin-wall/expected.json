@@ -1,0 +1,6 @@
+{
+  "failure_mode": "thin_wall",
+  "required_evidence": ["wall", "dimensions"],
+  "checks": ["min_wall_thickness", "section_bbox_at_z"],
+  "probe": "thin-wall section-region probe"
+}

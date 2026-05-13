@@ -53,6 +53,8 @@ agentcad probe <model> --z <z> --cx <x> --cy <y>  # radial probe center aliases
 agentcad probe <model> --z <z> --line-u <u>       # active line measurement
 agentcad probe <model> --z <z> --point u,v        # nearest contour distance
 agentcad probe <model> --scan --axis x|y|z        # axis profile + step changes
+agentcad probe <model> --plan                     # ranked probe plan from design intent
+agentcad probe <model> --plan --run               # execute planned probes and write outputs/probes.json
 agentcad inspect <model>                          # three-axis scan + auto sections + suggested probes
 agentcad validate <model>[:<variant>] [--views iso,front,top]  # build + measure + render + design checks + fix suggestions
 agentcad diff <model> [--last]                             # compare validation runs
@@ -101,6 +103,7 @@ project/
         validation-history/
           <timestamp>.json
         observability.json
+        probes.json
         review.json
         deliverable.json
         preview.html
@@ -121,8 +124,14 @@ project/
 - `features`: explicit user-visible / functional design intent (with `id`)
 - `checks`: measurable validation entries (each must have an `id` and one of
   the supported `type`s)
+- `functional_surfaces`: critical faces/datums mapped back to features
+- `interfaces`: fastener, mating, access, and fit risks mapped back to features
+- `failure_modes`: known ways a feature can silently pass while being unusable,
+  with required evidence columns
 - coverage rule: every feature must reference at least one check, otherwise
   validation fails with a `feature_coverage` error
+- evidence rule: review blocks high-risk features until position, dimensions,
+  access, wall/root, and interface-risk evidence are present where required
 
 This contract was driven by repeated real failures: a lead-in chamfer
 hidden by an overlapping cylinder; a hole-wall interference that

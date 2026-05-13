@@ -74,6 +74,14 @@ class ScrewHole(SteppedBore):
         self.through_r = through_r
         self.hole_kind = kind
         self.teardrop_angle = teardrop_angle
+        if builder is not None:
+            # SteppedBore registers checks before ScrewHole applies kind-specific
+            # tap/clearance sizing, so synchronize the contract to the final cut.
+            for check in getattr(builder, "_checks", []):
+                if check.get("id") == f"{feature_id}_through":
+                    check["expected"] = self.through_r * 2
+                elif check.get("id") == f"{feature_id}_access":
+                    check["hole_diameter"] = self.through_r * 2
 
     def cut(self) -> None:
         """Subtract the screw hole from the active BuildPart context.

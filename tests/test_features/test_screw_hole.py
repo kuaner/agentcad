@@ -12,6 +12,8 @@ class TestScrewHole:
         b = ContractBuilder()
         sh = screw_hole("M3", through_depth=10, kind="tap", builder=b)
         assert sh.through_r > 0
+        through = next(check for check in b.checks if check["id"] == "screw_hole_through")
+        assert through["expected"] == sh.through_r * 2
 
     def test_plain_head(self):
         b = ContractBuilder()

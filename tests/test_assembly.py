@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from agentcad.assembly import _cylinder_endpoints, init_assembly, list_assemblies, validate_assembly
+from agentcad.assembly import _cylinder_endpoints, init_assembly, list_assemblies, review_assembly, validate_assembly
 from agentcad.workspace import init_workspace, new_model
 
 
@@ -189,6 +189,33 @@ def test_assembly_validate_generates_geometry_previews_and_mjcf(tmp_path):
     radial = next(check for check in result["checks"] if check["name"] == "pin_socket_radial_clearance")
     assert 0.2 <= radial["actual_mm"] <= 0.4
     assert any(check["type"] == "mjcf_consistency" and check["ok"] for check in result["checks"])
+
+
+def test_assembly_interface_contract_checks_cylindrical_mate(tmp_path):
+    project = _project_with_pin_socket(tmp_path)
+    contract_path = project / "assemblies" / "pin_socket" / "assembly.json"
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    contract["interfaces"] = [
+        {
+            "id": "pin_to_socket",
+            "type": "cylindrical_mate",
+            "feature_a": "pin.interfaces.pin",
+            "feature_b": "socket.interfaces.socket",
+            "axis_tolerance_mm": 0.05,
+            "angle_tolerance_deg": 0.1,
+            "clearance_mm": 0.2,
+        }
+    ]
+    contract_path.write_text(json.dumps(contract, indent=2) + "\n", encoding="utf-8")
+
+    result = validate_assembly(project, "pin_socket")
+
+    interface = next(check for check in result["checks"] if check["name"] == "assembly_interface:pin_to_socket")
+    assert interface["ok"] is True
+    assert interface["clearance_mm"] >= 0.2
+    review = review_assembly(project, "pin_socket")
+    gate = next(check for check in review["checks"] if check["name"] == "assembly_interfaces_validated")
+    assert gate["ok"] is True
 
 
 def test_assembly_validate_rejects_scale(tmp_path):

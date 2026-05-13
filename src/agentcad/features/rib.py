@@ -62,14 +62,27 @@ def rib(
     result = bp.part.moved(Location(origin))
 
     if builder is not None:
+        ox, oy, oz = origin
+        if direction == "x":
+            region = [[ox - length / 2, oy - thickness / 2], [ox + length / 2, oy + thickness / 2]]
+        else:
+            region = [[ox - thickness / 2, oy - length / 2], [ox + thickness / 2, oy + length / 2]]
         checks: list[dict] = [
             {
                 "id": f"{feature_id}_thickness",
                 "type": "min_wall_thickness",
                 "z": origin[2] + height / 2,
-                "center": list(origin[:2]),
-                "expected_min": thickness,
+                "region": region,
+                "min_mm": thickness,
                 "tolerance": 0.3,
+                "feature_ref": feature_id,
+            },
+            {
+                "id": f"{feature_id}_root_position",
+                "type": "feature_position",
+                "point": [ox, oy, oz],
+                "expected": "solid",
+                "tolerance_mm": 0.3,
                 "feature_ref": feature_id,
             },
         ]
@@ -80,5 +93,12 @@ def rib(
             },
             checks=checks,
         )
+        builder.add_failure_mode({
+            "id": f"{feature_id}_suspended",
+            "mode": "suspended_rib",
+            "severity": "high",
+            "affects": [feature_id],
+            "required_evidence": ["position", "wall"],
+        })
 
     return result

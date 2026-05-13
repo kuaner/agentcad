@@ -1,0 +1,6 @@
+{
+  "failure_mode": "suspended_rib",
+  "required_evidence": ["position", "wall"],
+  "checks": ["feature_position", "min_wall_thickness"],
+  "probe": "root plane section probe"
+}

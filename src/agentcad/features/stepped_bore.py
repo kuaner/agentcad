@@ -78,6 +78,16 @@ class SteppedBore:
                     "tolerance": 0.3,
                     "feature_ref": feature_id,
                 },
+                {
+                    "id": f"{feature_id}_access",
+                    "type": "hole_accessibility",
+                    "axis": "z",
+                    "z": through_depth + 0.5,
+                    "center": [cx, cy],
+                    "hole_diameter": self.through_r * 2,
+                    "clearance_diameter": max(s.head_diameter + 1.0, self.through_r * 2 + 1.0),
+                    "feature_ref": feature_id,
+                },
             ]
             if bore_kind == "counterbore" and self.recess_depth > 0:
                 checks.append({
@@ -102,6 +112,20 @@ class SteppedBore:
                 "axis": {"point": [cx, cy, 0], "direction": [0, 0, 1]},
                 "clearance_diameter": self.through_r * 2,
                 "screw": s.name,
+            })
+            builder.add_design_interface({
+                "id": f"{feature_id}_fastener_interface",
+                "type": "fastener_clearance",
+                "feature_ids": [feature_id],
+                "access_axis": "z",
+                "failure_modes": ["hole_blocked", "edge_breakout"],
+            })
+            builder.add_failure_mode({
+                "id": f"{feature_id}_edge_breakout",
+                "mode": "edge_breakout",
+                "severity": "high",
+                "affects": [feature_id],
+                "required_evidence": ["position", "dimensions", "access", "interface_risk"],
             })
 
     def cut(self) -> None:

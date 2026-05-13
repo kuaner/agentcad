@@ -1,0 +1,6 @@
+{
+  "failure_mode": "assembly_eccentricity",
+  "required_evidence": ["position", "interface_risk"],
+  "checks": ["assembly_interface_contract", "radial_clearance", "coaxial"],
+  "probe": "interface axis section probe"
+}

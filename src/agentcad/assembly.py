@@ -194,6 +194,7 @@ def validate_assembly(project: Path, name: str) -> dict:
         checks.extend(geometry.get("metadata_schema_checks") or [])
         checks.extend(_mate_checks(geometry))
         checks.extend(_evaluate_user_checks(contract, geometry))
+        checks.extend(_assembly_interface_contract_checks(contract, geometry))
         checks.extend(_fit_coverage_checks(contract, geometry))
         checks.extend(_component_pair_classification_checks(contract, geometry))
 
@@ -299,9 +300,11 @@ def review_assembly(project: Path, name: str) -> dict:
     validation_path = out_dir / "assembly_validation.json"
     observability_path = out_dir / "assembly_observability.json"
     review_path = out_dir / "assembly_review.json"
+    contract_path = assembly_dir(project, safe) / "assembly.json"
 
     validation = read_json(validation_path, default=None)
     observability = read_json(observability_path, default=None)
+    contract = read_json(contract_path, default={}) or {}
     checks = []
     checks.append(
         {
@@ -340,6 +343,20 @@ def review_assembly(project: Path, name: str) -> dict:
                     "path": path,
                 }
             )
+        interface_contracts = contract.get("interfaces") or []
+        if interface_contracts:
+            interface_checks = [
+                check for check in validation.get("checks", [])
+                if str(check.get("name", "")).startswith("assembly_interface:")
+            ]
+            checks.append({
+                "name": "assembly_interfaces_validated",
+                "type": "assembly_interface_contract",
+                "ok": bool(interface_checks) and all(check.get("ok") for check in interface_checks),
+                "expected_interfaces": len(interface_contracts) if isinstance(interface_contracts, list) else len(interface_contracts.keys()),
+                "validated_interfaces": len(interface_checks),
+                "failed": [check.get("name") for check in interface_checks if not check.get("ok")],
+            })
 
     failed = [check for check in checks if not check.get("ok")]
     payload = {
@@ -587,6 +604,10 @@ def _collect_references(contract: dict) -> list[str]:
         if isinstance(check, dict):
             for key in ("ref", "path", "a", "b", "inner", "outer", "feature_a", "feature_b", "shape_a", "shape_b"):
                 _append_ref_value(refs, check.get(key))
+    for interface in contract.get("interfaces", []) or []:
+        if isinstance(interface, dict):
+            for key in ("a", "b", "feature_a", "feature_b", "inner", "outer"):
+                _append_ref_value(refs, interface.get(key))
     return sorted(set(refs))
 
 
@@ -1563,6 +1584,110 @@ def _mate_checks(geometry: dict) -> list[dict]:
     for mate in geometry.get("mate_residuals", []) or []:
         checks.append({**mate, "type": mate.get("type") or "mate", "name": mate.get("name")})
     return checks
+
+
+def _assembly_interface_contract_checks(contract: dict, geometry: dict) -> list[dict]:
+    checks: list[dict] = []
+    interfaces = contract.get("interfaces") or []
+    if isinstance(interfaces, dict):
+        interfaces = [
+            {"id": key, **value} if isinstance(value, dict) and "id" not in value else value
+            for key, value in interfaces.items()
+        ]
+    if not isinstance(interfaces, list):
+        return [{
+            "name": "assembly_interfaces_schema",
+            "type": "assembly_interface_contract",
+            "ok": False,
+            "error": {"type": "InterfacesInvalid", "message": "assembly interfaces must be a list or object"},
+        }]
+    refs = geometry.get("references") or {}
+    for index, interface in enumerate(interfaces):
+        if not isinstance(interface, dict):
+            checks.append({
+                "name": f"assembly_interface:{index}",
+                "type": "assembly_interface_contract",
+                "ok": False,
+                "error": {"type": "InterfaceInvalid", "message": "interface must be an object"},
+            })
+            continue
+        iface_type = str(interface.get("type") or "")
+        name = str(interface.get("id") or f"interface_{index}")
+        if iface_type in ("cylindrical_mate", "cylindrical_fit", "coaxial_fit"):
+            checks.append(_eval_assembly_cylindrical_interface(name, interface, refs, geometry))
+        else:
+            checks.append({
+                "name": f"assembly_interface:{name}",
+                "type": "assembly_interface_contract",
+                "ok": False,
+                "interface_type": iface_type,
+                "error": {"type": "UnsupportedAssemblyInterfaceType", "message": f"unsupported interface type: {iface_type}"},
+            })
+    return checks
+
+
+def _eval_assembly_cylindrical_interface(name: str, interface: dict, refs: dict[str, dict], geometry: dict) -> dict:
+    ref_a = interface.get("feature_a") or interface.get("a")
+    ref_b = interface.get("feature_b") or interface.get("b")
+    axis_a = _axis_from_ref(ref_a, refs)
+    axis_b = _axis_from_ref(ref_b, refs)
+    if axis_a is None or axis_b is None:
+        return {
+            "name": f"assembly_interface:{name}",
+            "type": "assembly_interface_contract",
+            "ok": False,
+            "interface_type": "cylindrical_mate",
+            "components": _components_from_refs([ref_a, ref_b]),
+            "error": {"type": "AxisMissing", "message": "feature_a and feature_b must resolve to axis-like metadata descriptors"},
+        }
+    max_offset = float(interface.get("axis_tolerance_mm", interface.get("max_radial_offset_mm", 0.2)))
+    max_angle = float(interface.get("angle_tolerance_deg", interface.get("max_axis_angle_deg", 1.0)))
+    angle = _angle_deg(axis_a[1], axis_b[1])
+    radial_offset = _point_axis_distance(axis_b[0], axis_a[0], axis_a[1])
+    clearance_req = interface.get("clearance_mm")
+    clearance = _interface_radial_clearance(ref_a, ref_b, geometry)
+    clearance_ok = True
+    if clearance_req is not None:
+        clearance_ok = clearance is not None and clearance >= float(clearance_req)
+    ok = angle <= max_angle and radial_offset <= max_offset and clearance_ok
+    return {
+        "name": f"assembly_interface:{name}",
+        "type": "assembly_interface_contract",
+        "ok": ok,
+        "interface_type": "cylindrical_mate",
+        "components": _components_from_refs([ref_a, ref_b]),
+        "refs": [ref_a, ref_b],
+        "angle_deg": angle,
+        "max_axis_angle_deg": max_angle,
+        "radial_offset_mm": radial_offset,
+        "axis_tolerance_mm": max_offset,
+        "clearance_mm": clearance,
+        "required_clearance_mm": float(clearance_req) if clearance_req is not None else None,
+        "error": None if ok else {"type": "AssemblyInterfaceMismatch", "message": "cylindrical interface is eccentric, angled, or lacks required radial clearance"},
+    }
+
+
+def _interface_radial_clearance(ref_a: Any, ref_b: Any, geometry: dict) -> float | None:
+    if not isinstance(ref_a, str) or not isinstance(ref_b, str):
+        return None
+    refs = geometry.get("references") or {}
+    desc_a = (refs.get(ref_a) or {}).get("local")
+    desc_b = (refs.get(ref_b) or {}).get("local")
+    if desc_a is None or desc_b is None:
+        return None
+    a_inner = _radius_from_descriptor(desc_a, "inner")
+    a_outer = _radius_from_descriptor(desc_a, "outer")
+    b_inner = _radius_from_descriptor(desc_b, "inner")
+    b_outer = _radius_from_descriptor(desc_b, "outer")
+    candidates = []
+    if a_inner is not None and b_outer is not None:
+        candidates.append(a_inner - b_outer)
+    if b_inner is not None and a_outer is not None:
+        candidates.append(b_inner - a_outer)
+    if not candidates:
+        return None
+    non_negative = [value for value in candidates if value >= 0]
+    return min(non_negative) if non_negative else max(candidates)
 
 
 def _evaluate_user_checks(contract: dict, geometry: dict) -> list[dict]:

@@ -11,8 +11,10 @@ from pathlib import Path
 
 from agentcad.contract import (
     classify_feature,
+    evaluate_design_intent_lint_dict,
     evaluate_feature_evidence_matrix_dict,
     evaluate_weak_check_warnings_dict,
+    validate_design_schema_dict,
 )
 from agentcad.review import review_model
 from agentcad.workspace import init_workspace, new_model, model_dir
@@ -229,6 +231,56 @@ class TestFeatureEvidenceMatrix:
         gate = next(item for item in result["checklist"] if item["id"] == "feature_evidence_matrix")
         assert gate["ok"] is False
         assert result["feature_evidence_matrix"][0]["missing"] == ["interface_risk"]
+
+    def test_failure_modes_expand_required_evidence(self):
+        matrix = evaluate_feature_evidence_matrix_dict({
+            "features": [{"id": "support_rib", "intent": "rib", "checks": ["wall"]}],
+            "checks": [
+                {"id": "wall", "type": "min_wall_thickness", "z": 1.0, "region": [[0, 0], [10, 10]], "min_mm": 1.0},
+            ],
+            "failure_modes": [
+                {
+                    "id": "rib_floats",
+                    "mode": "suspended_rib",
+                    "severity": "high",
+                    "affects": ["support_rib"],
+                }
+            ],
+        })
+
+        row = matrix[0]
+        assert "position" in row["required_evidence"]
+        assert "wall" in row["required_evidence"]
+        assert row["missing"] == ["position"]
+
+    def test_design_intent_lint_blocks_missing_interface_evidence(self):
+        design = {
+            "features": [{"id": "m3_hole", "intent": "M3 hole", "checks": ["dia", "access"]}],
+            "checks": [
+                {"id": "dia", "type": "inner_diameter_at_z", "z": 3.0, "expected": 3.4, "center": [0, 0]},
+                {"id": "access", "type": "hole_accessibility", "z": 3.0, "center": [0, 0], "hole_diameter": 3.4, "clearance_diameter": 7.0},
+            ],
+            "interfaces": [
+                {"id": "m3_fastener", "type": "fastener_clearance", "feature_ids": ["m3_hole"], "access_axis": "z"}
+            ],
+        }
+
+        lint = evaluate_design_intent_lint_dict(design)
+        interface = next(item for item in lint if item["name"] == "interface:m3_fastener")
+        assert interface["ok"] is False
+        assert interface["severity"] == "blocking"
+        assert interface["features"][0]["missing"] == ["interface_risk"]
+
+    def test_design_intent_schema_rejects_unknown_feature_refs(self):
+        issues = validate_design_schema_dict({
+            "features": [{"id": "body"}],
+            "checks": [],
+            "failure_modes": [
+                {"id": "bad", "mode": "thin_wall", "affects": ["ghost"]}
+            ],
+        })
+
+        assert any(issue["path"] == "failure_modes[0].affects" for issue in issues)
 
 
 # ── review blocking gates ────────────────────────────────────────────────────

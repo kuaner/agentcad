@@ -41,9 +41,12 @@ unknown before claiming the model is complete.
    `references/contract-design.md`. Optionally add `param_ref` fields to checks
    for targeted fix suggestions on failure. Fill the feature evidence matrix
    (position, dimensions, access, wall/root, interface risk) before `part.py`.
+   For risky features, add `functional_surfaces`, `interfaces`, and
+   `failure_modes`; high-severity failure modes must have concrete evidence.
 4. **Suggest**: run `agentcad suggest-checks <name>` to find missing checks. Paste
    suggested templates into `design.json` after filling concrete values. Use
-   `probe_plan` from the output to choose section/probe points.
+   `probe_plan` from the output to choose section/probe points. Use
+   `agentcad probe <name> --plan --run` after build to write `outputs/probes.json`.
 5. **Params**: put tunable dimensions in `models/<name>/params.json`.
 6. **Precheck**: run `agentcad precheck <name>`. Do not write `part.py` while
    precheck fails.
