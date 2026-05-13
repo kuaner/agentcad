@@ -18,11 +18,17 @@ models using the `agentcad` CLI and build123d geometry library.
 6. **Precheck**: run `agentcad precheck <name>`. Do not write `part.py` while
    precheck fails.
 7. **Implement**: write `models/<name>/part.py` using build123d. The final
-   object must be assigned to global variable `result`.
-8. **Build**: run `agentcad build <name>`.
+   object must be assigned to global variable `result`. Read
+   `references/build123d-guide.md` for build123d patterns and API usage;
+   read `references/feature/index.md` for feature helpers that auto-emit
+   contract checks and metadata interfaces.
+8. **Build**: run `agentcad build <name>`. If the build fails, consult
+   `references/debugging.md` for triage guidance.
 9. **Measure**: run `agentcad measure <name>`.
 10. **Render**: run `agentcad render <name> --views iso,front,top,side,back`.
-11. **Validate**: run `agentcad validate <name>`. It must pass.
+11. **Validate**: run `agentcad validate <name>`. It must pass. For check
+   details, tolerances, and probe usage, read
+   `references/validation-strategy.md`.
 12. **Review**: run `agentcad review <name>` and inspect every `must_view`
     artifact.
 13. **Preview**: run `agentcad preview <name>` to launch an interactive 3D
