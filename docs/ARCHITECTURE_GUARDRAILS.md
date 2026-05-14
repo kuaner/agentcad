@@ -33,8 +33,10 @@ frameworks.
   transforms.
 - `assembly/mates.py`: measurable mate residuals.
 - `assembly/artifacts.py`: preview/STL/MJCF artifact generation.
-- `probe.py`: probe planning and execution. This is the next likely package
-  candidate if probe evidence types keep growing.
+- `probe/core.py`: probe-plan workflow orchestration and artifact writing.
+- `probe/planner.py`: pure probe suggestion planning used by both `probe --plan`
+  and `suggest-checks`.
+- `probe/execution.py`: STL section probing and execution of planned probes.
 - `contract.py`: schema and review-gate policy. Split only around stable schema
   groups, not individual validators.
 
@@ -47,5 +49,7 @@ frameworks.
 - Public assembly entry points stay re-exported through `agentcad.assembly`.
 - Assembly internals must not import CLI, batch, model review, suggest, probe,
   doctor, or snapshot modules.
+- `suggest.py` must import `agentcad.probe.planner`, not the probe package or
+  execution layer.
 - Hot files have explicit line ceilings so growth is intentional.
 - Generated files are not tracked by git.

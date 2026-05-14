@@ -29,7 +29,7 @@ from .contract import (
     evaluate_feature_evidence_matrix_dict,
 )
 from .jsonio import read_json
-from .probe import plan_probe_points
+from .probe.planner import plan_probe_points
 from .workspace import model_dir, outputs_dir
 
 

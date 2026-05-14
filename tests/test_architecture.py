@@ -15,7 +15,10 @@ MODULE_LINE_LIMITS = {
     "src/agentcad/assembly/checks.py": 700,
     "src/agentcad/assembly/mesh.py": 550,
     "src/agentcad/assembly/references.py": 400,
-    "src/agentcad/probe.py": 1250,
+    "src/agentcad/probe/core.py": 250,
+    "src/agentcad/probe/execution.py": 450,
+    "src/agentcad/probe/planner.py": 850,
+    "src/agentcad/probe/utils.py": 120,
     "src/agentcad/contract.py": 1000,
     "src/agentcad/section.py": 900,
     "src/agentcad/suggest.py": 900,
@@ -76,6 +79,20 @@ def test_assembly_internals_do_not_depend_on_workflow_frontends():
     assert not offenders
 
 
+def test_suggest_depends_on_probe_planner_not_probe_execution():
+    path = ROOT / "src/agentcad/suggest.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    imports = {
+        imported
+        for node in ast.walk(tree)
+        for imported in _imported_modules(node, current_module="agentcad.suggest")
+    }
+
+    assert "agentcad.probe.planner" in imports
+    assert "agentcad.probe" not in imports
+    assert "agentcad.probe.execution" not in imports
+
+
 def test_generated_files_are_not_tracked():
     result = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=False)
     if result.returncode != 0:
@@ -90,7 +107,7 @@ def test_generated_files_are_not_tracked():
     assert generated == []
 
 
-def _imported_modules(node: ast.AST) -> list[str]:
+def _imported_modules(node: ast.AST, *, current_module: str | None = None) -> list[str]:
     if isinstance(node, ast.Import):
         return [alias.name for alias in node.names]
     if not isinstance(node, ast.ImportFrom) or node.module is None:
@@ -99,4 +116,7 @@ def _imported_modules(node: ast.AST) -> list[str]:
         return [node.module]
     if node.level == 2:
         return [f"agentcad.{node.module}"]
+    if node.level == 1 and current_module and current_module.startswith("agentcad."):
+        package = current_module.rsplit(".", 1)[0]
+        return [f"{package}.{node.module}"]
     return []
