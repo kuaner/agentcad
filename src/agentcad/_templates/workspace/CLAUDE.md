@@ -44,7 +44,9 @@ unknown before claiming the model is complete.
    For risky features, add `functional_surfaces`, `interfaces`, and
    `failure_modes`; high-severity failure modes must have concrete evidence.
 4. **Suggest**: run `agentcad suggest-checks <name>` to find missing checks. Paste
-   suggested templates into `design.json` after filling concrete values. Use
+   suggested templates into `design.json` after filling concrete values. Check
+   `suggestion_quality.placeholder_count`; unresolved `<...>` placeholders are
+   a blocker unless you explicitly know why they cannot be resolved yet. Use
    `probe_plan` from the output to choose section/probe points. Use
    `agentcad probe <name> --plan --run` after build to write `outputs/probes.json`.
 5. **Params**: put tunable dimensions in `models/<name>/params.json`.
@@ -124,6 +126,9 @@ differs. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
   motion, enclosure/cover relationships, or another inter-model relationship.
 - Treat `design.json` as the design contract: source of truth for intent.
   Treat CLI JSON output as the source of truth for actual state.
+- Do not paste suggested check templates with unresolved `<...>` placeholders
+  into `design.json` and call them done. Fill them from `params.json`,
+  `metadata.json`, measured geometry, probe output, or a documented assumption.
 - Prefer structured geometry measurements over visual impressions. When a
   section SVG exists, read its same-name `.json` analysis before judging it.
 - Every visible or functional feature must be represented in `design.json` and

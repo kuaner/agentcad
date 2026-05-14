@@ -28,7 +28,7 @@ and recommends the next command.
 | Scaffold | `agentcad new <model>` | Create model folder inside an existing workspace |
 | Scaffold | `agentcad new <model>:<variant>` | Create a variant (same `part.py`, different `params.json`) |
 | Sync | `agentcad sync [--dry-run] [--only <path>] [--prune-deprecated]` | Refresh workspace scaffold from latest templates, preview changes, or prune deprecated scaffold paths |
-| Suggest | `agentcad suggest-checks <model>` | Analyze design contract and recommend missing checks by feature classification |
+| Suggest | `agentcad suggest-checks <model>` | Analyze design contract and recommend missing concrete checks by feature classification, evidence gaps, existing artifacts, and probe plan |
 | Precheck | `agentcad precheck <model>` | Solve `design.json` statically (schema, feature coverage, `min_clearance`) **before** part.py is written |
 | Build | `agentcad build <model>[:<variant>]` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
 | Measure | `agentcad measure <model>[:<variant>]` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
@@ -47,6 +47,7 @@ and recommends the next command.
 | Assembly | `agentcad assembly init/list/validate/review` | Optional multi-model assembly contracts with component transforms, mate residuals, fit checks, combined/exploded SVGs, preview generation, MJCF export, and metadata interface validation |
 | Deliver | `agentcad deliver <model>[:<variant>]` | Delivery manifest |
 | Report | `agentcad report <model>` | Markdown summary of validation result |
+| CADBench | `agentcad cadbench [--root examples/cadbench]` | Evaluate contract-only failure-mode fixtures for evidence coverage, suggestion specificity, placeholder budgets, and probe relevance |
 
 Every command prints stable machine-readable JSON output. Failures include
 `stage`, `error.type`, and `error.message`. Validation failures include
@@ -82,7 +83,11 @@ half-covered by an adjacent wall.
 `agentcad review` treats missing hole-access checks as **blocking** when holes
 are declared, and load-bearing attachment features without root/interface checks
 as blocking warnings. `agentcad suggest-checks` generates check templates for
-the same gaps before validation runs.
+the same gaps before validation runs and reports `suggestion_quality` metrics:
+template count, placeholder count/ratio, concrete template count, and exact
+placeholder paths. A concrete suggestion should use `params.json`,
+`metadata.json`, existing checks, geometry bbox, and the probe plan instead of
+leaving unresolved `<...>` fields.
 
 ## Assembly validation
 
@@ -203,6 +208,7 @@ screws, nuts, washers, and heat-set inserts.
 | `examples/drone-panel/` | Lightweight drone panel with sparse_wall, hex_panel, torus seal, cover lip |
 | `examples/gear-housing/` | Spur + ring gear housing demonstrating gear helpers |
 | `examples/pipe-coupling/` | Pipe coupling with tube, dovetail, and chamfer_mask helpers |
+| `examples/cadbench/` | Contract-only failure-mode benchmark for evidence/suggest/probe quality gates |
 
 Re-run any example:
 
@@ -227,7 +233,7 @@ agentcad snapshot compare
 uv run pytest -v
 ```
 
-The test suite currently collects 657 tests. It covers CLI dispatch, workspace
+The full test suite currently reports 741 passed. It covers CLI dispatch, workspace
 scaffolding and sync modes, STL reading and measurement, section extraction and
 SVG rendering, JSON IO, post-build validation checks, feature classification,
 weak-check severity and review blocking gates, design schema hardening,
@@ -235,10 +241,10 @@ negative regression fixtures, min_wall_thickness range mode, metadata interface
 schema, ContractBuilder interface emission, feature helpers, hardware lookup
 tables, geometric primitives, interactive previews, variants, assembly
 validation, batch validation, regression snapshots, workflow diagnostics
-(doctor), suggest-checks, suggested-fix enrichment, timing instrumentation,
-section cache, executable helper cookbook, and artifact cleanup. GitHub Actions
-runs the fast suite on pushes and PRs; slow tests run on a scheduled/manual
-workflow.
+(doctor), suggest-checks, CADBench quality gates, suggested-fix enrichment,
+timing instrumentation, section cache, executable helper cookbook, and artifact
+cleanup. GitHub Actions runs the fast suite on pushes and PRs; slow tests run
+on a scheduled/manual workflow.
 
 ## Documentation
 

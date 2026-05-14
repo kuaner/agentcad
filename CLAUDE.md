@@ -4,7 +4,7 @@
 
 AgentCAD is a CLI-first CAD workflow runtime for coding agents. It provides a repeatable workspace, build/export tools, geometry measurement, SVG and interactive HTML previews, validation checks, feature helpers, assembly checks, and delivery manifests so an agent can autonomously create and refine CAD models with measurable feedback.
 
-Core loop: `discovery -> concept -> design contract -> precheck -> params/source -> build -> measure -> render -> preview -> validate -> review -> quality review -> deliver`
+Core loop: `discovery -> concept -> design contract -> suggest-checks -> precheck -> params/source -> build -> measure -> render -> preview -> validate -> review -> quality review -> deliver`
 
 The `precheck` and `review` stages are mandatory checkpoints that catch
 design-time interferences (before code) and pre-delivery gaps (before
@@ -51,7 +51,8 @@ src/agentcad/          # Main package
   batch.py              # Batch validation: target discovery + workspace-level orchestration
   snapshot.py           # Regression snapshots: write, load, compare normalized validation data
   doctor.py             # Workflow state diagnostics: severity-graded findings + recommended next commands
-  suggest.py             # Suggest missing checks based on design contract feature classification
+  suggest/              # Suggest missing checks, concrete templates, and suggestion quality metrics
+  cadbench.py           # Contract-fixture benchmark for evidence/suggest/probe quality gates
   metadata.py           # Metadata interface schema validation and resolution
   clean.py              # Artifact cleanup: validation history, debug SVGs, retention policy
   _templates/           # Template files (md, json, py) for workspace/model scaffolding
@@ -69,6 +70,7 @@ examples/
   gear-housing/         # Gear helper fixture
   pipe-coupling/        # Tube/dovetail/chamfer helper fixture
   iphone15pro-case/     # Real-world iPhone 15 Pro phone case
+  cadbench/             # Contract-only failure-mode fixtures for suggest/probe quality gates
 ```
 
 ## CLI Commands
@@ -102,6 +104,7 @@ agentcad probe <model> --scan --axis z|x|y       # Profile scan for step changes
 agentcad inspect <model>                         # Three-axis scan + section SVGs + suggested probes
 agentcad report <model>                                 # Markdown validation report
 agentcad suggest-checks <model>                 # Suggest missing checks based on design contract
+agentcad cadbench [--root examples/cadbench]     # Evaluate CADBench contract fixtures
 agentcad doctor <model>[:<variant>]               # Workflow state diagnostics: gaps, severity, next command
 agentcad clean [--model <name>] [--dry-run] [--debug] [--previews]  # Remove debug/history artifacts
 agentcad assembly init/list/validate/review      # Optional multi-model assembly workflow
@@ -210,6 +213,14 @@ Weak-check warnings are now categorized with severity levels:
 
 Feature classification (`classify_feature`) uses keyword matching on feature id, intent, and description to tag features as `hole`, `load_bearing_attachment`, or `interface`. Review promotes blocking-severity warnings to checklist items that gate `ready_to_deliver`.
 
+`agentcad suggest-checks` now includes a `suggestion_quality` payload with
+`template_count`, `placeholder_count`, `placeholder_ratio`, concrete template
+count, and exact placeholder paths. New suggest templates should use
+`params.json`, `metadata.json`, measured geometry, existing checks, and probe
+plans to avoid unresolved `<...>` values. `examples/cadbench` is the hard gate
+for these behaviors: evidence coverage, suggested check coverage, probe command
+relevance, and placeholder budgets must pass.
+
 Metadata interface schema (`metadata.py`) validates the `interfaces` and `anchors` sections of `metadata.json` with structured `SchemaIssue` error paths. Supported interface kinds: `cylindrical_male`, `cylindrical_female`, `screw_axis`, `dovetail_rail`, `snap_pin`, `snap_socket`, `gear_axis`, `planar`. Assembly validation converts metadata schema errors into `metadata_schema` checks. `ContractBuilder.add_interface()` accumulates interface entries and `write_metadata_to()` writes/merges them into `metadata.json`.
 
 Feature helpers that auto-emit interfaces when a builder is provided: `tube` (outer_sleeve + inner_bore), `duct_socket` (socket), `SteppedBore/ScrewHole` (screw_axis), `snap_pin` (pin), `snap_pin_socket` (socket).
@@ -238,16 +249,17 @@ uv run pytest -v                    # All tests
 uv run pytest tests/test_stl.py     # STL module only
 ```
 
-The fast suite currently reports 670 passed and 8 slow tests deselected with
-`uv run pytest -q -m "not slow"`. Coverage includes CLI dispatch, workspace
+The full suite currently reports 741 passed with
+`uv run pytest -q`. Coverage includes CLI dispatch, workspace
 init/new/sync, STL reading/measurement/section, SVG rendering, interactive
 previews, JSON IO, validation checks, feature coverage, feature helpers,
 hardware lookup tables, variants, diff, assemblies, precheck, review, batch
 validation, regression snapshots, contract schema hardening, min_wall_thickness
 range mode, negative regression fixtures, review blocking gates, metadata
 interface schema, ContractBuilder interface emission, doctor diagnostics,
-suggest-checks, improved suggested_fix payloads, timing instrumentation,
-section cache, executable helper cookbook, and artifact cleanup.
+suggest-checks, CADBench quality gates, improved suggested_fix payloads, timing
+instrumentation, section cache, executable helper cookbook, and artifact
+cleanup.
 
 Integration validation through example models:
 
