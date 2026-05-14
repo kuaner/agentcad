@@ -34,8 +34,8 @@ agentcad/probe/
   utils.py         small parsing/formatting helpers shared by planner/execution
 ```
 
-`suggest.py` imports `agentcad.probe.planner` directly so check suggestion does
-not depend on probe execution.
+`suggest/core.py` imports `agentcad.probe.planner` directly so check suggestion
+does not depend on probe execution.
 
 ## Constraints
 

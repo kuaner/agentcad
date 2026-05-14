@@ -561,19 +561,20 @@ Schema versions:
 
 ### Affected Modules
 
-- `src/agentcad/contract.py`: design schema validation.
+- `src/agentcad/contract/schema.py`: design schema validation.
+- `src/agentcad/contract/evidence.py`: feature evidence and design-intent lint.
 - `src/agentcad/validate.py`: stricter check validation and warnings.
 - `src/agentcad/precheck.py`: fail early on schema errors.
 - `src/agentcad/review.py`: promote selected warnings to blocking gates.
-- `src/agentcad/assembly.py`: assembly and metadata schema checks.
+- `src/agentcad/assembly/`: assembly and metadata schema checks.
 - `src/agentcad/checks/section.py`: section semantics.
 - `src/agentcad/checks/relations.py`: relation check validation.
 - `tests/fixtures/` or `tests/test_contract_hardening.py`: negative fixtures.
 
 ### Concrete Implementation
 
-Extend `contract.py` without breaking existing callers that expect check-shaped
-schema errors.
+Extend the `agentcad.contract` package without breaking existing callers that
+expect check-shaped schema errors from the package root.
 
 New issue type:
 
@@ -1256,7 +1257,7 @@ contract coverage.
 
 - `src/agentcad/cli.py`: new commands.
 - New `src/agentcad/doctor.py`: artifact and workflow diagnostics.
-- New `src/agentcad/suggest.py`: check suggestion engine.
+- New `src/agentcad/suggest/`: check suggestion engine.
 - `src/agentcad/review.py`: reuse advisory rules where possible.
 - Templates under `src/agentcad/_templates/workspace/references/`.
 - Tests under `tests/test_doctor.py` and `tests/test_suggest.py`.

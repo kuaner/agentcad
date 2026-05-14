@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..contract import evaluate_feature_evidence_matrix_dict
+from ..contract.evidence import evaluate_feature_evidence_matrix_dict
 from ..jsonio import read_json, write_json
 from ..workspace import model_dir, outputs_dir
 from .execution import run_probe_plan

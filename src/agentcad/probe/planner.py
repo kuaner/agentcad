@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..contract import classify_feature, evaluate_feature_evidence_matrix_dict
+from ..contract.common import classify_feature
+from ..contract.evidence import evaluate_feature_evidence_matrix_dict
 from ..geometry import shape_aabb
 from .utils import _fmt, _mid_pair, _norm, _num, _pair, _region, _region_arg, _triple
 

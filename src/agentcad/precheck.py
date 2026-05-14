@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Any
 
 from .checks import CheckContext, known_types, run_check, static_types
-from .contract import evaluate_feature_coverage, evaluate_weak_check_warnings, validate_design_schema
+from .contract.evidence import evaluate_feature_coverage
+from .contract.schema import validate_design_schema
+from .contract.weak import evaluate_weak_check_warnings
 from .jsonio import read_json, write_json
 from .runner import utc_now
 from .workspace import model_dir, outputs_dir

@@ -7,13 +7,11 @@ from typing import Any
 
 from .checks import CheckContext, known_types, run_check
 from .checks.mesh import _get_path, _vec_close
-from .contract import (
-    GEOMETRY_CHECK_TYPES,
-    evaluate_feature_coverage_dict,
-    evaluate_weak_check_warnings_dict,
-    validate_design_schema_dict,
-    search_params_by_keywords,
-)
+from .contract.common import GEOMETRY_CHECK_TYPES
+from .contract.evidence import evaluate_feature_coverage_dict
+from .contract.params import search_params_by_keywords
+from .contract.schema import validate_design_schema_dict
+from .contract.weak import evaluate_weak_check_warnings_dict
 from .jsonio import read_json, write_json
 from .measure import measure_model
 from .diff import archive_validation

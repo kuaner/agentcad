@@ -30,12 +30,12 @@ import itertools
 from pathlib import Path
 from typing import Any
 
-from .contract import (
-    HOLE_WORDS,
+from .contract.common import HOLE_WORDS
+from .contract.evidence import (
     evaluate_design_intent_lint_dict,
     evaluate_feature_evidence_matrix_dict,
-    evaluate_weak_check_warnings_dict,
 )
+from .contract.weak import evaluate_weak_check_warnings_dict
 from .geometry import min_clearance_3d, parse_shape
 from .jsonio import read_json, write_json
 from .runner import utc_now
