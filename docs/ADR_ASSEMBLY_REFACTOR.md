@@ -37,7 +37,7 @@ The package is split by responsibility:
 ```text
 agentcad/assembly/
   __init__.py      public compatibility exports
-  core.py          init/list/measure/validate orchestration and check rules
+  core.py          init/list/measure/validate orchestration
   types.py         schemas, errors, transform data model
   paths.py         workspace path helpers
   components.py    component loading, builds, metadata, public records
@@ -45,19 +45,18 @@ agentcad/assembly/
   references.py    metadata reference resolution and descriptor transforms
   metadata_checks.py metadata schema and interface geometry consistency checks
   mates.py         coaxial/coincident/axis/engagement evaluation
+  checks.py        assembly validation checks and interface contract checks
   mesh.py          pairwise mesh evidence and triangle geometry
   artifacts.py     SVG preview, STL export, MJCF export, consistency checks
   review.py        review_assembly gates
 ```
 
-Intentionally left in `core.py` for now:
+`core.py` should stay an orchestration module. New check types belong in
+`checks.py` unless they require their own coherent submodule.
 
-- `checks.py`: assembly validation checks and interface contract checks
-
-The remaining check code is still cohesive enough to keep together until the
-check taxonomy changes again. The next extraction should split it only when
-there is a concrete need, for example separating feature evidence matrix gates
-from pairwise assembly safety gates.
+The next extraction should split `checks.py` only when there is a concrete
+need, for example separating feature evidence matrix gates from pairwise
+assembly safety gates.
 
 ## Constraints
 
