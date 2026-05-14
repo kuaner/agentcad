@@ -1,0 +1,9 @@
+{
+  "length": 50.0,
+  "depth": 30.0,
+  "height": 6.0,
+  "hole_diameter": 4.2,
+  "tool_diameter": 8.0,
+  "edge_clearance": 2.0,
+  "tolerance": 0.2
+}

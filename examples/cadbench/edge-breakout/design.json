@@ -1,0 +1,31 @@
+{
+  "schema": "agentcad.design-spec.v1",
+  "features": [
+    {
+      "id": "edge_screw_hole",
+      "description": "Screw hole close to the outer edge where breakout is likely.",
+      "intent": "The hole must prove diameter, access, and edge clearance.",
+      "checks": []
+    }
+  ],
+  "checks": [],
+  "interfaces": [
+    {
+      "id": "edge_fastener_interface",
+      "type": "fastener_hole",
+      "feature_id": "edge_screw_hole",
+      "clearance_mm": 2.0,
+      "access_axis": "z"
+    }
+  ],
+  "failure_modes": [
+    {
+      "id": "edge_breakout",
+      "mode": "edge_breakout",
+      "severity": "high",
+      "affects": ["edge_screw_hole"],
+      "required_evidence": ["position", "dimensions", "access", "interface_risk"],
+      "min_edge_clearance_mm": 2.0
+    }
+  ]
+}

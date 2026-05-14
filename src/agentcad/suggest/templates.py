@@ -7,6 +7,7 @@ from .facts import _hole_facts
 from .geometry import (
     _best_center,
     _best_z,
+    _bbox_shape,
     _bbox_expected_from_geometry,
     _bbox_expected_from_params,
     _clearance_min,
@@ -14,6 +15,8 @@ from .geometry import (
     _feature_region,
     _feature_z_range,
     _find_param_hint,
+    _num,
+    _pair,
     _tolerance,
 )
 from .types import SuggestContext
@@ -100,13 +103,18 @@ def _hole_accessibility_template(
     hole = _hole_facts(fid, ctx, feature=feature, linked_checks=linked_checks)
     axis = str(hole.get("axis", "z"))
     position = hole.get("position", _best_z(ctx))
+    hole_diameter = hole.get("hole_diameter") or "<diameter>"
+    clearance_diameter = hole.get("clearance_diameter")
+    if clearance_diameter is None:
+        numeric_hole = _num(hole_diameter)
+        clearance_diameter = round(numeric_hole + 2.0, 4) if numeric_hole is not None else "<tool_diameter>"
     template: dict[str, Any] = {
         "id": f"{fid}_access",
         "type": "hole_accessibility",
         "axis": axis,
         "center": hole.get("center", _best_center(ctx)),
-        "hole_diameter": hole.get("hole_diameter") or "<diameter>",
-        "clearance_diameter": hole.get("clearance_diameter") or "<tool_diameter>",
+        "hole_diameter": hole_diameter,
+        "clearance_diameter": clearance_diameter,
         "approach": "top",
     }
     template[axis if axis in ("x", "y", "z") else "position"] = position
@@ -156,6 +164,35 @@ def _interface_template(
             "feature_a": hole["shape"],
             "feature_b": edge_guard,
             "min_mm": 0.0,
+        }
+    bbox = _bbox_shape(ctx)
+    center = _pair(_best_center(ctx))
+    if bbox and center:
+        x0, x1 = [float(v) for v in bbox["x_range"]]
+        y0, y1 = [float(v) for v in bbox["y_range"]]
+        z0, z1 = [float(v) for v in bbox["z_range"]]
+        cx, cy = center
+        span = max(min(abs(x1 - x0), abs(y1 - y0)) * 0.1, 0.5)
+        feature_box = {
+            "type": "box",
+            "role": "interface_probe",
+            "x_range": [round(cx - span / 2.0, 4), round(cx + span / 2.0, 4)],
+            "y_range": [round(cy - span / 2.0, 4), round(cy + span / 2.0, 4)],
+            "z_range": [round(z0, 4), round(z1, 4)],
+        }
+        guard = _edge_guard_shape(ctx, [cx, cy]) or {
+            "type": "box",
+            "role": "bbox_reference",
+            "x_range": [round(x0, 4), round(x1, 4)],
+            "y_range": [round(y0, 4), round(y1, 4)],
+            "z_range": [round(z0, 4), round(z1, 4)],
+        }
+        return {
+            "id": check_id or f"{fid}_clearance",
+            "type": "min_clearance",
+            "feature_a": feature_box,
+            "feature_b": guard,
+            "min_mm": _clearance_min(ctx),
         }
     return {
         "id": check_id or f"{fid}_clearance",

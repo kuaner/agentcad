@@ -1,6 +1,9 @@
 {
+  "feature": "edge_screw_hole",
   "failure_mode": "edge_breakout",
   "required_evidence": ["position", "dimensions", "access", "interface_risk"],
   "checks": ["inner_diameter_at_z", "hole_accessibility", "min_clearance"],
-  "probe": "nearest contour distance from hole center"
+  "suggested_checks": ["hole_accessibility", "min_clearance"],
+  "probe_command_contains": ["--point 24,0"],
+  "max_placeholder_count": 0
 }

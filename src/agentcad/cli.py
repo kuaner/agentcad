@@ -164,6 +164,10 @@ def build_parser() -> argparse.ArgumentParser:
     suggest_cmd = sub.add_parser("suggest-checks", help="suggest missing checks based on design contract")
     suggest_cmd.add_argument("model", help="model name to analyze")
 
+    cadbench_cmd = sub.add_parser("cadbench", help="evaluate CADBench contract fixtures")
+    cadbench_cmd.add_argument("--root", type=Path, default=Path("examples/cadbench"),
+                              help="CADBench fixture root (default: examples/cadbench)")
+
     clean_cmd = sub.add_parser("clean", help="remove accumulated debug and history artifacts")
     clean_cmd.add_argument("--model", default=None, help="clean only one model (default: all)")
     clean_cmd.add_argument("--validation-history", action=argparse.BooleanOptionalAction, default=True, help="clean old validation history files (default: on; use --no-validation-history to skip)")
@@ -244,6 +248,13 @@ def dispatch(args: argparse.Namespace) -> dict:
             only=getattr(args, "only", None),
             prune_deprecated=getattr(args, "prune_deprecated", False),
         )
+
+    if args.command == "cadbench":
+        from .cadbench import evaluate_cadbench
+        root = Path(getattr(args, "root", Path("examples/cadbench"))).expanduser()
+        if not root.is_absolute():
+            root = (Path.cwd() / root).resolve()
+        return evaluate_cadbench(root)
 
     project = _resolve_project(args)
     if args.command == "assembly":

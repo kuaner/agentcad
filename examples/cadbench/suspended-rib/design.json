@@ -1,0 +1,22 @@
+{
+  "schema": "agentcad.design-spec.v1",
+  "features": [
+    {
+      "id": "suspended_support_rib",
+      "description": "Support rib that must connect to the parent plate at the root.",
+      "intent": "A rib that floats above the parent solid is a blocking mechanical failure.",
+      "checks": []
+    }
+  ],
+  "checks": [],
+  "failure_modes": [
+    {
+      "id": "suspended_rib",
+      "mode": "suspended_rib",
+      "severity": "high",
+      "affects": ["suspended_support_rib"],
+      "required_evidence": ["position", "wall"],
+      "root_z": 0.0
+    }
+  ]
+}

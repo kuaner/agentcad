@@ -1,0 +1,20 @@
+{
+  "schema": "agentcad.part.metadata.v1",
+  "interfaces": {
+    "blind_mounting_hole_axis": {
+      "kind": "screw_axis",
+      "axis": {
+        "point": [0.0, 0.0, 0.0],
+        "direction": [0.0, 0.0, 1.0]
+      },
+      "clearance_diameter": 6.0,
+      "inner_cylinder": {
+        "type": "cylinder",
+        "axis": "z",
+        "center": [0.0, 0.0],
+        "radius": 1.7,
+        "z_range": [0.0, 8.0]
+      }
+    }
+  }
+}

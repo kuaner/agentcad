@@ -370,3 +370,16 @@ def test_preview_static_uses_open_preview(tmp_path, monkeypatch):
     result = main(["preview", "box", "--static"])
     assert result == 0
     assert "path" in opened
+
+
+def test_cadbench_cli_outputs_aggregate_payload(capsys):
+    root = Path(__file__).resolve().parents[1] / "examples" / "cadbench"
+
+    result = main(["cadbench", "--root", str(root)])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert result == 0
+    assert payload["ok"] is True
+    assert payload["stage"] == "cadbench"
+    assert payload["case_count"] == 5
+    assert payload["metrics"]["placeholder_count"] == 0

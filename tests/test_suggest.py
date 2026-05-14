@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from agentcad.suggest import suggest_checks
+from agentcad.suggest import evaluate_suggestion_quality, suggest_checks, suggest_from_contract
 from agentcad.workspace import init_workspace, new_model, model_dir
 
 
@@ -50,10 +50,11 @@ class TestSuggestChecksBasic:
             "checks": [],
         })
         result = suggest_checks(project, "thing")
-        assert len(result["suggestions"]) == 1
-        s = result["suggestions"][0]
+        assert result["suggestion_quality"]["template_count"] == len(result["suggestions"])
+        s = next(s for s in result["suggestions"] if s["missing"] == "any_check")
         assert s["feature"] == "shell"
         assert s["missing"] == "any_check"
+        assert {"dimension_check", "position_check"} <= {s["missing"] for s in result["suggestions"]}
 
     def test_feature_with_only_bbox_gets_geometry_suggestion(self, project):
         mdir = model_dir(project, "thing")
@@ -62,8 +63,7 @@ class TestSuggestChecksBasic:
             "checks": [{"id": "shell_bbox", "type": "bbox_size", "expected": [10, 10, 10], "tolerance": 0.1}],
         })
         result = suggest_checks(project, "thing")
-        assert len(result["suggestions"]) == 1
-        s = result["suggestions"][0]
+        s = next(s for s in result["suggestions"] if s["missing"] == "geometry_check")
         assert s["missing"] == "geometry_check"
         assert "type" in s["template"]
 
@@ -246,3 +246,140 @@ class TestSuggestTemplateQuality:
         assert template["z"] == 12.0
         assert template["center"] == [3.0, 4.0]
         assert template["clearance_diameter"] == "7.0"
+
+    def test_suggest_from_contract_in_memory_entry(self):
+        result = suggest_from_contract(
+            "fixture",
+            {
+                "features": [{"id": "body", "checks": []}],
+                "checks": [],
+            },
+            params={"length": 10.0, "depth": 8.0, "height": 4.0, "tolerance": 0.2},
+            geometry={
+                "geometry": {
+                    "bbox": {
+                        "min": [-5.0, -4.0, 0.0],
+                        "max": [5.0, 4.0, 4.0],
+                        "center": [0.0, 0.0, 2.0],
+                        "size": [10.0, 8.0, 4.0],
+                    }
+                }
+            },
+        )
+
+        assert result["ok"] is True
+        assert result["model"] == "fixture"
+        assert result["design_found"] is True
+        assert "suggestion_quality" in result
+
+    def test_feature_can_emit_multiple_evidence_suggestions(self):
+        result = suggest_from_contract(
+            "fixture",
+            {
+                "features": [
+                    {
+                        "id": "support_rib",
+                        "description": "Load bearing support rib at a thin root.",
+                        "checks": [],
+                    }
+                ],
+                "checks": [],
+            },
+            params={"length": 20.0, "depth": 10.0, "height": 8.0, "wall_thickness": 2.0},
+            geometry={
+                "geometry": {
+                    "bbox": {
+                        "min": [-10.0, -5.0, 0.0],
+                        "max": [10.0, 5.0, 8.0],
+                        "center": [0.0, 0.0, 4.0],
+                        "size": [20.0, 10.0, 8.0],
+                    }
+                }
+            },
+        )
+
+        types = {s["template"]["type"] for s in result["suggestions"]}
+        missings = {s["missing"] for s in result["suggestions"]}
+        assert {"min_wall_thickness", "section_bbox_at_z", "feature_position"} <= types
+        assert {"wall_thickness_check", "dimension_check", "position_check"} <= missings
+
+    def test_suggestion_quality_counts_placeholders(self):
+        quality = evaluate_suggestion_quality([
+            {
+                "feature": "f",
+                "missing": "dimension_check",
+                "template": {
+                    "id": "f_bbox",
+                    "type": "bbox_size",
+                    "expected": ["<width>", "<depth>", 5.0],
+                },
+            },
+            {
+                "feature": "g",
+                "missing": "position_check",
+                "template": {
+                    "id": "g_position",
+                    "type": "feature_position",
+                    "point": [0.0, 0.0, 1.0],
+                    "expected": "solid",
+                },
+            },
+        ])
+
+        assert quality["template_count"] == 2
+        assert quality["placeholder_count"] == 2
+        assert quality["concrete_template_count"] == 1
+        assert quality["placeholders"][0]["path"] == "template.expected[0]"
+
+    def test_params_metadata_and_geometry_eliminate_placeholders(self):
+        result = suggest_from_contract(
+            "fixture",
+            {
+                "features": [{"id": "m3_hole", "checks": []}],
+                "checks": [],
+                "failure_modes": [
+                    {
+                        "id": "edge",
+                        "mode": "edge_breakout",
+                        "severity": "high",
+                        "affects": ["m3_hole"],
+                        "required_evidence": ["position", "dimensions", "access", "interface_risk"],
+                    }
+                ],
+            },
+            params={
+                "length": 24.0,
+                "depth": 18.0,
+                "height": 6.0,
+                "hole_diameter": 3.4,
+                "tool_diameter": 7.0,
+                "edge_clearance": 2.0,
+            },
+            metadata={
+                "interfaces": {
+                    "m3_hole_axis": {
+                        "axis": {"point": [8.0, 0.0, 3.0], "direction": [0.0, 0.0, 1.0]},
+                        "clearance_diameter": 7.0,
+                        "inner_cylinder": {
+                            "type": "cylinder",
+                            "axis": "z",
+                            "center": [8.0, 0.0],
+                            "radius": 1.7,
+                            "z_range": [0.0, 6.0],
+                        },
+                    }
+                }
+            },
+            geometry={
+                "geometry": {
+                    "bbox": {
+                        "min": [-12.0, -9.0, 0.0],
+                        "max": [12.0, 9.0, 6.0],
+                        "center": [0.0, 0.0, 3.0],
+                        "size": [24.0, 18.0, 6.0],
+                    }
+                }
+            },
+        )
+
+        assert result["suggestion_quality"]["placeholder_count"] == 0

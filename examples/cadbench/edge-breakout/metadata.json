@@ -1,0 +1,20 @@
+{
+  "schema": "agentcad.part.metadata.v1",
+  "interfaces": {
+    "edge_screw_hole_axis": {
+      "kind": "screw_axis",
+      "axis": {
+        "point": [24.0, 0.0, 3.0],
+        "direction": [0.0, 0.0, 1.0]
+      },
+      "clearance_diameter": 8.0,
+      "inner_cylinder": {
+        "type": "cylinder",
+        "axis": "z",
+        "center": [24.0, 0.0],
+        "radius": 2.1,
+        "z_range": [0.0, 6.0]
+      }
+    }
+  }
+}

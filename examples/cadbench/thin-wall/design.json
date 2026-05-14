@@ -1,0 +1,22 @@
+{
+  "schema": "agentcad.design-spec.v1",
+  "features": [
+    {
+      "id": "thin_wall_sleeve",
+      "description": "Thin wall sleeve around a pocket that can silently become fragile.",
+      "intent": "The wall corridor must have a measured minimum thickness.",
+      "checks": []
+    }
+  ],
+  "checks": [],
+  "failure_modes": [
+    {
+      "id": "thin_wall",
+      "mode": "thin_wall",
+      "severity": "high",
+      "affects": ["thin_wall_sleeve"],
+      "required_evidence": ["wall", "dimensions"],
+      "min_wall_mm": 1.2
+    }
+  ]
+}

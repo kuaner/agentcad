@@ -1,0 +1,30 @@
+{
+  "schema": "agentcad.design-spec.v1",
+  "features": [
+    {
+      "id": "output_shaft_socket",
+      "description": "Cylindrical socket interface for a mating shaft that can become eccentric.",
+      "intent": "The socket axis must be checked against the mating interface center.",
+      "checks": []
+    }
+  ],
+  "checks": [],
+  "interfaces": [
+    {
+      "id": "shaft_socket_mate",
+      "type": "cylindrical_mate",
+      "feature_id": "output_shaft_socket",
+      "clearance_mm": 0.2,
+      "axis_tolerance_mm": 0.1
+    }
+  ],
+  "failure_modes": [
+    {
+      "id": "assembly_eccentricity",
+      "mode": "assembly_eccentricity",
+      "severity": "high",
+      "affects": ["output_shaft_socket"],
+      "required_evidence": ["position", "interface_risk"]
+    }
+  ]
+}

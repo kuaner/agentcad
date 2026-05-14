@@ -1,0 +1,30 @@
+{
+  "schema": "agentcad.design-spec.v1",
+  "features": [
+    {
+      "id": "blind_mounting_hole",
+      "description": "Blind M3 screw hole with a bottom plane that must not be modeled too shallow.",
+      "intent": "The hole depth must be proven, not only the mouth diameter.",
+      "checks": []
+    }
+  ],
+  "checks": [],
+  "functional_surfaces": [
+    {
+      "id": "blind_hole_bottom",
+      "feature_id": "blind_mounting_hole",
+      "role": "blind hole bottom depth",
+      "critical": true
+    }
+  ],
+  "failure_modes": [
+    {
+      "id": "shallow_hole",
+      "mode": "shallow_hole",
+      "severity": "high",
+      "affects": ["blind_mounting_hole"],
+      "required_evidence": ["position", "dimensions"],
+      "expected_depth_mm": 8.0
+    }
+  ]
+}

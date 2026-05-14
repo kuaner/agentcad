@@ -1,6 +1,9 @@
 {
+  "feature": "output_shaft_socket",
   "failure_mode": "assembly_eccentricity",
   "required_evidence": ["position", "interface_risk"],
-  "checks": ["assembly_interface_contract", "radial_clearance", "coaxial"],
-  "probe": "interface axis section probe"
+  "checks": ["min_clearance", "feature_position"],
+  "suggested_checks": ["min_clearance", "feature_position"],
+  "probe_command_contains": ["--z 5 --point 0.6,0"],
+  "max_placeholder_count": 0
 }

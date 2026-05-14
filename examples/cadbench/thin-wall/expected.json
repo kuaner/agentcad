@@ -1,6 +1,9 @@
 {
+  "feature": "thin_wall_sleeve",
   "failure_mode": "thin_wall",
   "required_evidence": ["wall", "dimensions"],
   "checks": ["min_wall_thickness", "section_bbox_at_z"],
-  "probe": "thin-wall section-region probe"
+  "suggested_checks": ["min_wall_thickness", "section_bbox_at_z"],
+  "probe_command_contains": ["--section-region"],
+  "max_placeholder_count": 0
 }

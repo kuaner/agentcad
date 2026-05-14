@@ -1,6 +1,9 @@
 {
+  "feature": "blind_mounting_hole",
   "failure_mode": "shallow_hole",
   "required_evidence": ["position", "dimensions"],
   "checks": ["inner_diameter_at_z", "feature_position"],
-  "probe": "hole bottom/depth section"
+  "suggested_checks": ["inner_diameter_at_z", "feature_position"],
+  "probe_command_contains": ["--z 8 --cx 0 --cy 0"],
+  "max_placeholder_count": 0
 }
