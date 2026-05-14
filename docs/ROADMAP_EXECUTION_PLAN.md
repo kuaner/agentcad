@@ -1548,7 +1548,7 @@ geometry semantics for speed.
 ### Affected Modules
 
 - `src/agentcad/validate.py`: timing and stage reporting.
-- `src/agentcad/section.py`: section extraction cache.
+- `src/agentcad/section/cache.py`: section extraction cache.
 - `src/agentcad/render.py`: render timing and reuse.
 - `src/agentcad/preview.py`: preview generation timing.
 - New `src/agentcad/cleanup.py` if cleanup becomes a command.

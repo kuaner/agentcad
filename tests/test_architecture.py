@@ -31,7 +31,13 @@ MODULE_LINE_LIMITS = {
     "src/agentcad/suggest/geometry.py": 350,
     "src/agentcad/suggest/templates.py": 300,
     "src/agentcad/suggest/types.py": 80,
-    "src/agentcad/section.py": 900,
+    "src/agentcad/section/__init__.py": 100,
+    "src/agentcad/section/analysis.py": 350,
+    "src/agentcad/section/cache.py": 80,
+    "src/agentcad/section/extraction.py": 120,
+    "src/agentcad/section/measure.py": 320,
+    "src/agentcad/section/render.py": 220,
+    "src/agentcad/section/types.py": 80,
     "src/agentcad/review.py": 650,
     "src/agentcad/validate.py": 650,
 }
@@ -71,10 +77,42 @@ CONTRACT_PUBLIC_API = {
     "validate_design_schema_issues",
 }
 
+SECTION_PUBLIC_API = {
+    "AXIS_X",
+    "AXIS_Y",
+    "AXIS_Z",
+    "SectionCache",
+    "Segment2D",
+    "_empty_svg",
+    "analyze_section_segments",
+    "measure_section_line",
+    "measure_section_point",
+    "measure_section_region",
+    "query_section_measurements",
+    "render_section_svg",
+    "scan_profile",
+    "section_segments",
+    "write_section_svg",
+}
+
 FORBIDDEN_ASSEMBLY_IMPORTS = {
     "agentcad.batch",
     "agentcad.cli",
     "agentcad.doctor",
+    "agentcad.probe",
+    "agentcad.review",
+    "agentcad.snapshot",
+    "agentcad.suggest",
+    "agentcad.validate",
+}
+
+FORBIDDEN_SECTION_IMPORTS = {
+    "agentcad.assembly",
+    "agentcad.batch",
+    "agentcad.cli",
+    "agentcad.contract",
+    "agentcad.doctor",
+    "agentcad.preview",
     "agentcad.probe",
     "agentcad.review",
     "agentcad.snapshot",
@@ -144,6 +182,14 @@ def test_suggest_public_api_stays_package_based():
     assert {"SuggestContext", "suggest_checks"} <= set(suggest.__all__)
 
 
+def test_section_public_api_stays_package_based():
+    assert not (ROOT / "src/agentcad/section.py").exists()
+
+    import agentcad.section as section
+
+    assert SECTION_PUBLIC_API <= set(section.__all__)
+
+
 def test_assembly_internals_do_not_depend_on_workflow_frontends():
     offenders = []
     for path in sorted((ROOT / "src/agentcad/assembly").glob("*.py")):
@@ -152,6 +198,22 @@ def test_assembly_internals_do_not_depend_on_workflow_frontends():
             for imported in _imported_modules(node):
                 if imported in FORBIDDEN_ASSEMBLY_IMPORTS:
                     offenders.append(f"{path.relative_to(ROOT)}:{node.lineno} imports {imported}")
+
+    assert not offenders
+
+
+def test_section_internals_do_not_depend_on_workflow_frontends():
+    offenders = []
+    for path in sorted((ROOT / "src/agentcad/section").glob("*.py")):
+        if path.name == "__init__.py":
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        current_module = _module_name_for_path(path)
+        for node in ast.walk(tree):
+            for imported in _imported_modules(node, current_module=current_module):
+                for forbidden in FORBIDDEN_SECTION_IMPORTS:
+                    if imported == forbidden or imported.startswith(f"{forbidden}."):
+                        offenders.append(f"{path.relative_to(ROOT)}:{node.lineno} imports {imported}")
 
     assert not offenders
 

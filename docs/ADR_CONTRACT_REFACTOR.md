@@ -32,12 +32,10 @@ explicit internal responsibilities:
 Internal workflow modules now import these submodules directly. The root package
 exists for backwards-compatible external imports and tests.
 
-## Non-Decision
+## Follow-up
 
-`section.py` is still a single module. It is large, but it remains a cohesive
-lower-level section-analysis abstraction with no workflow reverse dependency.
-Split it when a new rendering format or a new family of query APIs creates a
-stable second responsibility.
+`agentcad.section` has since been split into a package for LLM readability and
+stable low-level responsibility boundaries. See `docs/ADR_SECTION_REFACTOR.md`.
 
 ## Guardrails
 

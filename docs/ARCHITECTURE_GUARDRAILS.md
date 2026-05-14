@@ -54,9 +54,15 @@ frameworks.
 - `suggest/geometry.py`: geometry/params fallback helpers used by suggestion
   templates.
 - `suggest/types.py`: shared suggestion context types.
-- `section.py`: lower-level STL section extraction, measurement, and SVG output.
-  Split only when adding a second rendering format or a new family of section
-  queries; today its callers share the same section-analysis abstraction.
+- `section/extraction.py`: triangle-plane intersection and raw 2D section
+  segments.
+- `section/analysis.py`: section profile scans and connected-component
+  analysis.
+- `section/measure.py`: ad-hoc region, line, and point measurements on section
+  segments.
+- `section/render.py`: SVG rendering and section-analysis sidecar writing.
+- `section/cache.py`: per-validation section segment/analysis cache.
+- `section/types.py`: axis constants and shared section data types.
 
 ## Executable Rules
 
@@ -78,5 +84,9 @@ frameworks.
   return.
 - `suggest/core.py` must import `agentcad.probe.planner`, not the probe package or
   execution layer.
+- `agentcad.section` remains a package; `src/agentcad/section.py` must not
+  return.
+- Section internals must not import workflow frontends such as CLI, validate,
+  review, suggest, probe, assembly, contract, preview, or doctor.
 - Hot files have explicit line ceilings so growth is intentional.
 - Generated files are not tracked by git.

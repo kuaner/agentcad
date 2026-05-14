@@ -1,4 +1,4 @@
-"""Tests for section.py: cross-section segment extraction and SVG rendering."""
+"""Tests for agentcad.section cross-section extraction and SVG rendering."""
 from __future__ import annotations
 
 import struct
