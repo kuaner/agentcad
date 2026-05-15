@@ -13,7 +13,7 @@ from ..section import (
     section_segments,
 )
 from ..stl import read_stl, section_bbox_at_z, section_radius_at_z
-from ..workspace import outputs_dir
+from ..workspace import format_model_target, outputs_dir_for_variant, parse_model_target
 from .utils import _num, _pair, _region
 
 _AXIS_MAP = {"x": AXIS_X, "y": AXIS_Y, "z": AXIS_Z}
@@ -22,6 +22,8 @@ _AXIS_NAME = {AXIS_X: "X", AXIS_Y: "Y", AXIS_Z: "Z"}
 
 def run_probe_plan(project: Path, name: str, suggested: list[dict[str, Any]]) -> dict:
     """Execute planned probe entries without shelling out to the CLI."""
+    model_name, variant = parse_model_target(name)
+    target = format_model_target(model_name, variant)
     results: list[dict[str, Any]] = []
     for item in suggested:
         probe = item.get("probe") or {}
@@ -53,11 +55,11 @@ def run_probe_plan(project: Path, name: str, suggested: list[dict[str, Any]]) ->
             "point": point,
         }
         if axis == "z":
-            result = probe_model(project, name, z_values=[pos], **kwargs)
+            result = probe_model(project, target, z_values=[pos], **kwargs)
         elif axis == "x":
-            result = probe_model(project, name, x_values=[pos], **kwargs)
+            result = probe_model(project, target, x_values=[pos], **kwargs)
         else:
-            result = probe_model(project, name, y_values=[pos], **kwargs)
+            result = probe_model(project, target, y_values=[pos], **kwargs)
         results.append({
             "id": item.get("id"),
             "ok": bool(result.get("ok")),
@@ -68,7 +70,9 @@ def run_probe_plan(project: Path, name: str, suggested: list[dict[str, Any]]) ->
     return {
         "ok": not failed,
         "stage": "probe-plan-run",
-        "model": name,
+        "model": model_name,
+        "variant": variant,
+        "target": target,
         "count": len(results),
         "failed": len(failed),
         "results": results,
@@ -106,15 +110,19 @@ def probe_model(
         line_v: Optional fixed V coordinate for line-intersection measurement.
         point: Optional point in section coordinates for nearest-contour distance.
     """
-    stl_path = outputs_dir(project, name) / f"{name}.stl"
+    model_name, variant = parse_model_target(name)
+    target = format_model_target(model_name, variant)
+    out_dir = outputs_dir_for_variant(project, model_name, variant)
+    stl_path = out_dir / f"{model_name}.stl"
     if not stl_path.exists():
         return {
             "ok": False,
             "stage": "probe",
-            "model": name,
+            "model": model_name,
+            "variant": variant,
             "error": {
                 "type": "STLMissing",
-                "message": f"STL not found — run 'agentcad build {name}' first: {stl_path}",
+                "message": f"STL not found — run 'agentcad build {target}' first: {stl_path}",
             },
         }
 
@@ -160,7 +168,9 @@ def probe_model(
     payload: dict = {
         "ok": True,
         "stage": "probe",
-        "model": name,
+        "model": model_name,
+        "variant": variant,
+        "target": target,
         "center": [cx, cy],
     }
     if total == 1:
@@ -189,15 +199,18 @@ def probe_scan(
         axis: "x", "y", or "z".
         samples: Number of cross-sections to sample.
     """
-    stl_path = outputs_dir(project, name) / f"{name}.stl"
+    model_name, variant = parse_model_target(name)
+    target = format_model_target(model_name, variant)
+    stl_path = outputs_dir_for_variant(project, model_name, variant) / f"{model_name}.stl"
     if not stl_path.exists():
         return {
             "ok": False,
             "stage": "probe",
-            "model": name,
+            "model": model_name,
+            "variant": variant,
             "error": {
                 "type": "STLMissing",
-                "message": f"STL not found — run 'agentcad build {name}' first: {stl_path}",
+                "message": f"STL not found — run 'agentcad build {target}' first: {stl_path}",
             },
         }
 
@@ -213,11 +226,11 @@ def probe_scan(
     for step in scan.get("step_changes", []):
         pos = step["pos"]
         if axis_int == AXIS_Z:
-            cmd = f"agentcad probe {name} --z {pos}"
+            cmd = f"agentcad probe {target} --z {pos}"
         elif axis_int == AXIS_X:
-            cmd = f"agentcad probe {name} --x {pos}"
+            cmd = f"agentcad probe {target} --x {pos}"
         else:
-            cmd = f"agentcad probe {name} --y {pos}"
+            cmd = f"agentcad probe {target} --y {pos}"
         suggested.append({
             "pos": pos,
             "hint": step.get("hint", ""),
@@ -227,7 +240,9 @@ def probe_scan(
     return {
         "ok": True,
         "stage": "probe",
-        "model": name,
+        "model": model_name,
+        "variant": variant,
+        "target": target,
         "scan": scan,
         "suggested_probes": suggested,
     }

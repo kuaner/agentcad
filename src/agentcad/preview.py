@@ -4,7 +4,12 @@ import html
 import http.server
 import json
 import os
+import re
 import socketserver
+import threading
+import urllib.error
+import urllib.parse
+import urllib.request
 import webbrowser
 from functools import lru_cache
 from pathlib import Path
@@ -150,12 +155,75 @@ def serve_preview(preview_path: Path, *, port: int = 0) -> None:
     with _ReusableThreadedServer(("127.0.0.1", port), handler) as httpd:
         actual_port = httpd.server_address[1]
         url = f"http://localhost:{actual_port}/{_rel_link(preview_path, Path(directory))}"
-        print(f"Serving preview at {url}  (Ctrl+C to stop)")
+        print(f"Serving preview at {url}  (Ctrl+C to stop)", flush=True)
         webbrowser.open(url)
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
             pass
+
+
+def check_preview_page(preview_path: Path) -> dict:
+    """Load a preview page through the same HTTP root and verify linked assets."""
+    preview_path = preview_path.expanduser().resolve()
+    if not preview_path.exists():
+        return _preview_check_failure(
+            preview_path,
+            "PreviewMissing",
+            f"preview.html not found: {preview_path}",
+            broken_assets=[_asset("preview_page", "preview", str(preview_path), "missing")],
+        )
+
+    serve_root = _find_serve_root(preview_path)
+    handler = _make_handler(str(serve_root))
+    with _ReusableThreadedServer(("127.0.0.1", 0), handler) as httpd:
+        thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+        thread.start()
+        try:
+            base_url = f"http://127.0.0.1:{httpd.server_address[1]}/"
+            page_url = urllib.parse.urljoin(base_url, _quote_rel(preview_path, serve_root))
+            page = _fetch_url(page_url)
+            if not page["ok"]:
+                return _preview_check_failure(
+                    preview_path,
+                    "PreviewLoadFailed",
+                    f"preview page could not be loaded: {page.get('error')}",
+                    serve_root=serve_root,
+                    url=page_url,
+                    broken_assets=[_asset("preview_page", "preview", page_url, page.get("error", "failed"))],
+                )
+            data = _extract_preview_payload(page.get("text", ""))
+            if not isinstance(data, dict):
+                return _preview_check_failure(
+                    preview_path,
+                    "PreviewPayloadMissing",
+                    "window.AGENTCAD_PREVIEW payload was not found or was not JSON",
+                    serve_root=serve_root,
+                    url=page_url,
+                )
+
+            assets = _preview_assets(data)
+            broken: list[dict] = []
+            for item in assets:
+                result = _fetch_url(urllib.parse.urljoin(page_url, item["url"]))
+                if not result["ok"]:
+                    broken.append({**item, "error": result.get("error"), "status": result.get("status")})
+            return {
+                "ok": not broken,
+                "stage": "preview-check",
+                "kind": data.get("kind"),
+                "name": data.get("title"),
+                "preview_page": str(preview_path),
+                "serve_root": str(serve_root),
+                "url": page_url,
+                "assets_checked": len(assets) + 1,
+                "broken_assets": broken,
+                "artifacts": {"preview_page": str(preview_path)},
+                "message": "preview assets reachable" if not broken else "preview has broken asset links",
+            }
+        finally:
+            httpd.shutdown()
+            thread.join(timeout=2)
 
 
 class _ReusableThreadedServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -182,6 +250,104 @@ def _make_handler(directory: str):
         def log_message(self, format, *args):
             pass
     return Handler
+
+
+def _extract_preview_payload(html_text: str) -> dict | None:
+    match = re.search(r"<script>window\.AGENTCAD_PREVIEW = (.*?);</script>", html_text, re.S)
+    if not match:
+        return None
+    try:
+        return json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return None
+
+
+def _preview_assets(data: dict) -> list[dict]:
+    rows: list[dict] = []
+    for component in data.get("components") or []:
+        cid = str(component.get("id") or component.get("model") or "component")
+        if component.get("stlUrl"):
+            rows.append(_asset("component_stl", cid, str(component["stlUrl"])))
+        rows.extend(_artifact_assets(component.get("artifacts") or {}, owner=f"component:{cid}"))
+    for svg in data.get("svgs") or []:
+        if svg.get("path"):
+            rows.append(_asset("svg", str(svg.get("label") or "svg"), str(svg["path"])))
+    rows.extend(_artifact_assets(data.get("artifacts") or {}, owner="preview"))
+    return _dedupe_assets(rows)
+
+
+def _artifact_assets(value: dict, *, owner: str) -> list[dict]:
+    rows: list[dict] = []
+    for key, url in value.items():
+        if isinstance(url, str):
+            rows.append(_asset("artifact", f"{owner}:{key}", url))
+    return rows
+
+
+def _dedupe_assets(rows: list[dict]) -> list[dict]:
+    seen: set[tuple[str, str]] = set()
+    unique = []
+    for row in rows:
+        key = (row["kind"], row["url"])
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(row)
+    return unique
+
+
+def _fetch_url(url: str) -> dict:
+    try:
+        with urllib.request.urlopen(url, timeout=5) as response:
+            body = response.read()
+            status = int(getattr(response, "status", 200))
+        return {
+            "ok": 200 <= status < 400,
+            "status": status,
+            "text": body.decode("utf-8", errors="replace"),
+            "byte_count": len(body),
+        }
+    except urllib.error.HTTPError as exc:
+        return {"ok": False, "status": exc.code, "error": f"HTTP {exc.code}"}
+    except urllib.error.URLError as exc:
+        return {"ok": False, "error": str(exc.reason)}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
+def _preview_check_failure(
+    preview_path: Path,
+    error_type: str,
+    message: str,
+    *,
+    serve_root: Path | None = None,
+    url: str | None = None,
+    broken_assets: list[dict] | None = None,
+) -> dict:
+    payload = {
+        "ok": False,
+        "stage": "preview-check",
+        "preview_page": str(preview_path),
+        "error": {"type": error_type, "message": message},
+        "broken_assets": broken_assets or [],
+        "artifacts": {"preview_page": str(preview_path)},
+    }
+    if serve_root is not None:
+        payload["serve_root"] = str(serve_root)
+    if url is not None:
+        payload["url"] = url
+    return payload
+
+
+def _asset(kind: str, label: str, url: str, error: str | None = None) -> dict:
+    row = {"kind": kind, "label": label, "url": url}
+    if error:
+        row["error"] = error
+    return row
+
+
+def _quote_rel(path: Path, root: Path) -> str:
+    return urllib.parse.quote(_rel_link(path, root).replace(os.sep, "/"))
 
 
 def _write_preview_file(path: Path, data: dict, title: str) -> dict:

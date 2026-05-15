@@ -12,7 +12,7 @@ from .jsonio import print_payload
 from .measure import measure_model
 from .precheck import precheck_model
 from .probe import plan_probes, probe_model, probe_scan
-from .preview import serve_preview, write_assembly_preview, write_model_preview
+from .preview import check_preview_page, serve_preview, write_assembly_preview, write_model_preview
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .report import report_model
 from .review import review_model
@@ -22,17 +22,12 @@ from .stl import read_stl
 from .batch import validate_all
 from .snapshot import compare_snapshot, load_snapshot, snapshot_target, write_snapshot
 from .validate import deliver_model, validate_model
-from .workspace import find_project, init_workspace, model_dir, new_model, normalize_model_name, outputs_dir, outputs_dir_for_variant, sync_workspace
+from .workspace import find_project, init_workspace, model_dir, new_model, normalize_model_name, outputs_dir, outputs_dir_for_variant, parse_model_target, sync_workspace
 
 
 def _parse_model_target(target: str) -> tuple[str, str | None]:
     """Parse 'model' or 'model:variant' into (model, variant_or_None)."""
-    if ":" not in target:
-        return target, None
-    model, variant = target.rsplit(":", 1)
-    if not model or not variant:
-        raise ValueError(f"invalid target '{target}': both model and variant name required around ':'")
-    return model, variant
+    return parse_model_target(target)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -96,6 +91,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="preview target kind; auto detects models/<name> or assemblies/<name>",
     )
 
+    preview_check = sub.add_parser("preview-check", help="verify preview.html and linked assets without opening a browser")
+    preview_check.add_argument("target")
+    preview_check.add_argument(
+        "--kind",
+        choices=["auto", "model", "assembly"],
+        default="auto",
+        help="preview target kind; auto detects models/<name> or assemblies/<name>",
+    )
+
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model or all targets")
     validate.add_argument("model")
     validate.add_argument("--view", choices=["iso", "front", "top", "side", "back"], default="iso")
@@ -152,6 +156,9 @@ def build_parser() -> argparse.ArgumentParser:
     review = sub.add_parser("review", help="pre-delivery checklist + pairwise relations matrix")
     review.add_argument("model")
 
+    workflow = sub.add_parser("workflow", help="run final delivery gates without opening a browser")
+    workflow.add_argument("model", help="model name to check (supports model:variant syntax)")
+
     sync = sub.add_parser("sync", help="update workspace scaffold files from templates")
     sync.add_argument("--dry-run", action="store_true", help="preview template updates without writing files")
     sync.add_argument("--only", default=None, help="sync only one template path prefix (e.g. references/)")
@@ -162,6 +169,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     suggest_cmd = sub.add_parser("suggest-checks", help="suggest missing checks based on design contract")
     suggest_cmd.add_argument("model", help="model name to analyze")
+    suggest_cmd.add_argument("--apply", action="store_true", help="apply concrete suggested checks to design.json")
 
     cadbench_cmd = sub.add_parser("cadbench", help="evaluate CADBench contract fixtures")
     cadbench_cmd.add_argument("--root", type=Path, default=Path("examples/cadbench"),
@@ -308,6 +316,13 @@ def dispatch(args: argparse.Namespace) -> dict:
             kind=getattr(args, "kind", "auto"),
             variant=variant_name,
         )
+    if args.command == "preview-check":
+        target, variant_name = _parse_model_target(args.target)
+        return _preview_check_target(
+            project, target,
+            kind=getattr(args, "kind", "auto"),
+            variant=variant_name,
+        )
     if args.command == "validate":
         if args.model == "all":
             include_models = getattr(args, "models", False)
@@ -380,13 +395,16 @@ def dispatch(args: argparse.Namespace) -> dict:
     if args.command == "review":
         model_name, variant_name = _parse_model_target(args.model)
         return review_model(project, model_name, variant=variant_name)
+    if args.command == "workflow":
+        from .workflow import run_workflow
+        return run_workflow(project, args.model)
     if args.command == "doctor":
         from .doctor import run_model_doctor
         model_name, variant_name = _parse_model_target(args.model)
         return run_model_doctor(project, model_name, variant=variant_name)
     if args.command == "suggest-checks":
         from .suggest import suggest_checks
-        return suggest_checks(project, args.model)
+        return suggest_checks(project, args.model, apply=getattr(args, "apply", False))
     if args.command == "clean":
         from .clean import clean_model, _clean_all
         if args.model:
@@ -452,6 +470,58 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: 
         serve_preview(preview_path)
 
     return result
+
+
+def _preview_check_target(project: Path, target: str, *, kind: str = "auto", variant: str | None = None) -> dict:
+    safe = normalize_model_name(target)
+    has_model = model_dir(project, safe).exists()
+    has_assembly = (assembly_dir(project, safe) / "assembly.json").exists()
+
+    result: dict | None = None
+    if kind == "model":
+        if not has_model:
+            return {**_preview_not_found(safe, kind="model"), "stage": "preview-check"}
+        result = write_model_preview(project, safe, variant=variant)
+    elif kind == "assembly":
+        if not has_assembly:
+            return {**_preview_not_found(safe, kind="assembly"), "stage": "preview-check"}
+        result = write_assembly_preview(project, safe)
+    elif has_model and has_assembly:
+        return {
+            "ok": False,
+            "stage": "preview-check",
+            "target": safe,
+            "error": {
+                "type": "AmbiguousPreviewTarget",
+                "message": f"both model and assembly exist for {safe}; pass --kind model or --kind assembly",
+            },
+        }
+    elif has_model:
+        result = write_model_preview(project, safe, variant=variant)
+    elif has_assembly:
+        result = write_assembly_preview(project, safe)
+    else:
+        return {
+            "ok": False,
+            "stage": "preview-check",
+            "target": safe,
+            "error": {
+                "type": "PreviewTargetNotFound",
+                "message": f"no model or assembly found for {safe}",
+            },
+        }
+
+    if not result or not result.get("ok"):
+        return {**(result or {}), "stage": "preview-check"}
+    preview_page = (result.get("artifacts") or {}).get("preview_page")
+    if not preview_page:
+        return {
+            "ok": False,
+            "stage": "preview-check",
+            "target": safe,
+            "error": {"type": "PreviewPageMissing", "message": "preview generation did not return preview_page"},
+        }
+    return check_preview_page(Path(preview_page))
 
 
 def _validation_json_path(project: Path, target) -> Path:

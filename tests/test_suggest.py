@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from agentcad.suggest import evaluate_suggestion_quality, suggest_checks, suggest_from_contract
-from agentcad.workspace import init_workspace, new_model, model_dir
+from agentcad.workspace import init_workspace, new_model, new_variant, model_dir, outputs_dir
 
 
 @pytest.fixture()
@@ -395,3 +395,73 @@ class TestSuggestTemplateQuality:
         )
 
         assert result["suggestion_quality"]["placeholder_count"] == 0
+
+
+class TestSuggestPatches:
+    def test_suggest_includes_deterministic_json_patches(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "body", "checks": []}],
+            "checks": [{"id": "body_bbox", "type": "bbox_size", "expected": [1, 1, 1]}],
+        })
+        _write_params(mdir, {"length": 20, "depth": 10, "height": 5})
+
+        result = suggest_checks(project, "thing")
+
+        add_check = next(p for p in result["patches"] if p["path"] == "/checks/-")
+        link_check = next(p for p in result["patches"] if p["path"] == "/features/0/checks/-")
+        assert add_check["value"]["id"] == "body_bbox_2"
+        assert add_check["value"]["type"] == "bbox_size"
+        assert link_check["value"] == "body_bbox_2"
+
+    def test_suggest_apply_writes_concrete_patches(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {"features": [{"id": "body", "checks": []}], "checks": []})
+        _write_params(mdir, {"length": 20, "depth": 10, "height": 5})
+        out_dir = outputs_dir(project, "thing")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "geometry.json").write_text(json.dumps({
+            "geometry": {
+                "bbox": {
+                    "min": [-10, -5, 0],
+                    "max": [10, 5, 5],
+                    "center": [0, 0, 2.5],
+                    "size": [20, 10, 5],
+                }
+            }
+        }), encoding="utf-8")
+
+        result = suggest_checks(project, "thing", apply=True)
+        design = json.loads((mdir / "design.json").read_text(encoding="utf-8"))
+
+        assert result["ok"] is True
+        assert result["applied"] is True
+        assert design["checks"][0]["id"] == "body_bbox"
+        assert design["features"][0]["checks"] == ["body_bbox", "body_position", "body_section"]
+
+    def test_suggest_apply_rejects_placeholders(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {"features": [{"id": "body", "checks": []}], "checks": []})
+        before = (mdir / "design.json").read_text(encoding="utf-8")
+
+        result = suggest_checks(project, "thing", apply=True)
+
+        assert result["ok"] is False
+        assert result["error"]["type"] == "UnresolvedPlaceholders"
+        assert (mdir / "design.json").read_text(encoding="utf-8") == before
+
+    def test_suggest_variant_reads_variant_params_but_does_not_apply(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {"features": [{"id": "body", "checks": []}], "checks": []})
+        _write_params(mdir, {"length": 1, "depth": 1, "height": 1})
+        new_variant(project, "thing", "large", params={"length": 40, "depth": 20, "height": 8})
+
+        result = suggest_checks(project, "thing:large")
+        applied = suggest_checks(project, "thing:large", apply=True)
+
+        add_check = next(p for p in result["patches"] if p["path"] == "/checks/-")
+        assert result["variant"] == "large"
+        assert result["target"] == "thing:large"
+        assert add_check["value"]["expected"] == [40, 20, 8]
+        assert applied["ok"] is False
+        assert applied["error"]["type"] == "VariantApplyNotAllowed"

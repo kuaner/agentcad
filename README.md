@@ -14,11 +14,13 @@ visual intuition.
 ```text
 discovery -> concept -> design contract -> suggest-checks -> precheck
   -> params/source -> build -> measure -> render -> validate
-  -> review -> quality review -> preview -> deliver
+  -> preview-check -> probe proof -> review -> quality review -> workflow
 ```
 
 If interrupted at any stage, `agentcad doctor <model>` reports workflow gaps
-and recommends the next command.
+and recommends the next command. Before final handoff, `agentcad workflow
+<model>` is the hard gate: it runs the nonblocking proof loop and writes
+`outputs/workflow.json`.
 
 ## What's in the box
 
@@ -28,12 +30,13 @@ and recommends the next command.
 | Scaffold | `agentcad new <model>` | Create model folder inside an existing workspace |
 | Scaffold | `agentcad new <model>:<variant>` | Create a variant (same `part.py`, different `params.json`) |
 | Sync | `agentcad sync [--dry-run] [--only <path>] [--prune-deprecated]` | Refresh workspace scaffold from latest templates, preview changes, or prune deprecated scaffold paths |
-| Suggest | `agentcad suggest-checks <model>` | Analyze design contract and recommend missing concrete checks by feature classification, evidence gaps, existing artifacts, and probe plan |
+| Suggest | `agentcad suggest-checks <model> [--apply]` | Analyze design contract and recommend missing concrete checks by feature classification, evidence gaps, existing artifacts, and probe plan; `--apply` writes only concrete suggestions |
 | Precheck | `agentcad precheck <model>` | Solve `design.json` statically (schema, feature coverage, `min_clearance`) **before** part.py is written |
 | Build | `agentcad build <model>[:<variant>]` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
 | Measure | `agentcad measure <model>[:<variant>]` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
 | Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews with dimension annotations + Z/X/Y cross-section SVGs with measurement sidecars |
 | Preview | `agentcad preview <name>[:<variant>]` | Interactive Three.js preview for models and assemblies served through a local HTTP server |
+| Preview check | `agentcad preview-check <name>[:<variant>]` | Nonblocking HTTP health check for preview.html, STL, SVG, and artifact links |
 | Probe | `agentcad probe <model>` | Cross-section diameter / bbox / component analysis plus ad-hoc line, point, and region measurements; `--scan` to discover step changes; `--cx/--cy` avoid negative-number parsing issues |
 | Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + measurement JSON + suggested probes |
 | Validate | `agentcad validate <model>[:<variant>]` | Build + measure + render all orthographic previews + design checks + feature coverage + fix suggestions (includes timing and section cache) |
@@ -43,6 +46,7 @@ and recommends the next command.
 | Diff | `agentcad diff <model> [--last]` | Compare current vs previous validation run: fixed/regressed/stable checks + geometry drift |
 | Doctor | `agentcad doctor <model>[:<variant>]` | Workflow state diagnostics: severity-graded findings and recommended next command |
 | Review | `agentcad review <model>` | Pre-delivery checklist with pairwise relations matrix, hole-access enforcement, weak-check blocking gates, and must-view SVG list |
+| Workflow | `agentcad workflow <model>[:<variant>]` | Final model gate: suggest-checks, precheck, validate, preview-check, probe proof, review, and deliver manifest |
 | Clean | `agentcad clean [--model <name>] [--dry-run] [--no-validation-history] [--no-debug] [--previews]` | Remove debug SVGs, old validation history, optionally preview SVGs |
 | Assembly | `agentcad assembly init/list/validate/review` | Optional multi-model assembly contracts with component transforms, mate residuals, fit checks, combined/exploded SVGs, preview generation, MJCF export, and metadata interface validation |
 | Deliver | `agentcad deliver <model>[:<variant>]` | Delivery manifest |
@@ -159,14 +163,11 @@ agentcad precheck bracket
 # 3. Implement part.py, then run the post-build pipeline
 agentcad validate bracket
 
-# 4. If interrupted, diagnose workflow gaps
+# 4. Final hard gate before handoff
+agentcad workflow bracket
+
+# 5. If interrupted, diagnose workflow gaps
 agentcad doctor bracket
-
-# 5. Pre-delivery review, then quality review
-agentcad review bracket
-
-# 6. Deliver
-agentcad deliver bracket
 ```
 
 The default generated model is a simple build123d cuboid. Agent rules and
@@ -216,6 +217,7 @@ Re-run any example:
 cd examples/fan-adapter-8025
 agentcad validate fan_duct_adapter_8025
 agentcad review fan_duct_adapter_8025
+agentcad workflow fan_duct_adapter_8025
 ```
 
 Batch validate the whole workspace:

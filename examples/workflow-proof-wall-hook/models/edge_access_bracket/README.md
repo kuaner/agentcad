@@ -16,8 +16,8 @@ agentcad precheck edge_access_bracket     # 1. solve design.json statically
 agentcad build edge_access_bracket        # 2. generate STEP/STL
 agentcad measure edge_access_bracket      # 3. measure geometry stats
 agentcad validate edge_access_bracket     # 4. run all checks (auto-renders SVGs)
-agentcad review edge_access_bracket       # 5. pre-delivery checklist + relations matrix
-agentcad deliver edge_access_bracket      # 6. write delivery manifest
+agentcad preview-check edge_access_bracket # 5. verify preview assets without opening browser
+agentcad workflow edge_access_bracket     # 6. final hard gate + delivery manifest
 ```
 
 Before writing `design.json`, run the Discovery Gate in
@@ -28,7 +28,8 @@ questions with concrete options and wait for the user's answer.
 For non-trivial parts, write a short `concept.md` using
 `../../references/concept-design.md` before committing `design.json`. After
 `validate` and `review` pass, apply
-`../../references/design-quality-review.md` before delivery.
+`../../references/design-quality-review.md`, then run
+`agentcad workflow edge_access_bracket` before delivery.
 
 ## Common errors to design *against*
 
@@ -74,5 +75,5 @@ errors and the check types that catch them.
 
 Generated artifacts go to `outputs/`.
 
-See `workflow-evidence.md` for the completed end-to-end run and the workflow
-gap this model exposed.
+See `workflow-evidence.md` and `outputs/workflow.json` for the completed
+end-to-end run and the workflow gap this model exposed.

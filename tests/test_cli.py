@@ -350,6 +350,42 @@ def test_preview_uses_http_server(tmp_path, monkeypatch):
     assert "path" in served
 
 
+def test_preview_help_does_not_include_static(capsys):
+    with pytest.raises(SystemExit) as exc_info:
+        main(["preview", "--help"])
+    output = capsys.readouterr().out
+
+    assert exc_info.value.code == 0
+    assert "--static" not in output
+
+
+def test_preview_check_does_not_start_http_server(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    main(["init", "project", "--model", "box"])
+    monkeypatch.chdir(tmp_path / "project")
+    checked = {}
+
+    def fake_model_preview(project_path, target, **kwargs):
+        preview_page = tmp_path / "project" / "models" / "box" / "outputs" / "preview.html"
+        preview_page.parent.mkdir(parents=True, exist_ok=True)
+        preview_page.write_text("<html></html>", encoding="utf-8")
+        return {"ok": True, "stage": "preview", "kind": "model", "name": target,
+                "artifacts": {"preview_page": str(preview_page)}}
+
+    def fake_check(path):
+        checked["path"] = str(path)
+        return {"ok": True, "stage": "preview-check", "artifacts": {"preview_page": str(path)}}
+
+    monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
+    monkeypatch.setattr(cli_mod, "check_preview_page", fake_check)
+    monkeypatch.setattr(cli_mod, "serve_preview", lambda p: (_ for _ in ()).throw(AssertionError("should not serve")))
+
+    result = main(["preview-check", "box"])
+
+    assert result == 0
+    assert checked["path"].endswith("preview.html")
+
+
 def test_cadbench_cli_outputs_aggregate_payload(capsys):
     root = Path(__file__).resolve().parents[1] / "examples" / "cadbench"
 

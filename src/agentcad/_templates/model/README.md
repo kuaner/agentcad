@@ -16,8 +16,8 @@ agentcad precheck {name}     # 1. solve design.json statically
 agentcad build {name}        # 2. generate STEP/STL
 agentcad measure {name}      # 3. measure geometry stats
 agentcad validate {name}     # 4. run all checks (auto-renders SVGs)
-agentcad review {name}       # 5. pre-delivery checklist + relations matrix
-agentcad deliver {name}      # 6. write delivery manifest
+agentcad preview-check {name} # 5. verify preview assets without opening browser
+agentcad workflow {name}     # 6. final hard gate + delivery manifest
 ```
 
 Before writing `design.json`, run the Discovery Gate in
@@ -28,7 +28,8 @@ questions with concrete options and wait for the user's answer.
 For non-trivial parts, write a short `concept.md` using
 `../../references/concept-design.md` before committing `design.json`. After
 `validate` and `review` pass, apply
-`../../references/design-quality-review.md` before delivery.
+`../../references/design-quality-review.md`, then run `agentcad workflow {name}`
+before delivery.
 
 ## Common errors to design *against*
 

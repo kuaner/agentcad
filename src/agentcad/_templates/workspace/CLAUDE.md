@@ -27,7 +27,7 @@ user requirement -> feature in design.json -> concrete check -> measured result
 If a feature cannot be checked yet, either add a check or explicitly record the
 unknown before claiming the model is complete.
 
-## Workflow (16 stages, do not skip)
+## Workflow (17 stages, do not skip)
 
 1. **Understand**: read the user request, identify every feature, and pass the
    Discovery Gate. Capture functional surfaces, interfaces, envelopes,
@@ -43,12 +43,14 @@ unknown before claiming the model is complete.
    (position, dimensions, access, wall/root, interface risk) before `part.py`.
    For risky features, add `functional_surfaces`, `interfaces`, and
    `failure_modes`; high-severity failure modes must have concrete evidence.
-4. **Suggest**: run `agentcad suggest-checks <name>` to find missing checks. Paste
-   suggested templates into `design.json` after filling concrete values. Check
-   `suggestion_quality.placeholder_count`; unresolved `<...>` placeholders are
-   a blocker unless you explicitly know why they cannot be resolved yet. Use
-   `probe_plan` from the output to choose section/probe points. Use
-   `agentcad probe <name> --plan --run` after build to write `outputs/probes.json`.
+4. **Suggest**: run `agentcad suggest-checks <name>` to find missing checks.
+   If every suggested template is concrete, use `agentcad suggest-checks <name>
+   --apply`; otherwise paste templates into `design.json` only after filling
+   concrete values. Check `suggestion_quality.placeholder_count`; unresolved
+   `<...>` placeholders are a blocker unless you explicitly know why they
+   cannot be resolved yet. Use `probe_plan` from the output to choose
+   section/probe points. Use `agentcad probe <name> --plan --run` after build
+   to write `outputs/probes.json`.
 5. **Params**: put tunable dimensions in `models/<name>/params.json`.
 6. **Precheck**: run `agentcad precheck <name>`. Do not write `part.py` while
    precheck fails.
@@ -68,14 +70,18 @@ unknown before claiming the model is complete.
    usage.
 12. **Review**: run `agentcad review <name>` and inspect every `must_view`
     artifact.
-13. **Preview**: run `agentcad preview <name>` (starts a local HTTP server and
-    auto-opens browser; do NOT manually open the file). See CLI Quick Reference
-    for assembly and kind options.
-14. **Quality Review**: apply `references/design-quality-review.md`. If the model
+13. **Preview Health**: run `agentcad preview-check <name>` to verify
+    `preview.html`, STL, SVG, and artifact links through the same HTTP serve
+    root used by `agentcad preview`.
+14. **Preview**: run `agentcad preview <name>` when human visual review is
+    needed (starts a local HTTP server and auto-opens browser; do NOT manually
+    open the file). See CLI Quick Reference for assembly and kind options.
+15. **Quality Review**: apply `references/design-quality-review.md`. If the model
     is valid but not good, revise and repeat from the relevant stage.
-15. **Deliver**: run `agentcad deliver <name>` only after review and quality
-    review pass.
-16. **Resume**: if interrupted, run `agentcad doctor <name>` for workflow state
+16. **Workflow Gate**: run `agentcad workflow <name>` as the final hard gate.
+    It runs suggest-checks, precheck, validate, preview-check, probe proof,
+    review, and `deliver --no-validate`, then writes `outputs/workflow.json`.
+17. **Resume**: if interrupted, run `agentcad doctor <name>` for workflow state
     and recommended next command.
 
 ## Iteration Loop
@@ -101,7 +107,8 @@ shape. First add or tighten the check that should have caught the issue, then
 change geometry and validate again.
 
 If you are unsure where you left off, run `agentcad doctor <name>` to get the
-workflow state and the next recommended command.
+workflow state and the next recommended command. Before handoff, rerun
+`agentcad workflow <name>` and require `ok: true`.
 
 ## Model Variants
 
@@ -136,8 +143,8 @@ differs. Variant outputs go to `models/<model>/outputs/<variant_name>/`.
   misplaced, shallow, blocked, detached, or too thin.
 - If visual review finds a problem, encode the problem as a check before or
   while fixing it. Do not rely on memory that you inspected it once.
-- Do not claim a model is complete until `agentcad validate` and
-  `agentcad review` both pass and the quality review has no blocking issues.
+- Do not claim a model is complete until `agentcad workflow <name>` returns
+  `ok: true` and the quality review has no blocking issues.
 - Every requested feature must have at least one validation check.
 - bbox + watertight alone are not sufficient: they pass even when features are
   missing or hidden.
@@ -183,6 +190,7 @@ models/<name>/
     precheck.json       Static contract report
     review.json         Pre-delivery review report
     deliverable.json    Delivery manifest
+    workflow.json       Final gate report
     preview.html        Interactive preview (agentcad preview)
     <name>.step         STEP export
     <name>.stl          STL export
@@ -215,6 +223,7 @@ agentcad measure <model>
 agentcad render <model>
 agentcad render <model> --views iso,front,top,side,back
 agentcad validate <model>
+agentcad workflow <model>[:<variant>]
 
 # Iteration and review
 agentcad diff <model>
@@ -236,6 +245,7 @@ agentcad snapshot compare --target <name>   # Compare one target
 agentcad snapshot compare --target <model>:<variant>
 
 # Preview (auto-opens browser — do NOT manually run `open`)
+agentcad preview-check <name>             # Verify preview assets without opening browser
 agentcad preview <name>                  # Start local server + auto-open browser
 agentcad preview <name> --kind assembly  # Force assembly mode
 
@@ -260,6 +270,7 @@ agentcad inspect <model>
 agentcad report <model>
 agentcad doctor <model>[:<variant>]           # Workflow state diagnostics: gaps, next command
 agentcad suggest-checks <model>               # Suggest missing checks based on design contract
+agentcad suggest-checks <model> --apply       # Apply only concrete suggested checks
 agentcad clean [--model <name>] [--dry-run]   # Remove debug/history artifacts
 
 # Assembly

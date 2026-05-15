@@ -21,7 +21,8 @@ from ..contract.common import GEOMETRY_CHECK_TYPES, HOLE_CHECK_TYPES, ROOT_CHECK
 from ..contract.evidence import evaluate_design_intent_lint_dict, evaluate_feature_evidence_matrix_dict
 from ..jsonio import read_json
 from ..probe.planner import plan_probe_points
-from ..workspace import model_dir, outputs_dir
+from ..workspace import format_model_target, model_dir, outputs_dir_for_variant, parse_model_target, variant_params_path
+from .patches import apply_suggestion_patches, build_suggestion_patches
 from .templates import (
     _append_evidence_suggestions,
     _attachment_root_template,
@@ -34,33 +35,39 @@ from .types import SuggestContext
 from .quality import evaluate_suggestion_quality
 
 
-def suggest_checks(project: Path, name: str) -> dict[str, Any]:
+def suggest_checks(project: Path, name: str, *, apply: bool = False) -> dict[str, Any]:
     """Analyze design.json and suggest missing checks."""
-    mdir = model_dir(project, name)
-    design = read_json(mdir / "design.json", default=None)
+    model_name, variant = parse_model_target(name)
+    target = format_model_target(model_name, variant)
+    mdir = model_dir(project, model_name)
+    design_path = mdir / "design.json"
+    design = read_json(design_path, default=None)
 
     if design is None or not isinstance(design, dict):
         return {
             "ok": False,
             "stage": "suggest-checks",
-            "model": name,
+            "model": model_name,
+            "variant": variant,
             "suggestions": [],
+            "patches": [],
             "suggestion_quality": evaluate_suggestion_quality([]),
             "design_found": False,
-            "error": {"type": "DesignNotFound", "message": f"design.json not found for model '{name}'"},
+            "error": {"type": "DesignNotFound", "message": f"design.json not found for model '{model_name}'"},
         }
 
-    features = design.get("features") or []
-    checks = design.get("checks") or []
-    params = read_json(mdir / "params.json", default={})
-    metadata = read_json(mdir / "metadata.json", default={}) or {}
-    out_dir = outputs_dir(project, name)
+    params_path = variant_params_path(project, model_name, variant) if variant else mdir / "params.json"
+    params = read_json(params_path, default={})
+    out_dir = outputs_dir_for_variant(project, model_name, variant)
+    metadata = read_json(out_dir / "metadata.json", default=None)
+    if metadata is None:
+        metadata = read_json(mdir / "metadata.json", default={}) or {}
     geometry = read_json(out_dir / "geometry.json", default={}) or {}
     validation = read_json(out_dir / "validation.json", default={}) or {}
     observability = read_json(out_dir / "observability.json", default={}) or {}
 
-    return suggest_from_contract(
-        name,
+    result = suggest_from_contract(
+        target,
         design,
         params=params if isinstance(params, dict) else {},
         metadata=metadata if isinstance(metadata, dict) else {},
@@ -68,6 +75,25 @@ def suggest_checks(project: Path, name: str) -> dict[str, Any]:
         validation=validation if isinstance(validation, dict) else {},
         observability=observability if isinstance(observability, dict) else {},
     )
+    result["model"] = model_name
+    result["variant"] = variant
+    result["target"] = target
+    if apply:
+        if variant:
+            result["ok"] = False
+            result["error"] = {"type": "VariantApplyNotAllowed", "message": "suggest-checks --apply cannot modify shared design.json through a variant target"}
+            return result
+        quality = result.get("suggestion_quality") or {}
+        if int(quality.get("placeholder_count") or 0) > 0:
+            result["ok"] = False
+            result["error"] = {"type": "UnresolvedPlaceholders", "message": "refusing to apply suggested checks with unresolved <...> placeholders"}
+            return result
+        updated = apply_suggestion_patches(design, result.get("patches") or [], design_path)
+        result["applied"] = True
+        result["applied_patch_count"] = len(result.get("patches") or [])
+        result["applied_check_count"] = len(updated.get("checks") or []) - len(design.get("checks") or [])
+        result["artifacts"] = {"design": str(design_path)}
+    return result
 
 
 def suggest_from_contract(
@@ -193,11 +219,13 @@ def suggest_from_contract(
         )
 
     suggestion_quality = evaluate_suggestion_quality(suggestions)
+    patches = build_suggestion_patches(design, suggestions)
     return {
         "ok": True,
         "stage": "suggest-checks",
         "model": name,
         "suggestions": suggestions,
+        "patches": patches,
         "suggestion_quality": suggestion_quality,
         "feature_evidence_matrix": feature_evidence_matrix,
         "design_intent_lint": design_intent_lint,

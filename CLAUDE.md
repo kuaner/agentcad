@@ -4,7 +4,7 @@
 
 AgentCAD is a CLI-first CAD workflow runtime for coding agents. It provides a repeatable workspace, build/export tools, geometry measurement, SVG and interactive HTML previews, validation checks, feature helpers, assembly checks, and delivery manifests so an agent can autonomously create and refine CAD models with measurable feedback.
 
-Core loop: `discovery -> concept -> design contract -> suggest-checks -> precheck -> params/source -> build -> measure -> render -> preview -> validate -> review -> quality review -> deliver`
+Core loop: `discovery -> concept -> design contract -> suggest-checks -> precheck -> params/source -> build -> measure -> render -> validate -> preview-check -> probe proof -> review -> quality review -> workflow`
 
 The `precheck` and `review` stages are mandatory checkpoints that catch
 design-time interferences (before code) and pre-delivery gaps (before
@@ -36,8 +36,9 @@ src/agentcad/          # Main package
   workspace.py          # workspace init/new, project discovery, model directory helpers
   measure.py            # STL geometry measurement -> geometry.json
   render.py             # Dependency-free SVG preview renderer from STL
-  preview.py            # Interactive HTML preview for models and assemblies
+  preview.py            # Interactive HTML preview plus nonblocking preview asset health checks
   validate.py           # Full validation pipeline: build + measure + render + design checks + feature coverage
+  workflow.py           # Final model gate: suggest, precheck, validate, preview-check, probe, review, deliver
   precheck.py           # Static design-time solver (no STL): clearance + schema + coverage
   review.py             # Pre-delivery checklist + pairwise relations matrix + must-view SVGs
   geometry.py           # Pure shape primitives: AABB, projection, clearance, accessibility
@@ -88,6 +89,7 @@ agentcad render <model>                          # SVG preview from STL
 agentcad render <model> --views iso,front,top    # Render multiple SVG previews
 agentcad preview <name>[:<variant>]                      # Start local server + interactive browser preview (auto-opens browser)
 agentcad preview <name> --kind assembly          # Disambiguate if a model and assembly share a name
+agentcad preview-check <name>[:<variant>]                 # Verify preview page and linked assets without opening a browser
 agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
 agentcad validate <model>[:<variant>]                    # Full validation pipeline
 agentcad validate all [--models] [--assemblies] [--include-variants] \
@@ -98,11 +100,12 @@ agentcad snapshot compare [--target <name>|<model>:<variant>]  # Compare current
 agentcad diff <model> [--last]                   # Compare validation runs
 agentcad review <model>[:<variant>]              # Pre-delivery checklist + relations matrix
 agentcad deliver <model>[:<variant>]                     # Delivery manifest
+agentcad workflow <model>[:<variant>]                    # Final nonblocking delivery gate, writes outputs/workflow.json
 agentcad probe <model> --z <z> --cx <x> --cy <y> # Radial center aliases
 agentcad probe <model> --scan --axis z|x|y       # Profile scan for step changes / void detection
 agentcad inspect <model>                         # Three-axis scan + section SVGs + suggested probes
 agentcad report <model>                                 # Markdown validation report
-agentcad suggest-checks <model>                 # Suggest missing checks based on design contract
+agentcad suggest-checks <model> [--apply]       # Suggest missing checks; --apply writes concrete patches only
 agentcad cadbench [--root examples/cadbench]     # Evaluate CADBench contract fixtures
 agentcad doctor <model>[:<variant>]               # Workflow state diagnostics: gaps, severity, next command
 agentcad clean [--model <name>] [--dry-run] [--debug] [--previews]  # Remove debug/history artifacts
@@ -183,7 +186,7 @@ never discover it — so always check both files after a change.
 - Coordinate convention: +X right, +Y back, +Z up
 - Units are millimeters unless explicitly stated otherwise
 - Generated artifacts live only under `models/<name>/outputs/` or `assemblies/<name>/outputs/`
-- After building and validating a model, always run `agentcad preview <name>` and let the human review the 3D result. Do NOT claim the model is complete until the human confirms it looks correct.
+- Before final handoff, always run `agentcad workflow <name>` and require `ok: true` in `outputs/workflow.json`. Use `agentcad preview <name>` for human 3D review when visual confirmation is needed; use `agentcad preview-check <name>` for automated asset health.
 
 ## build123d Pitfalls
 

@@ -8,7 +8,7 @@ import pytest
 
 from agentcad.inspect import inspect_model
 from agentcad.probe import plan_probes, probe_model, probe_scan
-from agentcad.workspace import init_workspace, new_model, outputs_dir
+from agentcad.workspace import init_workspace, new_model, new_variant, outputs_dir, outputs_dir_for_variant
 
 
 def _make_cube_stl(path: Path, size: float = 10.0) -> None:
@@ -234,6 +234,28 @@ def test_probe_plan_run_writes_artifact(cube_project):
     probes_path = cube_project / "models" / "cube" / "outputs" / "probes.json"
     assert probes_path.exists()
     assert result["execution"]["count"] >= 1
+
+
+def test_probe_plan_run_supports_variant_outputs(cube_project):
+    new_variant(cube_project, "cube", "big")
+    variant_out = outputs_dir_for_variant(cube_project, "cube", "big")
+    variant_out.mkdir(parents=True, exist_ok=True)
+    _make_cube_stl(variant_out / "cube.stl", size=20.0)
+    design_path = cube_project / "models" / "cube" / "design.json"
+    design_path.write_text("""{
+      "features": [{"id": "center_hole", "checks": ["hole_dia"]}],
+      "checks": [
+        {"id": "hole_dia", "type": "inner_diameter_at_z", "z": 10.0, "expected": 4.0, "center": [10.0, 10.0]}
+      ]
+    }""", encoding="utf-8")
+
+    result = plan_probes(cube_project, "cube:big", run=True)
+
+    assert result["ok"] is True
+    assert result["variant"] == "big"
+    assert (variant_out / "probes.json").exists()
+    assert any("agentcad probe cube:big" in item["command"] for item in result["suggested_probes"])
+    assert result["execution"]["target"] == "cube:big"
 
 
 def test_inspect_suggested_commands_use_supported_cli_flags(cube_project):

@@ -186,6 +186,22 @@ def normalize_model_name(name: str) -> str:
     return value
 
 
+def parse_model_target(target: str) -> tuple[str, str | None]:
+    """Parse 'model' or 'model:variant' into normalized names."""
+    raw = str(target)
+    if ":" not in raw:
+        return normalize_model_name(raw), None
+    model, variant = raw.rsplit(":", 1)
+    if not model or not variant:
+        raise ValueError(f"invalid target '{target}': both model and variant name required around ':'")
+    return normalize_model_name(model), normalize_model_name(variant)
+
+
+def format_model_target(name: str, variant: str | None = None) -> str:
+    safe = normalize_model_name(name)
+    return f"{safe}:{normalize_model_name(variant)}" if variant else safe
+
+
 def variant_dir(project: Path, name: str, variant: str) -> Path:
     safe_variant = normalize_model_name(variant)
     return model_dir(project, name) / "variants" / safe_variant

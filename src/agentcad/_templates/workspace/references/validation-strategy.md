@@ -16,6 +16,11 @@ agentcad probe my_model --plan
 Use the resulting `suggested_probes` commands before guessing `z`, `center`, or
 `region` values.
 
+Before final handoff, run `agentcad workflow <model>`. It repeats the proof loop
+with `suggest-checks`, `precheck`, `validate`, `preview-check`, `probe --plan
+--run`, `review`, and `deliver --no-validate`, then writes
+`outputs/workflow.json` with the next command if any gate fails.
+
 ```bash
 # 1. Build the model first
 agentcad build my_model
