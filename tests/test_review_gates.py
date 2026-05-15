@@ -209,6 +209,20 @@ class TestFeatureEvidenceMatrix:
         assert row["evidence"]["interface_risk"]["ok"] is False
         assert row["missing"] == ["access", "interface_risk"]
 
+    def test_access_evidence_requires_hole_accessibility_check_type(self):
+        matrix = evaluate_feature_evidence_matrix_dict({
+            "features": [{"id": "m4_hole", "intent": "M4 mounting hole", "checks": ["diameter", "access_marker"]}],
+            "checks": [
+                {"id": "diameter", "type": "inner_diameter_at_z", "z": 3.0, "expected": 4.0, "center": [0, 0]},
+                {"id": "access_marker", "type": "feature_position", "point": [0, 0, 3.0], "expected": "void"},
+            ],
+        })
+
+        row = matrix[0]
+        assert row["evidence"]["access"]["ok"] is False
+        assert row["evidence"]["access"]["accepted_types"] == ["hole_accessibility"]
+        assert row["missing"] == ["access", "interface_risk"]
+
     def test_review_exposes_feature_evidence_matrix_gate(self, project):
         mdir = model_dir(project, "thing")
         _write_design(mdir, {

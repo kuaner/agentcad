@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentcad-cli"
-version = "0.3.0"
+version = "0.3.1"
 description = "Agent-first CAD workflow runtime"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
@@ -23,7 +23,7 @@ agentcad = "agentcad.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"agentcad._templates" = ["**/*.md", "**/*.json", "**/*.py", "**/.gitkeep"]
+"agentcad._templates" = ["**/*.md", "**/*.json", "**/*.py", "**/*.html", "**/.gitkeep"]
 
 [project.optional-dependencies]
 dev = ["pytest"]

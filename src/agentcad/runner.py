@@ -115,7 +115,7 @@ def build_model(project: Path, name: str, force: bool = False, variant: str | No
         from build123d import export_step, export_stl  # type: ignore
 
         export_step(result, str(step_path))
-        export_stl(result, str(stl_path))
+        export_stl(result, str(stl_path), tolerance=5e-4, angular_tolerance=0.05)
     except Exception as exc:
         tb = traceback.format_exc()
         payload = _failure(name, "export", type(exc).__name__, str(exc), source)
