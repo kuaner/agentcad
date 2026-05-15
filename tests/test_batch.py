@@ -313,7 +313,6 @@ class TestValidateAllIntegration:
     @pytest.fixture(autouse=True)
     def _no_preview_serve(self, monkeypatch):
         monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
-        monkeypatch.setattr(cli_mod, "open_preview", lambda *a, **kw: None)
 
     def test_empty_workspace_returns_ok(self, tmp_path):
         project = _make_workspace(tmp_path)
@@ -412,7 +411,6 @@ class TestValidateAllCLI:
     @pytest.fixture(autouse=True)
     def _no_preview_serve(self, monkeypatch):
         monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
-        monkeypatch.setattr(cli_mod, "open_preview", lambda *a, **kw: None)
 
     def test_validate_all_cli_returns_zero_on_empty(self, tmp_path, monkeypatch):
         """Empty workspace should return 0 (all 0 targets pass)."""

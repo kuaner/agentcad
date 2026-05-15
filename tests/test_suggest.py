@@ -155,6 +155,18 @@ class TestSuggestAttachmentChecks:
         result = suggest_checks(project, "thing")
         assert not any(s["missing"] == "root_interface_check" for s in result["suggestions"])
 
+    def test_attachment_with_root_section_no_suggestion(self, project):
+        mdir = model_dir(project, "thing")
+        _write_design(mdir, {
+            "features": [{"id": "retaining_lip", "checks": ["lip_section", "lip_root_section"]}],
+            "checks": [
+                {"id": "lip_section", "type": "section_bbox_at_z", "z": 5, "expected": [10, 2], "tolerance": 0.1},
+                {"id": "lip_root_section", "type": "section_bbox_at_z", "z": 1, "expected": "solid", "region": [[0, 0], [10, 2]]},
+            ],
+        })
+        result = suggest_checks(project, "thing")
+        assert not any(s["missing"] == "root_interface_check" for s in result["suggestions"])
+
 
 class TestSuggestTemplateQuality:
     def test_hole_no_checks_gets_accessibility_template(self, project):

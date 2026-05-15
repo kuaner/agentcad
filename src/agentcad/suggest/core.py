@@ -17,7 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from ..contract.common import GEOMETRY_CHECK_TYPES, HOLE_CHECK_TYPES, ROOT_CHECK_TYPES, classify_feature
+from ..contract.common import GEOMETRY_CHECK_TYPES, HOLE_CHECK_TYPES, ROOT_CHECK_TYPES, ROOT_WORDS, classify_feature
 from ..contract.evidence import evaluate_design_intent_lint_dict, evaluate_feature_evidence_matrix_dict
 from ..jsonio import read_json
 from ..probe.planner import plan_probe_points
@@ -174,8 +174,7 @@ def suggest_from_contract(
 
             # Load-bearing attachment: missing root/interface check.
             if "load_bearing_attachment" in categories:
-                root_checks = linked_types & ROOT_CHECK_TYPES
-                if not root_checks:
+                if not _has_root_interface_check(linked_checks):
                     suggestions.append(_suggestion(
                         fid, "root_interface_check",
                         "load-bearing feature has no root/interface check — detachment risk is unverified",
@@ -205,3 +204,19 @@ def suggest_from_contract(
         "probe_plan": probe_plan,
         "design_found": True,
     }
+
+
+def _has_root_interface_check(linked_checks: list[dict[str, Any]]) -> bool:
+    for check in linked_checks:
+        check_type = str(check.get("type", ""))
+        check_id = str(check.get("id", ""))
+        if check_type in ROOT_CHECK_TYPES:
+            return True
+        if check_type == "section_bbox_at_z" and _text_has_any(check_id, ROOT_WORDS):
+            return True
+    return False
+
+
+def _text_has_any(text: str, words: frozenset[str]) -> bool:
+    lowered = text.lower()
+    return any(word in lowered for word in words)

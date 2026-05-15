@@ -20,24 +20,10 @@ def test_validate_writes_live_model_preview(tmp_path):
     assert "STLLoader" in html
     assert '"kind": "model"' in html
     assert '"stlUrl"' in html
-    assert '"stlBase64"' not in html
+    assert '"mode": "fetch-relative-url"' in html
     assert '"validation": "validation.json"' in html
     assert 'id="explode"' in html
     assert 'id="next-part"' in html
-
-
-def test_validate_writes_static_model_preview(tmp_path):
-    init_workspace(tmp_path)
-    new_model(tmp_path, "static_block")
-
-    result = validate_model(tmp_path, "static_block")
-    assert result["ok"] is True
-    # Generate a static preview and verify it embeds base64
-    static = write_model_preview(tmp_path, "static_block", static=True)
-    assert static["ok"] is True
-    html = Path(static["artifacts"]["preview_page"]).read_text(encoding="utf-8")
-    assert '"stlBase64"' in html
-    assert '"artifactsContent"' in html
 
 
 def test_preview_command_fails_before_stl_exists(tmp_path):

@@ -236,12 +236,13 @@ def _validate_section_bbox_check(check: dict, index: int) -> list[SchemaIssue]:
     """
     issues: list[SchemaIssue] = []
     expected = check.get("expected", "solid")
-    expected_str = str(expected).lower()
-    if expected_str not in ("solid", "void"):
+    expected_dims = _section_bbox_expected_dimensions(expected)
+    expected_str = str(expected).lower() if expected_dims is None else ""
+    if expected_dims is None and expected_str not in ("solid", "void"):
         issues.append(_issue(
             _check_path(index, "expected"),
-            f"expected must be 'solid' or 'void', got {expected!r}",
-            hint="Use expected='solid' or expected='void' with a region.",
+            f"expected must be 'solid', 'void', or [width, depth], got {expected!r}",
+            hint="Use expected='solid', expected='void' with a region, or expected=[width, depth] with tolerance.",
         ))
     elif expected_str == "void" and "region" not in check:
         issues.append(_issue(
@@ -251,6 +252,15 @@ def _validate_section_bbox_check(check: dict, index: int) -> list[SchemaIssue]:
             hint="Add region [[x0,y0],[x1,y1]] so an empty global slice cannot pass accidentally.",
         ))
     return issues
+
+
+def _section_bbox_expected_dimensions(expected: object) -> list[float] | None:
+    if not isinstance(expected, list | tuple) or len(expected) != 2:
+        return None
+    try:
+        return [float(expected[0]), float(expected[1])]
+    except (TypeError, ValueError):
+        return None
 
 
 def _validate_min_wall_thickness_check(check: dict, index: int) -> list[SchemaIssue]:

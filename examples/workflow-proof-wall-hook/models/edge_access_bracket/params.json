@@ -1,0 +1,21 @@
+{
+  "base_width": 64.0,
+  "base_depth": 36.0,
+  "base_thickness": 4.0,
+  "hole_spacing": 44.0,
+  "hole_y": -6.0,
+  "hole_diameter": 4.5,
+  "tool_diameter": 9.0,
+  "min_edge_clearance": 6.0,
+  "hook_width": 16.0,
+  "hook_arm_depth": 40.0,
+  "hook_root_y": 12.0,
+  "hook_arm_thickness": 6.0,
+  "hook_lip_thickness": 5.0,
+  "hook_lip_height": 14.0,
+  "rib_thickness": 3.0,
+  "rib_height": 10.0,
+  "rib_depth": 26.0,
+  "min_wall_thickness": 2.4,
+  "tolerance": 0.35
+}

@@ -1,0 +1,234 @@
+{
+  "schema": "agentcad.design-spec.v1",
+  "model": "edge_access_bracket",
+  "units": "mm",
+  "intent": "Wall-mounted cable hook bracket that intentionally stresses edge-hole clearance, tool access, and load-bearing root checks.",
+  "features": [
+    {
+      "id": "wall_mount_plate",
+      "description": "Flat wall contact plate and structural datum for the bracket body.",
+      "intent": "Provides the wall contact datum and load transfer surface.",
+      "checks": ["overall_bbox", "base_plate_section", "watertight"]
+    },
+    {
+      "id": "edge_mounting_holes",
+      "description": "Two M4 clearance screw holes deliberately close enough to the side edges to require edge-breakout evidence.",
+      "intent": "Fastener holes must prove diameter, position, access, and edge clearance.",
+      "checks": [
+        "left_hole_diameter",
+        "right_hole_diameter",
+        "left_hole_access",
+        "right_hole_access",
+        "left_hole_edge_clearance",
+        "right_hole_edge_clearance"
+      ]
+    },
+    {
+      "id": "load_hook_arm",
+      "description": "Cantilever hook arm projecting from the front of the wall plate.",
+      "intent": "Carries cable load without detaching from the plate.",
+      "checks": ["hook_arm_section", "hook_root_to_plate_contact"]
+    },
+    {
+      "id": "hook_stop_lip",
+      "description": "Raised lip at the end of the hook arm to keep the cable from sliding off.",
+      "intent": "Acts as the retention stop and must be attached to the arm.",
+      "checks": ["lip_section", "lip_root_section"]
+    },
+    {
+      "id": "root_reinforcing_ribs",
+      "description": "Two reinforcing ribs tying the hook arm into the base plate.",
+      "intent": "Reduce bending at the hook root and prove the support is not floating.",
+      "checks": ["rib_section", "rib_wall", "hook_root_to_plate_contact"]
+    }
+  ],
+  "checks": [
+    {
+      "id": "overall_bbox",
+      "type": "bbox_size",
+      "expected": [64.0, 70.0, 18.0],
+      "tolerance": 0.6
+    },
+    {
+      "id": "watertight",
+      "type": "watertight",
+      "expected": true
+    },
+    {
+      "id": "base_plate_section",
+      "type": "section_bbox_at_z",
+      "z": 2.0,
+      "region": [[-31.5, -17.5], [31.5, 17.5]],
+      "expected": "solid"
+    },
+    {
+      "id": "left_hole_diameter",
+      "type": "inner_diameter_at_z",
+      "z": 2.0,
+      "center": [-22.0, -6.0],
+      "expected": 4.5,
+      "tolerance": 0.5
+    },
+    {
+      "id": "right_hole_diameter",
+      "type": "inner_diameter_at_z",
+      "z": 2.0,
+      "center": [22.0, -6.0],
+      "expected": 4.5,
+      "tolerance": 0.5
+    },
+    {
+      "id": "left_hole_access",
+      "type": "hole_accessibility",
+      "axis": "z",
+      "z": 4.6,
+      "center": [-22.0, -6.0],
+      "hole_diameter": 4.5,
+      "clearance_diameter": 9.0
+    },
+    {
+      "id": "right_hole_access",
+      "type": "hole_accessibility",
+      "axis": "z",
+      "z": 4.6,
+      "center": [22.0, -6.0],
+      "hole_diameter": 4.5,
+      "clearance_diameter": 9.0
+    },
+    {
+      "id": "left_hole_edge_clearance",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "role": "hole", "axis": "z", "center": [-22.0, -6.0], "radius": 2.25, "z_range": [0.0, 4.0]},
+      "feature_b": {"type": "box", "role": "left_edge_guard", "x_range": [-33.0, -32.0], "y_range": [-18.0, 18.0], "z_range": [0.0, 4.0]},
+      "min_mm": 6.0,
+      "tolerance": 0.1
+    },
+    {
+      "id": "right_hole_edge_clearance",
+      "type": "min_clearance",
+      "feature_a": {"type": "cylinder", "role": "hole", "axis": "z", "center": [22.0, -6.0], "radius": 2.25, "z_range": [0.0, 4.0]},
+      "feature_b": {"type": "box", "role": "right_edge_guard", "x_range": [32.0, 33.0], "y_range": [-18.0, 18.0], "z_range": [0.0, 4.0]},
+      "min_mm": 6.0,
+      "tolerance": 0.1
+    },
+    {
+      "id": "hook_arm_section",
+      "type": "section_bbox_at_z",
+      "z": 7.0,
+      "region": [[-8.2, 12.0], [8.2, 52.0]],
+      "expected": [16.0, 40.0],
+      "tolerance": 0.4
+    },
+    {
+      "id": "hook_root_to_plate_contact",
+      "type": "min_clearance",
+      "feature_a": {"type": "box", "role": "hook_root", "x_range": [-8.0, 8.0], "y_range": [12.0, 18.0], "z_range": [4.0, 10.0]},
+      "feature_b": {"type": "box", "role": "plate_top_at_root", "x_range": [-8.0, 8.0], "y_range": [12.0, 18.0], "z_range": [0.0, 4.0]},
+      "min_mm": 0.0,
+      "tolerance": 0.1
+    },
+    {
+      "id": "lip_section",
+      "type": "section_bbox_at_z",
+      "z": 12.0,
+      "region": [[-8.2, 47.0], [8.2, 52.0]],
+      "expected": [16.0, 5.0],
+      "tolerance": 0.4
+    },
+    {
+      "id": "lip_root_section",
+      "type": "section_bbox_at_z",
+      "z": 5.0,
+      "region": [[-8.2, 47.0], [8.2, 52.0]],
+      "expected": "solid"
+    },
+    {
+      "id": "rib_section",
+      "type": "section_bbox_at_z",
+      "z": 9.0,
+      "region": [[-8.0, 12.0], [8.0, 38.0]],
+      "expected": "solid"
+    },
+    {
+      "id": "rib_wall",
+      "type": "min_wall_thickness",
+      "z": 9.0,
+      "region": [[-8.0, 12.0], [8.0, 38.0]],
+      "min_mm": 2.4,
+      "sample_resolution": 1.0
+    },
+    {
+      "id": "step_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/edge_access_bracket.step"
+    },
+    {
+      "id": "stl_artifact",
+      "type": "artifact_exists",
+      "path": "outputs/edge_access_bracket.stl"
+    }
+  ],
+  "functional_surfaces": [
+    {
+      "id": "wall_contact_back",
+      "feature_id": "wall_mount_plate",
+      "role": "wall contact face",
+      "critical": true
+    },
+    {
+      "id": "cable_support_top",
+      "feature_id": "load_hook_arm",
+      "role": "cable bearing surface",
+      "critical": true
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "m4_wall_fasteners",
+      "type": "fastener_hole",
+      "feature_id": "edge_mounting_holes",
+      "access_axis": "z",
+      "clearance_mm": 6.0,
+      "failure_modes": ["edge_breakout", "access_blocked"]
+    },
+    {
+      "id": "hook_root_joint",
+      "type": "load_bearing_interface",
+      "feature_ids": ["load_hook_arm", "root_reinforcing_ribs"],
+      "failure_modes": ["detached_rib", "thin_wall"]
+    }
+  ],
+  "failure_modes": [
+    {
+      "id": "mount_hole_edge_breakout",
+      "mode": "edge_breakout",
+      "severity": "high",
+      "affects": ["edge_mounting_holes"],
+      "required_evidence": ["position", "dimensions", "access", "interface_risk"],
+      "min_edge_clearance_mm": 6.0
+    },
+    {
+      "id": "mount_hole_access_blocked",
+      "mode": "access_blocked",
+      "severity": "high",
+      "affects": ["edge_mounting_holes"],
+      "required_evidence": ["position", "access"]
+    },
+    {
+      "id": "hook_root_detaches",
+      "mode": "detached_rib",
+      "severity": "high",
+      "affects": ["load_hook_arm", "root_reinforcing_ribs"],
+      "required_evidence": ["position", "wall"],
+      "root_z": 4.0
+    },
+    {
+      "id": "hook_wall_too_thin",
+      "mode": "thin_wall",
+      "severity": "high",
+      "affects": ["load_hook_arm", "hook_stop_lip", "root_reinforcing_ribs"],
+      "required_evidence": ["wall", "dimensions"],
+      "min_wall_mm": 2.4
+    }
+  ]
+}

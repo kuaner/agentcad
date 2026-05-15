@@ -13,7 +13,6 @@ from agentcad.cli import main
 @pytest.fixture(autouse=True)
 def _no_serve(monkeypatch):
     monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
-    monkeypatch.setattr(cli_mod, "open_preview", lambda *a, **kw: None)
 
 
 def test_new_auto_init(tmp_path, monkeypatch):
@@ -193,7 +192,7 @@ def test_preview_auto_detects_model(monkeypatch, tmp_path):
 
     def fake_model_preview(project_path, target, **kwargs):
         captured["target"] = target
-        captured["static"] = kwargs.get("static", False)
+        captured["kwargs"] = kwargs
         return {"ok": True, "stage": "preview", "kind": "model", "name": target}
 
     monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
@@ -201,27 +200,7 @@ def test_preview_auto_detects_model(monkeypatch, tmp_path):
 
     assert result == 0
     assert captured["target"] == "bracket"
-    assert captured["static"] is False
-
-
-def test_preview_static_mode(monkeypatch, tmp_path):
-    monkeypatch.chdir(tmp_path)
-    main(["new", "bracket"])
-    monkeypatch.chdir(tmp_path / "bracket")
-    captured = {}
-
-    def fake_model_preview(project_path, target, **kwargs):
-        captured["target"] = target
-        captured["static"] = kwargs.get("static", False)
-        return {"ok": True, "stage": "preview", "kind": "model", "name": target,
-                "artifacts": {"preview_page": "/tmp/fake.html"}}
-
-    monkeypatch.setattr(cli_mod, "open_preview", lambda path: None)
-    monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
-    result = main(["preview", "bracket", "--static"])
-
-    assert result == 0
-    assert captured["static"] is True
+    assert "static" not in captured["kwargs"]
 
 
 def test_preview_auto_detects_assembly(monkeypatch, tmp_path):
@@ -353,23 +332,22 @@ def test_project_flag_rejects_invalid(tmp_path, monkeypatch):
     assert result == 1
 
 
-def test_preview_static_uses_open_preview(tmp_path, monkeypatch):
+def test_preview_uses_http_server(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     main(["init", "project", "--model", "box"])
     monkeypatch.chdir(tmp_path / "project")
-    opened = {}
+    served = {}
 
     def fake_model_preview(project_path, target, **kwargs):
         return {"ok": True, "stage": "preview", "kind": "model", "name": target,
                 "artifacts": {"preview_page": str(tmp_path / "project" / "models" / "box" / "outputs" / "preview.html")}}
 
     monkeypatch.setattr(cli_mod, "write_model_preview", fake_model_preview)
-    monkeypatch.setattr(cli_mod, "open_preview", lambda p: opened.setdefault("path", str(p)))
-    monkeypatch.setattr(cli_mod, "serve_preview", lambda *a, **kw: None)
+    monkeypatch.setattr(cli_mod, "serve_preview", lambda p: served.setdefault("path", str(p)))
 
-    result = main(["preview", "box", "--static"])
+    result = main(["preview", "box"])
     assert result == 0
-    assert "path" in opened
+    assert "path" in served
 
 
 def test_cadbench_cli_outputs_aggregate_payload(capsys):

@@ -26,8 +26,7 @@ models using the `agentcad` CLI and build123d geometry library.
 12. **Preview**: run `agentcad preview <name>` to launch an interactive 3D
     preview in the browser (starts a local HTTP server). Use the 3D view to
     inspect topology, section SVGs, geometry values, and failing checks. For an
-    assembly, run `agentcad preview <name>` (auto-detected). Add `--static` to
-    generate a self-contained HTML file that works offline without a server.
+    assembly, run `agentcad preview <name>` (auto-detected).
 13. **Quality Review**: apply `references/design-quality-review.md`. If the
     model is merely valid but not good, revise the concept, contract, or
     geometry and repeat validation.
@@ -197,7 +196,6 @@ agentcad deliver <model>
 
 # Preview
 agentcad preview <name>                  # Start local server + open browser
-agentcad preview <name> --static         # Generate self-contained HTML + open browser
 agentcad preview <name> --kind assembly  # Force assembly mode
 
 # Inspection

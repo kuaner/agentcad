@@ -33,7 +33,7 @@ and recommends the next command.
 | Build | `agentcad build <model>[:<variant>]` | Run `part.py` through build123d, export STEP + STL, hash-cache stale runs |
 | Measure | `agentcad measure <model>[:<variant>]` | Mesh stats + structural facts (bbox, watertight, triangles, voids) |
 | Render | `agentcad render <model>` | Iso/front/top/side/back SVG previews with dimension annotations + Z/X/Y cross-section SVGs with measurement sidecars |
-| Preview | `agentcad preview <name>[:<variant>]` | Interactive Three.js preview for models and assemblies — `--static` generates self-contained offline HTML |
+| Preview | `agentcad preview <name>[:<variant>]` | Interactive Three.js preview for models and assemblies served through a local HTTP server |
 | Probe | `agentcad probe <model>` | Cross-section diameter / bbox / component analysis plus ad-hoc line, point, and region measurements; `--scan` to discover step changes; `--cx/--cy` avoid negative-number parsing issues |
 | Inspect | `agentcad inspect <model>` | Three-axis scan + automatic section SVGs + measurement JSON + suggested probes |
 | Validate | `agentcad validate <model>[:<variant>]` | Build + measure + render all orthographic previews + design checks + feature coverage + fix suggestions (includes timing and section cache) |
@@ -64,7 +64,7 @@ Every command prints stable machine-readable JSON output. Failures include
 | `metadata_equals` | post-build | Asserts a value emitted from `part.py` |
 | `outer_diameter_at_z` | post-build | Cross-section radial size at Z |
 | `inner_diameter_at_z` | post-build | Inner cavity diameter at Z |
-| `section_bbox_at_z` | post-build | Cross-section AABB / void detection at Z; `expected: "void"` requires `region` to prevent false passes on empty slices |
+| `section_bbox_at_z` | post-build | Cross-section state or dimensions at Z; `expected` accepts `"solid"`, `"void"`, or `[width, depth]`; `expected: "void"` requires `region` |
 | `section_component_count` | post-build | Count disconnected section contours for repeated slots/cavities |
 | `diameter_decreases_along_z` | post-build | Monotonicity for tapers / lead-ins |
 | `volume_range` | post-build | Volume sanity bounds |

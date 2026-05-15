@@ -177,6 +177,11 @@ class TestSectionBboxValidation:
         issues = _validate_section_bbox_check(check, 0)
         assert len(issues) == 0
 
+    def test_dimension_expected_value_passes_schema(self):
+        check = {"id": "s1", "type": "section_bbox_at_z", "z": 5, "expected": [10, 8], "tolerance": 0.1}
+        issues = _validate_section_bbox_check(check, 0)
+        assert len(issues) == 0
+
     def test_warning_has_hint(self):
         check = {"id": "s1", "type": "section_bbox_at_z", "z": 5, "expected": "void"}
         issues = _validate_section_bbox_check(check, 0)
@@ -193,7 +198,7 @@ class TestSectionBboxValidation:
         assert any(i.path == "checks[0].region" for i in issues)
 
     def test_invalid_expected_value_errors(self):
-        check = {"id": "s1", "type": "section_bbox_at_z", "z": 5, "expected": [10, 10]}
+        check = {"id": "s1", "type": "section_bbox_at_z", "z": 5, "expected": [10]}
         issues = _validate_section_bbox_check(check, 0)
         assert len(issues) == 1
         assert issues[0].severity == "error"

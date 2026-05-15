@@ -653,14 +653,7 @@
     let activeSoloId = null;
     let activeFocusId = null;
 
-    function decodeBase64(b64) {
-      const binary = atob(b64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      return bytes.buffer;
-    }
     async function loadStlBuffer(component) {
-      if (component.stlBase64) return decodeBase64(component.stlBase64);
       const response = await fetch(component.stlUrl);
       if (!response.ok) throw new Error(`fetch failed: ${response.status}`);
       return response.arrayBuffer();
@@ -1076,7 +1069,7 @@
         label.textContent = item.label || item.path || "svg";
         label.style.cssText = "font-size:11px;color:var(--muted);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
         const img = document.createElement("img");
-        img.src = item.svgBase64 ? `data:image/svg+xml;base64,${item.svgBase64}` : (item.path || "");
+        img.src = item.path || "";
         img.alt = item.label || "";
         img.addEventListener("click", () => {
           const modal = document.getElementById("svg-modal");
@@ -1090,60 +1083,26 @@
 
       const links = document.getElementById("links");
       const artifactRows = Object.entries(data.artifacts || {});
-      const artifactContent = data.artifactsContent || {};
       document.getElementById("artifact-count").textContent = String(artifactRows.length);
       artifactRows.forEach(([key, value]) => {
         const ext = (value || "").split(".").pop().toLowerCase();
-        const inlineData = artifactContent[key];
-        if (inlineData) {
-          const details = document.createElement("details");
-          details.className = "artifact";
-          const summary = document.createElement("summary");
-          const label = document.createElement("span");
-          label.className = "label";
-          label.textContent = artifactLabel(key);
-          const path = document.createElement("span");
-          path.className = "path";
-          path.textContent = value;
-          const extTag = document.createElement("span");
-          extTag.className = "ext";
-          extTag.textContent = ext;
-          const dl = document.createElement("a");
-          dl.href = value;
-          dl.textContent = "Open";
-          dl.className = "download";
-          dl.addEventListener("click", (e) => e.stopPropagation());
-          summary.append(label, path, extTag, dl);
-          const body = document.createElement("div");
-          body.className = "artifact-body";
-          const pre = document.createElement("pre");
-          if (inlineData.format === "json") {
-            pre.innerHTML = highlightJson(JSON.stringify(inlineData.data, null, 2));
-          } else {
-            pre.textContent = inlineData.text || "";
-          }
-          body.append(pre);
-          details.append(summary, body);
-          links.append(details);
-        } else {
-          const row = document.createElement("div");
-          row.className = "artifact artifact-head";
-          const label = document.createElement("span");
-          label.className = "label";
-          label.textContent = artifactLabel(key);
-          const path = document.createElement("span");
-          path.className = "path";
-          path.textContent = value;
-          const extTag = document.createElement("span");
-          extTag.className = "ext";
-          extTag.textContent = ext;
-          const dl = document.createElement("a");
-          dl.href = value;
-          dl.textContent = "Open";
-          dl.className = "download";
-          row.append(label, path, extTag, dl);
-          links.append(row);
-        }
+        const row = document.createElement("div");
+        row.className = "artifact artifact-head";
+        const label = document.createElement("span");
+        label.className = "label";
+        label.textContent = artifactLabel(key);
+        const path = document.createElement("span");
+        path.className = "path";
+        path.textContent = value;
+        const extTag = document.createElement("span");
+        extTag.className = "ext";
+        extTag.textContent = ext;
+        const dl = document.createElement("a");
+        dl.href = value;
+        dl.textContent = "Open";
+        dl.className = "download";
+        row.append(label, path, extTag, dl);
+        links.append(row);
       });
       if (!links.children.length) links.append(emptyNode("No artifact links."));
     }

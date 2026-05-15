@@ -248,6 +248,13 @@ def section_bbox_at_z(
         result["region"] = {"x_min": rx0, "y_min": ry0, "x_max": rx1, "y_max": ry1}
         result["region_point_count"] = len(region_points)
         result["region_has_points"] = len(region_points) > 0
+        if region_points:
+            rxs = [p[0] for p in region_points]
+            rys = [p[1] for p in region_points]
+            result["region_bbox"] = {
+                "x_min": min(rxs), "x_max": max(rxs),
+                "y_min": min(rys), "y_max": max(rys),
+            }
 
     return result
 

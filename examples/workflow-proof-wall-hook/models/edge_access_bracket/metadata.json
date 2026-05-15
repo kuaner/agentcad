@@ -1,0 +1,79 @@
+{
+  "schema": "agentcad.part.metadata.v1",
+  "units": "mm",
+  "anchors": {
+    "origin": [
+      0,
+      0,
+      0
+    ],
+    "x_min": [
+      -32.0,
+      0,
+      0
+    ],
+    "x_max": [
+      32.0,
+      0,
+      0
+    ]
+  },
+  "interfaces": {
+    "left_wall_fastener": {
+      "kind": "screw_axis",
+      "axis": {
+        "point": [
+          -22.0,
+          -6.0,
+          2.0
+        ],
+        "direction": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "inner_cylinder": {
+        "type": "cylinder",
+        "axis": "z",
+        "center": [
+          -22.0,
+          -6.0
+        ],
+        "radius": 2.25,
+        "z_range": [
+          0.0,
+          4.0
+        ]
+      }
+    },
+    "right_wall_fastener": {
+      "kind": "screw_axis",
+      "axis": {
+        "point": [
+          22.0,
+          -6.0,
+          2.0
+        ],
+        "direction": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "inner_cylinder": {
+        "type": "cylinder",
+        "axis": "z",
+        "center": [
+          22.0,
+          -6.0
+        ],
+        "radius": 2.25,
+        "z_range": [
+          0.0,
+          4.0
+        ]
+      }
+    }
+  }
+}

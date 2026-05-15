@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 import html
 import http.server
 import json
@@ -23,7 +22,6 @@ def write_model_preview(
     validation_payload: dict | None = None,
     geometry_payload: dict | None = None,
     variant: str | None = None,
-    static: bool = False,
 ) -> dict:
     safe = normalize_model_name(name)
     out_dir = outputs_dir_for_variant(project, safe, variant)
@@ -46,11 +44,8 @@ def write_model_preview(
         "worldBbox": bbox,
         "mesh": ((geometry or {}).get("geometry") or {}).get("mesh"),
         "artifacts": _model_artifact_links(project, safe, out_dir),
+        "stlUrl": _rel_link(stl_path, out_dir),
     }
-    if static:
-        component["stlBase64"] = _file_b64(stl_path)
-    else:
-        component["stlUrl"] = _rel_link(stl_path, out_dir)
 
     data = {
         "schema": "agentcad.preview.v1",
@@ -81,12 +76,10 @@ def write_model_preview(
             "features": design.get("features") or [],
         },
         "metadata": metadata,
-        "svgs": _collect_svg_assets(out_dir, static=static),
+        "svgs": _collect_svg_assets(out_dir),
         "artifacts": _model_artifact_links(project, safe, out_dir),
-        "runtime": _runtime_caps(mjcf=False, static=static),
+        "runtime": _runtime_caps(mjcf=False),
     }
-    if static:
-        data["artifactsContent"] = _artifact_contents(_model_artifact_paths(project, safe, out_dir))
     return _write_preview_file(preview_path, data, title=f"AgentCAD Preview - {safe}")
 
 
@@ -96,7 +89,6 @@ def write_assembly_preview(
     *,
     validation_payload: dict | None = None,
     geometry_payload: dict | None = None,
-    static: bool = False,
 ) -> dict:
     safe = normalize_model_name(name)
     root = project / "assemblies" / safe
@@ -121,11 +113,8 @@ def write_assembly_preview(
             "mesh": component.get("mesh"),
             "build": component.get("build"),
             "artifacts": _component_artifact_links(component, out_dir),
+            "stlUrl": _rel_link(stl_path, out_dir),
         }
-        if static:
-            entry["stlBase64"] = _file_b64(stl_path)
-        else:
-            entry["stlUrl"] = _rel_link(stl_path, out_dir)
         components.append(entry)
 
     mjcf_path = out_dir / f"{safe}.mjcf.xml"
@@ -148,12 +137,10 @@ def write_assembly_preview(
         "observability": {
             "failed_checks": ((observability.get("checks") or {}).get("failed") if observability else []),
         },
-        "svgs": _collect_svg_assets(out_dir, static=static),
+        "svgs": _collect_svg_assets(out_dir),
         "artifacts": _assembly_artifact_links(root, out_dir),
-        "runtime": _runtime_caps(mjcf=mjcf_path.exists(), static=static),
+        "runtime": _runtime_caps(mjcf=mjcf_path.exists()),
     }
-    if static:
-        data["artifactsContent"] = _artifact_contents(_assembly_artifact_paths(root, out_dir))
     return _write_preview_file(preview_path, data, title=f"AgentCAD Assembly Preview - {safe}")
 
 
@@ -169,10 +156,6 @@ def serve_preview(preview_path: Path, *, port: int = 0) -> None:
             httpd.serve_forever()
         except KeyboardInterrupt:
             pass
-
-
-def open_preview(preview_path: Path) -> None:
-    webbrowser.open(preview_path.resolve().as_uri())
 
 
 class _ReusableThreadedServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -224,21 +207,17 @@ def _failure(stage: str, error_type: str, message: str, path: Path) -> dict:
     }
 
 
-def _runtime_caps(*, mjcf: bool, static: bool) -> dict:
+def _runtime_caps(*, mjcf: bool) -> dict:
     return {
         "three": {"enabled": True, "source": f"jsdelivr three@{THREE_VERSION}"},
-        "stl": {"enabled": True, "mode": "embedded-base64" if static else "fetch-relative-url"},
+        "stl": {"enabled": True, "mode": "fetch-relative-url"},
         "mjcf": {"enabled": mjcf, "mode": "browser-xml-summary-and-agentcad-roundtrip"},
         "occt": {"enabled": False, "mode": "external-viewer-compatible-step-artifact"},
         "mujoco": {"enabled": False, "mjcf_present": mjcf, "mode": "external-viewer-compatible-mjcf-artifact"},
     }
 
 
-def _file_b64(path: Path) -> str:
-    return base64.b64encode(path.read_bytes()).decode("ascii")
-
-
-def _collect_svg_assets(out_dir: Path, *, static: bool = False) -> list[dict]:
+def _collect_svg_assets(out_dir: Path) -> list[dict]:
     paths = sorted(out_dir.glob("preview.*.svg")) + sorted(out_dir.glob("section.*.svg"))
     seen: set[Path] = set()
     rows = []
@@ -246,10 +225,7 @@ def _collect_svg_assets(out_dir: Path, *, static: bool = False) -> list[dict]:
         if path in seen:
             continue
         seen.add(path)
-        item: dict = {"label": path.stem, "path": _rel_link(path, out_dir)}
-        if static:
-            item["svgBase64"] = _file_b64(path)
-        rows.append(item)
+        rows.append({"label": path.stem, "path": _rel_link(path, out_dir)})
     return rows
 
 
@@ -296,23 +272,6 @@ def _assembly_artifact_paths(root: Path, out_dir: Path) -> dict[str, Path]:
         "assembly_stl": out_dir / f"{root.name}.stl",
     }
     return {key: path for key, path in candidates.items() if path.exists()}
-
-
-def _artifact_contents(paths: dict[str, Path]) -> dict:
-    out: dict = {}
-    for key, path in paths.items():
-        suffix = path.suffix.lower()
-        if suffix == ".json":
-            try:
-                out[key] = {"format": "json", "data": json.loads(path.read_text(encoding="utf-8"))}
-            except (OSError, ValueError):
-                continue
-        elif suffix == ".xml":
-            try:
-                out[key] = {"format": "xml", "text": path.read_text(encoding="utf-8")}
-            except OSError:
-                continue
-    return out
 
 
 def _rel_link(path: Path, base: Path) -> str:

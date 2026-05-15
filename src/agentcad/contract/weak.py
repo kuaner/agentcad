@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .common import GEOMETRY_CHECK_TYPES, HOLE_CHECK_TYPES, ROOT_CHECK_TYPES, classify_feature
+from .common import GEOMETRY_CHECK_TYPES, HOLE_CHECK_TYPES, ROOT_CHECK_TYPES, ROOT_WORDS, classify_feature
 from .schema import load_design
 
 def evaluate_weak_check_warnings(project: Path, name: str) -> list[dict]:
@@ -66,8 +66,7 @@ def evaluate_weak_check_warnings_dict(design: dict[str, Any]) -> list[dict]:
                 })
 
         if "load_bearing_attachment" in categories:
-            root_checks = linked_types & ROOT_CHECK_TYPES
-            if not root_checks:
+            if not _has_root_interface_check(linked_ids, check_type_map):
                 warnings.append({
                     "feature": feature_id,
                     "category": ["load_bearing_attachment"],
@@ -78,3 +77,18 @@ def evaluate_weak_check_warnings_dict(design: dict[str, Any]) -> list[dict]:
                 })
 
     return warnings
+
+
+def _has_root_interface_check(linked_ids: list[str], check_type_map: dict[str, str]) -> bool:
+    for check_id in linked_ids:
+        check_type = check_type_map.get(check_id, "")
+        if check_type in ROOT_CHECK_TYPES:
+            return True
+        if check_type == "section_bbox_at_z" and _text_has_any(check_id, ROOT_WORDS):
+            return True
+    return False
+
+
+def _text_has_any(text: str, words: frozenset[str]) -> bool:
+    lowered = text.lower()
+    return any(word in lowered for word in words)

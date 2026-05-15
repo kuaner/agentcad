@@ -99,9 +99,11 @@ def evaluate_section_bbox_at_z(check: dict, ctx: CheckContext) -> dict:
     raw_z = check.get("z")
     if raw_z is None:
         return _input_error(check, "section_bbox_at_z", "check requires 'z' field")
-    expected_state = str(check.get("expected", "solid")).lower()
-    if expected_state not in ("solid", "void"):
-        return _input_error(check, "section_bbox_at_z", "'expected' must be 'solid' or 'void'")
+    raw_expected = check.get("expected", "solid")
+    expected_dims = _section_expected_dimensions(raw_expected)
+    expected_state = str(raw_expected).lower() if expected_dims is None else None
+    if expected_dims is None and expected_state not in ("solid", "void"):
+        return _input_error(check, "section_bbox_at_z", "'expected' must be 'solid', 'void', or [width, depth]")
     raw_region = check.get("region")
     if expected_state == "void" and raw_region is None:
         return _input_error(check, "section_bbox_at_z", "expected='void' requires 'region' to avoid global false-pass")
@@ -124,6 +126,43 @@ def evaluate_section_bbox_at_z(check: dict, ctx: CheckContext) -> dict:
             "error": {"type": "SectionError", "message": str(section.get("error"))},
             "section": section,
         }
+    if expected_dims is not None:
+        bbox = section.get("region_bbox") if region is not None else section.get("bbox")
+        if not bbox:
+            return {
+                "name": check.get("id") or "section_bbox_at_z",
+                "type": "section_bbox_at_z",
+                "ok": False,
+                "z": z,
+                "region": raw_region,
+                "expected": expected_dims,
+                "actual": None,
+                "error": {"type": "SectionError", "message": "section has no points in region"},
+                "section": section,
+            }
+        actual = [
+            float(bbox["x_max"]) - float(bbox["x_min"]),
+            float(bbox["y_max"]) - float(bbox["y_min"]),
+        ]
+        tolerance = float(check.get("tolerance", 0.0))
+        ok = all(abs(a - e) <= tolerance for a, e in zip(actual, expected_dims))
+        result = {
+            "name": check.get("id") or "section_bbox_at_z",
+            "type": "section_bbox_at_z",
+            "ok": ok,
+            "z": z,
+            "region": raw_region,
+            "expected": expected_dims,
+            "actual": actual,
+            "tolerance": tolerance,
+            "section": section,
+        }
+        if not ok:
+            svg_path = ctx.out_dir / f"debug.{check.get('id') or 'section_bbox'}.z{z:.2f}.svg"
+            info = write_section_svg(triangles, AXIS_Z, z, svg_path)
+            result["debug_svg"] = info.get("svg")
+            result["debug_analysis_json"] = info.get("analysis_json")
+        return result
     if region is None:
         return {"name": check.get("id") or "section_bbox_at_z", "type": "section_bbox_at_z", "ok": True, "z": z, "section": section}
     has_points = bool(section.get("region_has_points"))
@@ -145,6 +184,15 @@ def evaluate_section_bbox_at_z(check: dict, ctx: CheckContext) -> dict:
         result["debug_svg"] = info.get("svg")
         result["debug_analysis_json"] = info.get("analysis_json")
     return result
+
+
+def _section_expected_dimensions(expected: object) -> list[float] | None:
+    if not isinstance(expected, list | tuple) or len(expected) != 2:
+        return None
+    try:
+        return [float(expected[0]), float(expected[1])]
+    except (TypeError, ValueError):
+        return None
 
 
 @register_check("section_component_count", layer=POST_BUILD)

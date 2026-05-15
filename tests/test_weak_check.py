@@ -124,3 +124,16 @@ def test_no_warnings_for_section_bbox_check(project):
     })
     warnings = evaluate_weak_check_warnings(project, "thing")
     assert warnings == []
+
+
+def test_root_named_section_bbox_satisfies_attachment_root_check(project):
+    mdir = model_dir(project, "thing")
+    _write_design(mdir, {
+        "features": [{"id": "retaining_lip", "checks": ["lip_section", "lip_root_section"]}],
+        "checks": [
+            {"id": "lip_section", "type": "section_bbox_at_z", "z": 5.0, "expected": [10.0, 2.0]},
+            {"id": "lip_root_section", "type": "section_bbox_at_z", "z": 1.0, "expected": "solid", "region": [[0, 0], [10, 2]]},
+        ],
+    })
+    warnings = evaluate_weak_check_warnings(project, "thing")
+    assert warnings == []

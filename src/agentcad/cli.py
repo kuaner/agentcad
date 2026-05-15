@@ -12,7 +12,7 @@ from .jsonio import print_payload
 from .measure import measure_model
 from .precheck import precheck_model
 from .probe import plan_probes, probe_model, probe_scan
-from .preview import open_preview, serve_preview, write_assembly_preview, write_model_preview
+from .preview import serve_preview, write_assembly_preview, write_model_preview
 from .render import VIEW_DIRS, render_model, render_models_multi
 from .report import report_model
 from .review import review_model
@@ -95,7 +95,6 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="preview target kind; auto detects models/<name> or assemblies/<name>",
     )
-    preview.add_argument("--static", action="store_true", help="generate self-contained HTML with embedded assets (for offline use)")
 
     validate = sub.add_parser("validate", help="build, measure, render, and validate a model or all targets")
     validate.add_argument("model")
@@ -308,7 +307,6 @@ def dispatch(args: argparse.Namespace) -> dict:
             project, target,
             kind=getattr(args, "kind", "auto"),
             variant=variant_name,
-            static=getattr(args, "static", False),
         )
     if args.command == "validate":
         if args.model == "all":
@@ -409,7 +407,7 @@ def dispatch(args: argparse.Namespace) -> dict:
     raise ValueError(f"unknown command: {args.command}")
 
 
-def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: str | None = None, static: bool = False) -> dict:
+def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: str | None = None) -> dict:
     safe = normalize_model_name(target)
     has_model = model_dir(project, safe).exists()
     has_assembly = (assembly_dir(project, safe) / "assembly.json").exists()
@@ -419,11 +417,11 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: 
     if kind == "model":
         if not has_model:
             return _preview_not_found(safe, kind="model")
-        result = write_model_preview(project, safe, variant=variant, static=static)
+        result = write_model_preview(project, safe, variant=variant)
     elif kind == "assembly":
         if not has_assembly:
             return _preview_not_found(safe, kind="assembly")
-        result = write_assembly_preview(project, safe, static=static)
+        result = write_assembly_preview(project, safe)
     elif has_model and has_assembly:
         return {
             "ok": False,
@@ -435,9 +433,9 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: 
             },
         }
     elif has_model:
-        result = write_model_preview(project, safe, variant=variant, static=static)
+        result = write_model_preview(project, safe, variant=variant)
     elif has_assembly:
-        result = write_assembly_preview(project, safe, static=static)
+        result = write_assembly_preview(project, safe)
     else:
         return {
             "ok": False,
@@ -451,10 +449,7 @@ def _preview_target(project: Path, target: str, *, kind: str = "auto", variant: 
 
     if result and result.get("ok") and result.get("artifacts", {}).get("preview_page"):
         preview_path = Path(result["artifacts"]["preview_page"])
-        if static:
-            open_preview(preview_path)
-        else:
-            serve_preview(preview_path)
+        serve_preview(preview_path)
 
     return result
 

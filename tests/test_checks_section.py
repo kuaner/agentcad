@@ -3,7 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from agentcad.checks import CheckContext
-from agentcad.checks.section import evaluate_diameter_decreases_along_z, evaluate_section_component_count
+from agentcad.checks.section import (
+    evaluate_diameter_decreases_along_z,
+    evaluate_section_bbox_at_z,
+    evaluate_section_component_count,
+)
 
 
 def _cube_triangles(size: float = 10.0):
@@ -41,3 +45,24 @@ def test_section_component_count_passes_for_cube(tmp_path: Path):
     )
     assert result["ok"] is True
     assert result["actual"] == 1
+
+
+def test_section_bbox_accepts_expected_dimensions(tmp_path: Path):
+    ctx = CheckContext(project=tmp_path, name="m", measure={}, get_triangles=lambda: _cube_triangles(), out_dir=tmp_path)
+    result = evaluate_section_bbox_at_z(
+        {"id": "section_dims", "type": "section_bbox_at_z", "z": 5.0, "expected": [10.0, 10.0], "tolerance": 0.01},
+        ctx,
+    )
+    assert result["ok"] is True
+    assert result["actual"] == [10.0, 10.0]
+
+
+def test_section_bbox_dimension_mismatch_fails(tmp_path: Path):
+    ctx = CheckContext(project=tmp_path, name="m", measure={}, get_triangles=lambda: _cube_triangles(), out_dir=tmp_path)
+    result = evaluate_section_bbox_at_z(
+        {"id": "section_dims", "type": "section_bbox_at_z", "z": 5.0, "expected": [9.0, 10.0], "tolerance": 0.01},
+        ctx,
+    )
+    assert result["ok"] is False
+    assert result["expected"] == [9.0, 10.0]
+    assert result["actual"] == [10.0, 10.0]

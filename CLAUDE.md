@@ -87,7 +87,6 @@ agentcad measure <model>[:<variant>]                     # Measure STL geometry
 agentcad render <model>                          # SVG preview from STL
 agentcad render <model> --views iso,front,top    # Render multiple SVG previews
 agentcad preview <name>[:<variant>]                      # Start local server + interactive browser preview (auto-opens browser)
-agentcad preview <name> --static                         # Self-contained offline HTML preview (auto-opens browser, no server needed)
 agentcad preview <name> --kind assembly          # Disambiguate if a model and assembly share a name
 agentcad render <model> --section-z <z>                 # Cross-section SVG at Z (also --section-x, --section-y)
 agentcad validate <model>[:<variant>]                    # Full validation pipeline
@@ -202,9 +201,9 @@ Existing: `bbox_size`, `watertight`, `min_triangles`, `artifact_exists`, `metada
 - `min_wall_thickness` — minimum wall thickness in a region at Z; supports range mode (axis + range + samples) for multi-slice evaluation
 - `feature_position` — a 3D point is in expected solid/void state
 
-Section checks use STL triangle-plane intersections for validating ducts, tapers, sockets, and chamfers. `min_clearance` is a pure-shape check evaluated at design time before any code is written, catching the most common interference bugs (hole edge under a wall, hole-to-edge break, hole-to-hole pitch too tight).
+Section checks use STL triangle-plane intersections for validating ducts, tapers, sockets, rectangular arms/lips, and chamfers. `section_bbox_at_z` accepts `expected: "solid"`, `expected: "void"`, or `expected: [width, depth]` with `tolerance`. `min_clearance` is a pure-shape check evaluated at design time before any code is written, catching the most common interference bugs (hole edge under a wall, hole-to-edge break, hole-to-hole pitch too tight).
 
-Schema validation now uses structured `SchemaIssue` with field-level error paths, severity (error/warning), and hints. `section_bbox_at_z` with `expected: "void"` emits a warning if `region` is missing (false-pass risk on empty slices). `min_wall_thickness` validates single-plane vs range-mode schema before evaluation.
+Schema validation now uses structured `SchemaIssue` with field-level error paths, severity (error/warning), and hints. `section_bbox_at_z` with dimension expected values validates `[width, depth]`; `expected: "void"` emits a warning if `region` is missing (false-pass risk on empty slices). `min_wall_thickness` validates single-plane vs range-mode schema before evaluation.
 
 Weak-check warnings are now categorized with severity levels:
 - Features without any checks or without geometry checks → `severity: "blocking"` (gates delivery in review)
